@@ -1,0 +1,146 @@
+.history-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 20px;
+}
+
+.history-card {
+    background: white;
+    padding: 40px;
+    border-radius: 10px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    max-width: 600px;
+}
+
+.history-card h2 {
+    color: #333;
+    margin-bottom: 10px;
+    font-size: 28px;
+    text-align: center;
+}
+
+.history-user {
+    color: #666;
+    text-align: center;
+    margin-bottom: 24px;
+    font-size: 15px;
+}
+
+.history-stats {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+}
+
+.history-stat {
+    background: #f8f9fa;
+    padding: 20px 28px;
+    border-radius: 8px;
+    text-align: center;
+    min-width: 120px;
+}
+
+.history-stat.overall {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.history-stat h3 {
+    margin: 0 0 6px 0;
+    font-size: 28px;
+}
+
+.history-stat p {
+    margin: 0;
+    font-size: 13px;
+    color: #555;
+}
+
+.history-stat.overall p {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.history-list h3 {
+    color: #333;
+    margin-bottom: 14px;
+    font-size: 18px;
+}
+
+.history-list {
+    margin-bottom: 24px;
+}
+
+.history-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+}
+
+.history-item-type {
+    font-weight: 600;
+    color: #333;
+    min-width: 120px;
+}
+
+.history-item-score {
+    color: #555;
+}
+
+.history-item-date {
+    margin-left: auto;
+    font-size: 13px;
+    color: #777;
+}
+
+.history-empty {
+    text-align: center;
+    color: #666;
+    padding: 24px;
+    margin-bottom: 24px;
+}
+
+.history-loading,
+.history-error {
+    text-align: center;
+    color: #555;
+    padding: 20px;
+}
+
+.history-error {
+    color: #dc3545;
+    margin-bottom: 16px;
+}
+
+.history-actions {
+    text-align: center;
+}
+
+.btn-history {
+    padding: 12px 28px;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.btn-history.btn-dashboard {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.btn-history.btn-dashboard:hover {
+    opacity: 0.9;
+}
