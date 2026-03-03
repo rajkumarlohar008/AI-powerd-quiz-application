@@ -1,8 +1,9 @@
 # Dependencies
 node_modules/
-
-# Environment variables
+build/
+dist/
 .env
+
 
 # Logs
 *.log
@@ -14,10 +15,12 @@ Thumbs.db
 # IDE files
 .vscode/
 .idea/
+*.iml
 
-# Build outputs
-build/
-dist/
 
 #spring boot properties
+target/
+*.class
+*.jar
+*.war
 application.properties
