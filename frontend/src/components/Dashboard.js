@@ -56,7 +56,7 @@ const Dashboard = () => {
                             Start Predefined Quiz
                         </button>
                         <button onClick={handleStartAiQuiz} className="btn-logout">
-                            Start AI Quiz (Gemini)
+                            Start AI Quiz
                         </button>
                     </div>
                     <button onClick={handleViewHistory} className="btn-logout" style={{ background: '#28a745' }}>

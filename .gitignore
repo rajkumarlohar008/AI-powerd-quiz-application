@@ -24,3 +24,4 @@ target/
 *.jar
 *.war
 application.properties
+backend/render.yaml

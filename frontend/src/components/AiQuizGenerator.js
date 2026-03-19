@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import API_URL from '../config';
@@ -104,7 +104,7 @@ const AiQuizGenerator = () => {
                         topic: q.topic || null,
                     })),
                 };
-                axios.post(`${API_URL}/api/quiz-attempts`, payload).catch(() => {});
+                axios.post(`${API_URL}/api/quiz-attempts`, payload).catch(() => { });
             }
         } catch (err) {
             setError('Failed to generate quiz summary.');
@@ -129,13 +129,38 @@ const AiQuizGenerator = () => {
 
     const current = quiz && quiz.questions[currentQuestion];
 
+    // Handle file input button click and label update using useEffect
+    useEffect(() => {
+        const btn = document.querySelector("#inputbtn");
+        const input = document.querySelector("#fileinput");
+        if (!btn || !input) return;
+
+        const handleBtnClick = () => {
+            input.click();
+        };
+
+        const handleInputChange = (e) => {
+            if (e.target.files && e.target.files[0]) {
+                btn.textContent = e.target.files[0].name;
+            }
+        };
+
+        btn.addEventListener("click", handleBtnClick);
+        input.addEventListener("change", handleInputChange);
+
+        return () => {
+            btn.removeEventListener("click", handleBtnClick);
+            input.removeEventListener("change", handleInputChange);
+        };
+    }, []);
+
     // 1) Initial screen: use same card style, but with input form
     if (!quiz && !showSummary) {
         return (
             <div className="quiz-container">
                 <div className="quiz-card">
                     <div className="quiz-header" style={{ borderBottom: 'none', marginBottom: '10px' }}>
-                        <div className="question-counter">AI Quiz Generator (Gemini)</div>
+                        <div className="question-counter">AI Quiz Generator</div>
                     </div>
 
                     <form onSubmit={handleGenerate}>
@@ -153,10 +178,12 @@ const AiQuizGenerator = () => {
                         <div className="question-section">
                             <h2 className="question-text">Or upload file (PDF / text)</h2>
                             <input
+                                id="fileinput"
                                 type="file"
                                 accept="application/pdf,text/plain"
                                 onChange={(e) => setFile(e.target.files[0] || null)}
                             />
+                            <button id="inputbtn">Upload file</button>
                         </div>
 
                         {error && <p className="error">{error}</p>}
@@ -194,9 +221,8 @@ const AiQuizGenerator = () => {
                             {current.options.map((opt, idx) => (
                                 <button
                                     key={idx}
-                                    className={`option-button ${
-                                        userAnswers[currentQuestion] === idx ? 'selected' : ''
-                                    }`}
+                                    className={`option-button ${userAnswers[currentQuestion] === idx ? 'selected' : ''
+                                        }`}
                                     onClick={() => handleAnswerSelect(idx)}
                                 >
                                     {opt}
@@ -326,9 +352,8 @@ const AiQuizGenerator = () => {
                                         </p>
                                     </div>
                                     <div
-                                        className={`answer-status ${
-                                            isCorrect ? 'correct' : 'incorrect'
-                                        }`}
+                                        className={`answer-status ${isCorrect ? 'correct' : 'incorrect'
+                                            }`}
                                     >
                                         {isCorrect ? '✓ Correct' : '✗ Incorrect'}
                                     </div>
