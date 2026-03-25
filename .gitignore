@@ -23,5 +23,5 @@ target/
 *.class
 *.jar
 *.war
-application.properties
+# application.properties
 backend/render.yaml
