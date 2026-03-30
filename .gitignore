@@ -25,3 +25,4 @@ target/
 *.war
 # application.properties
 backend/render.yaml
+application.properties

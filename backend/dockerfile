@@ -1,13 +1,16 @@
-# Step 1: Build the application
+# Step 1: Build
 FROM maven:3.8.4-openjdk-17 AS build
 WORKDIR /app
 COPY . .
 RUN chmod +x mvnw && ./mvnw clean package -DskipTests
 
-# Step 2: Run the application
-# We are changing the image below from openjdk:17-jdk-slim to eclipse-temurin
+# Step 2: Run
 FROM eclipse-temurin:17-jdk-alpine
 WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
-EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "app.jar"]
+
+# ❗ IMPORTANT: match Render port
+EXPOSE 10000
+
+# ❗ IMPORTANT: bind to Render port + public address
+ENTRYPOINT ["sh", "-c", "java -jar app.jar --server.port=$PORT --server.address=0.0.0.0"]
