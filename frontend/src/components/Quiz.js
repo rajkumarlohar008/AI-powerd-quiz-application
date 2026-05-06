@@ -53,7 +53,6 @@ const Quiz = () => {
         }, 1000);
 
         return () => clearInterval(timer);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentQuestion, loading, showResult]);
 
     const handleAnswerSelect = (index) => {

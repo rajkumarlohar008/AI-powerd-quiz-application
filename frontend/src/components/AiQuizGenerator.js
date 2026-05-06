@@ -36,7 +36,7 @@ const AiQuizGenerator = () => {
             }
 
             // Do not set Content-Type manually - axios sets multipart/form-data with boundary
-            const res = await axios.post(`http://localhost:8080/api/ai/generate-quiz`, formData, {
+            const res = await axios.post(`${API_URL}/api/ai/generate-quiz`, formData, {
                 // Add a timeout (e.g., 2 minutes) because AI generation can be slow
                 timeout: 60000, 
                 headers: {
