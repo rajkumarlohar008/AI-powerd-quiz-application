@@ -54,11 +54,11 @@ public class ApiController {
         this.geminiService = geminiService;
     }
 
-    @GetMapping("/helth"){
-        public String helth(){
-            return "ok";
-        }
+    @GetMapping("/helth")
+    public String helth(){
+        return "ok";
     }
+    
 
     @PostMapping("/register")
     public ResponseEntity<Map<String, Object>> register(@Valid @RequestBody RegisterRequest request) {
