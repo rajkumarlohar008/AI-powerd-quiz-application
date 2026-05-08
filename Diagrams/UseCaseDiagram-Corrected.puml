@@ -1,0 +1,42 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+actor User
+actor "Gemini API" as Gemini
+
+rectangle "AI Quiz System" {
+  usecase "Register Account" as UC_Register
+  usecase "Login" as UC_Login
+  usecase "Take Predefined Quiz" as UC_PreQuiz
+  usecase "Take AI Quiz" as UC_AiQuiz
+  usecase "Generate AI Quiz\n(from text/PDF)" as UC_GenAi
+  usecase "Submit Quiz" as UC_Submit
+  usecase "View Result" as UC_Result
+  usecase "View Explanations\n& AI Summary" as UC_Summary
+  usecase "Save Attempt" as UC_Save
+  usecase "View Quiz History" as UC_History
+  usecase "Logout" as UC_Logout
+}
+
+User --> UC_Register
+User --> UC_Login
+User --> UC_PreQuiz
+User --> UC_AiQuiz
+User --> UC_GenAi
+User --> UC_History
+User --> UC_Logout
+
+UC_PreQuiz .> UC_Submit : <<include>>
+UC_AiQuiz .> UC_Submit : <<include>>
+
+UC_Submit .> UC_Result : <<include>>
+UC_Submit .> UC_Save : <<include>>
+
+UC_AiQuiz .> UC_Summary : <<include>>
+UC_Summary .> UC_Save : <<include>>
+
+Gemini --> UC_GenAi
+Gemini --> UC_Summary
+
+@enduml

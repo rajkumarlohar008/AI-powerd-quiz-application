@@ -1,0 +1,48 @@
+@startuml
+start
+
+:Open Application;
+if (Already registered?) then (No)
+  :Register Account;
+endif
+
+:Login;
+if (Login successful?) then (No)
+  :Show login error;
+  stop
+endif
+
+:Open Dashboard;
+if (Choose module) then (Predefined Quiz)
+  :Fetch predefined quiz;
+  :Attempt quiz;
+  :Submit answers;
+  :Evaluate answers;
+  :Show result & explanation;
+  :Save attempt;
+elseif (AI Quiz)
+  :Enter text or upload file;
+  :Generate AI quiz;
+  if (AI generation successful?) then (No)
+    :Show generation error;
+    :Retry input/generate;
+  else (Yes)
+    :Attempt AI quiz;
+    :Submit answers;
+    :Generate AI summary\n(topic strengths, recommendations);
+    :Show result + explanation + summary;
+    :Save attempt;
+  endif
+else (Quiz History)
+  :Fetch attempt history;
+  :Display history & averages;
+endif
+
+if (Continue?) then (Yes)
+  :Return to Dashboard;
+else (No)
+  :Logout;
+  stop
+endif
+
+@enduml

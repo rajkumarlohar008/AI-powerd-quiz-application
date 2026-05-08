@@ -1,0 +1,36 @@
+@startuml
+top to bottom direction
+skinparam shadowing false
+
+actor User
+database "D1 Users" as D1
+database "D2 Quiz Attempts" as D2
+rectangle "P1.0 Authentication" as P1
+rectangle "P2.0 Quiz Delivery\n(Predefined + AI)" as P2
+rectangle "P3.0 AI Processing\n(Generation + Summary)" as P3
+rectangle "P4.0 Evaluation & Result" as P4
+rectangle "P5.0 History Management" as P5
+rectangle "External:\nGemini API" as AI
+
+User --> P1 : register/login data
+P1 --> D1 : create/read user
+D1 --> P1 : user record
+P1 --> User : auth response
+
+User --> P2 : start quiz,\ninput text/file
+P2 --> P3 : AI quiz request / summary request
+P3 --> AI : prompt request
+AI --> P3 : generated JSON
+P3 --> P2 : AI quiz / summary data
+
+User --> P4 : submit answers
+P2 --> P4 : question set
+P4 --> User : score/result/explanations
+P4 --> D2 : save attempt
+
+User --> P5 : history request
+P5 --> D2 : fetch attempts by user
+D2 --> P5 : attempts + stats
+P5 --> User : history response
+
+@enduml

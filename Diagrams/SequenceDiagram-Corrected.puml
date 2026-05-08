@@ -1,0 +1,48 @@
+@startuml
+autonumber
+actor User
+participant Frontend
+participant Backend
+database MongoDB
+participant "Gemini API" as AI
+
+== Authentication ==
+User -> Frontend: Login(email, password)
+Frontend -> Backend: POST /api/login
+Backend -> MongoDB: find user by email
+MongoDB --> Backend: user record
+Backend --> Frontend: JWT + user profile
+Frontend --> User: Dashboard shown
+
+== AI Quiz Generation ==
+User -> Frontend: Enter text / Upload PDF\nClick Generate Quiz
+Frontend -> Backend: POST /api/ai/generate-quiz (multipart)
+Backend -> Backend: Extract text from file/content
+Backend -> AI: Generate MCQ quiz(JSON prompt)
+AI --> Backend: Quiz questions JSON
+Backend --> Frontend: Quiz questions
+Frontend --> User: Display quiz
+
+== Submission & Summary ==
+User -> Frontend: Submit answers
+Frontend -> Backend: POST /api/ai/quiz-summary
+Backend -> Backend: Compute topic stats
+Backend -> AI: Generate summary/recommendations
+AI --> Backend: Summary JSON
+Backend --> Frontend: Result + explanations + summary
+Frontend --> User: Show result screen
+
+== Persistence ==
+Frontend -> Backend: POST /api/quiz-attempts
+Backend -> MongoDB: save attempt document
+MongoDB --> Backend: saved
+Backend --> Frontend: attempt saved
+
+== History View ==
+User -> Frontend: Open Quiz History
+Frontend -> Backend: GET /api/quiz-history?userId=...
+Backend -> MongoDB: fetch attempts by user
+MongoDB --> Backend: attempts list
+Backend --> Frontend: history + average score
+Frontend --> User: Display history
+@enduml

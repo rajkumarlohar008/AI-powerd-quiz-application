@@ -1,0 +1,41 @@
+@startuml
+' Minimal class diagram aligned with implemented backend
+hide methods
+skinparam classAttributeIconSize 0
+
+class User {
+  +id: String
+  +name: String
+  +email: String
+  +password: String
+}
+
+class QuizAttempt {
+  +id: String
+  +userId: String
+  +quizType: String
+  +correct: int
+  +total: int
+  +percentage: double
+  +createdAt: Instant
+}
+
+class QuestionAttempt {
+  +question: String
+  +options: List<String>
+  +correctAnswer: Integer
+  +userAnswer: Integer
+  +explanation: String
+  +topic: String
+}
+
+class ApiController
+class GeminiService
+
+User "1" --> "0..*" QuizAttempt : has
+QuizAttempt "1" *-- "1..*" QuestionAttempt : contains
+ApiController --> GeminiService : uses
+ApiController --> User : manages auth
+ApiController --> QuizAttempt : saves/reads attempts
+
+@enduml

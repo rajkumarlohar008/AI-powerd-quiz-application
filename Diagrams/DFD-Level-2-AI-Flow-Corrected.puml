@@ -1,0 +1,41 @@
+@startuml
+top to bottom direction
+skinparam shadowing false
+
+actor User
+database "D2 Quiz Attempts" as D2
+rectangle "2.1 Capture Input\n(text/file)" as P21
+rectangle "2.2 Validate Input" as P22
+rectangle "2.3 Extract File Text\n(PDF/text)" as P23
+rectangle "2.4 Build Prompt" as P24
+rectangle "2.5 Call Gemini API" as P25
+rectangle "2.6 Parse Quiz JSON" as P26
+rectangle "2.7 Display AI Quiz" as P27
+rectangle "2.8 Submit Answers" as P28
+rectangle "2.9 Generate AI Summary" as P29
+rectangle "2.10 Show Result +\nExplanation + Summary" as P210
+rectangle "2.11 Save Attempt" as P211
+rectangle "External:\nGemini API" as AI
+
+User --> P21 : enter text / upload file
+P21 --> P22
+P22 --> P23 : if file exists
+P22 --> P24 : if text only
+P23 --> P24
+P24 --> P25
+P25 --> AI : quiz prompt
+AI --> P25 : quiz response
+P25 --> P26
+P26 --> P27
+P27 --> User : quiz questions
+
+User --> P28 : submit answers
+P28 --> P29
+P29 --> AI : summary prompt
+AI --> P29 : summary response
+P29 --> P210
+P210 --> User : score + feedback
+P210 --> P211
+P211 --> D2 : store attempt
+
+@enduml
