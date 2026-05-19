@@ -10,8 +10,11 @@ const Register = () => {
         email: '',
         password: ''
     });
+
     const [message, setMessage] = useState('');
     const [error, setError] = useState('');
+    const [isDisabled, setIsDisabled] = useState(false);
+
     const navigate = useNavigate();
 
     const handleChange = (e) => {
@@ -23,19 +26,28 @@ const Register = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        // Disable button after first click
+        setIsDisabled(true);
+
         setMessage('');
         setError('');
 
         try {
             const response = await axios.post(`${API_URL}/api/register`, formData);
+
             setMessage(response.data.message);
 
             // Redirect to login after successful registration
             setTimeout(() => {
                 navigate('/login');
             }, 1500);
+
         } catch (err) {
             setError(err.response?.data?.message || 'Registration failed');
+
+            // Re-enable button if registration fails
+            setIsDisabled(false);
         }
     };
 
@@ -43,6 +55,7 @@ const Register = () => {
         <div className="auth-container">
             <div className="auth-card">
                 <h2>Register</h2>
+
                 <form onSubmit={handleSubmit}>
                     <div className="form-group">
                         <label>Name</label>
@@ -80,14 +93,26 @@ const Register = () => {
                         />
                     </div>
 
-                    <button type="submit" className="btn-submit">Register</button>
+                    <button
+                        type="submit"
+                        className="btn-submit"
+                        disabled={isDisabled}
+                    >
+                        {isDisabled ? 'Registering...' : 'Register'}
+                    </button>
                 </form>
 
-                {message && <p className="success-message">{message}</p>}
-                {error && <p className="error-message">{error}</p>}
+                {message && (
+                    <p className="success-message">{message}</p>
+                )}
+
+                {error && (
+                    <p className="error-message">{error}</p>
+                )}
 
                 <p className="auth-link">
-                    Already have an account? <Link to="/login">Login here</Link>
+                    Already have an account?{' '}
+                    <Link to="/login">Login here</Link>
                 </p>
             </div>
         </div>
