@@ -73,10 +73,10 @@
 
         <!-- PDF parsing for uploaded files -->
         <dependency>
-            <groupId>org.apache.pdfbox</groupId>
-            <artifactId>pdfbox</artifactId>
-            <version>2.0.30</version>
-        </dependency>
+             <groupId>org.apache.pdfbox</groupId>
+             <artifactId>pdfbox</artifactId>
+             <version>3.0.2</version>
+         </dependency>
     </dependencies>
 
     <build>
