@@ -9,8 +9,11 @@ const Login = () => {
         email: '',
         password: ''
     });
+
     const [message, setMessage] = useState('');
     const [error, setError] = useState('');
+    const [isDisabled, setIsDisabled] = useState(false);
+
     const navigate = useNavigate();
 
     const handleChange = (e) => {
@@ -22,6 +25,10 @@ const Login = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        // Disable button after first click
+        setIsDisabled(true);
+
         setMessage('');
         setError('');
 
@@ -38,8 +45,12 @@ const Login = () => {
             setTimeout(() => {
                 navigate('/dashboard');
             }, 1000);
+
         } catch (err) {
             setError(err.response?.data?.message || 'Login failed');
+
+            // Re-enable button if login fails
+            setIsDisabled(false);
         }
     };
 
@@ -47,6 +58,7 @@ const Login = () => {
         <div className="auth-container">
             <div className="auth-card">
                 <h2>Login</h2>
+
                 <form onSubmit={handleSubmit}>
                     <div className="form-group">
                         <label>Email</label>
@@ -72,14 +84,26 @@ const Login = () => {
                         />
                     </div>
 
-                    <button type="submit" className="btn-submit">Login</button>
+                    <button
+                        type="submit"
+                        className="btn-submit"
+                        disabled={isDisabled}
+                    >
+                        {isDisabled ? 'Logging in...' : 'Login'}
+                    </button>
                 </form>
 
-                {message && <p className="success-message">{message}</p>}
-                {error && <p className="error-message">{error}</p>}
+                {message && (
+                    <p className="success-message">{message}</p>
+                )}
+
+                {error && (
+                    <p className="error-message">{error}</p>
+                )}
 
                 <p className="auth-link">
-                    Don't have an account? <Link to="/register">Register here</Link>
+                    Don't have an account?{' '}
+                    <Link to="/register">Register here</Link>
                 </p>
             </div>
         </div>
