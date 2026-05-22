@@ -201,24 +201,13 @@ public class ApiController {
         }
 
         List<QuizAttempt> attempts = quizAttemptRepository.findByUserIdOrderByCreatedAtDesc(userId);
-        List<QuizAttemptItem> items = attempts.stream()
-                .map(a -> new QuizAttemptItem(
-                        a.getId(),
-                        a.getQuizType(),
-                        a.getCorrect(),
-                        a.getTotal(),
-                        a.getPercentage(),
-                        a.getCreatedAt()
-                ))
-                .collect(Collectors.toList());
-
         double averagePercentage = 0;
         if (!attempts.isEmpty()) {
             double sum = attempts.stream().mapToDouble(QuizAttempt::getPercentage).sum();
             averagePercentage = Math.round(sum / attempts.size() * 100.0) / 100.0;
         }
 
-        QuizHistoryResponse response = new QuizHistoryResponse(items, attempts.size(), averagePercentage);
+        QuizHistoryResponse response = new QuizHistoryResponse(attempts, attempts.size(), averagePercentage);
         return ResponseEntity.ok(response);
     }
 

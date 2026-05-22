@@ -1,27 +1,29 @@
 package com.example.server.dto;
 
+import com.example.server.model.QuizAttempt;
+
 import java.util.List;
 
 public class QuizHistoryResponse {
 
-    private List<QuizAttemptItem> attempts;
+    private List<QuizAttempt> attempts;
     private long totalAttempts;
     private double averagePercentage;
 
     public QuizHistoryResponse() {
     }
 
-    public QuizHistoryResponse(List<QuizAttemptItem> attempts, long totalAttempts, double averagePercentage) {
+    public QuizHistoryResponse(List<QuizAttempt> attempts, long totalAttempts, double averagePercentage) {
         this.attempts = attempts;
         this.totalAttempts = totalAttempts;
         this.averagePercentage = averagePercentage;
     }
 
-    public List<QuizAttemptItem> getAttempts() {
+    public List<QuizAttempt> getAttempts() {
         return attempts;
     }
 
-    public void setAttempts(List<QuizAttemptItem> attempts) {
+    public void setAttempts(List<QuizAttempt> attempts) {
         this.attempts = attempts;
     }
 

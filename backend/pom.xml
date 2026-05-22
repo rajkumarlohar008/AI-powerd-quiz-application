@@ -33,6 +33,12 @@
             <artifactId>spring-boot-starter-data-mongodb</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.apache.pdfbox</groupId>
+            <artifactId>pdfbox</artifactId>
+            <version>3.0.2</version>
+        </dependency>
+
         <!-- BCrypt password hashing -->
         <dependency>
             <groupId>org.springframework.security</groupId>
@@ -72,11 +78,19 @@
         </dependency>
 
         <!-- PDF parsing for uploaded files -->
+<<<<<<< HEAD
         <dependency>
              <groupId>org.apache.pdfbox</groupId>
              <artifactId>pdfbox</artifactId>
              <version>3.0.2</version>
          </dependency>
+=======
+<!--        <dependency>-->
+<!--            <groupId>org.apache.pdfbox</groupId>-->
+<!--            <artifactId>pdfbox</artifactId>-->
+<!--            <version>2.0.30</version>-->
+<!--        </dependency>-->
+>>>>>>> a486313 (Updated backend files)
     </dependencies>
 
     <build>

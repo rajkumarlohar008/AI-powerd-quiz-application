@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.springframework.beans.factory.annotation.Value;
@@ -36,8 +37,10 @@ public class GeminiService {
     private final ObjectMapper objectMapper;
     private final HttpClient httpClient;
 
-    public GeminiService(@Value("${gemini.api.key:}") String apiKey,
-                         ObjectMapper objectMapper) {
+    public GeminiService(
+            @Value("${gemini.api.key:}") String apiKey,
+            ObjectMapper objectMapper) {
+
         this.apiKey = apiKey;
         this.objectMapper = objectMapper;
         this.httpClient = HttpClient.newHttpClient();
@@ -46,10 +49,39 @@ public class GeminiService {
     // ==============================
     // FILE TEXT EXTRACTION
     // ==============================
+
     public String extractTextFromFile(MultipartFile file) throws IOException {
+<<<<<<< HEAD
 
     if (file == null || file.isEmpty()) {
         return "";
+=======
+
+        if (file == null) {
+            return "";
+        }
+
+        String contentType = file.getContentType();
+
+        // PDF support (PDFBox 3.x)
+        if ("application/pdf".equalsIgnoreCase(contentType)) {
+
+            try (InputStream in = file.getInputStream();
+                 PDDocument document = Loader.loadPDF(in.readAllBytes())) {
+
+                PDFTextStripper stripper = new PDFTextStripper();
+                return stripper.getText(document);
+            }
+        }
+
+        // Text files
+        if (contentType != null && contentType.startsWith("text/")) {
+            return new String(file.getBytes(), StandardCharsets.UTF_8);
+        }
+
+        throw new IOException(
+                "Unsupported file type: " + contentType);
+>>>>>>> a486313 (Updated backend files)
     }
 
     String contentType = file.getContentType();
@@ -81,6 +113,7 @@ public class GeminiService {
     // ==============================
     // GENERATE QUIZ
     // ==============================
+
     public AiQuizResponse generateQuiz(String combinedText)
             throws IOException, InterruptedException {
 
@@ -89,22 +122,25 @@ public class GeminiService {
         String prompt = """
                 You are an expert tutor.
                 Read the following study material and create a quiz.
+
                 - Generate 10 multiple-choice questions.
-                - Each question must have:
+                - Each question must contain:
                   - "question": string
                   - "options": array of 4 strings
-                  - "answerIndex": index (0-3) of correct option
+                  - "answerIndex": correct option index (0-3)
                   - "topic": short topic name
-                  - "explanation": 1–3 sentence explanation.
-                - Return ONLY valid JSON:
+                  - "explanation": short explanation
+
+                Return ONLY valid JSON:
+
                 {
-                  "questions": [
+                  "questions":[
                     {
-                      "question": "...",
-                      "options": ["...", "...", "...", "..."],
-                      "answerIndex": 0,
-                      "topic": "...",
-                      "explanation": "..."
+                      "question":"...",
+                      "options":["...","...","...","..."],
+                      "answerIndex":0,
+                      "topic":"...",
+                      "explanation":"..."
                     }
                   ]
                 }
@@ -116,29 +152,43 @@ public class GeminiService {
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(
-                        "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" + apiKey))
-                .header("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+                        "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key="
+                                + apiKey))
+                .header(
+                        "Content-Type",
+                        MediaType.APPLICATION_JSON_VALUE)
                 .POST(HttpRequest.BodyPublishers.ofByteArray(
                         objectMapper.writeValueAsBytes(body)))
                 .build();
 
         HttpResponse<String> response =
-                httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+                httpClient.send(
+                        request,
+                        HttpResponse.BodyHandlers.ofString());
 
         if (response.statusCode() >= 400) {
-            throw new IOException("Gemini API error: "
-                    + response.statusCode() + " - " + response.body());
+
+            throw new IOException(
+                    "Gemini API error: "
+                            + response.statusCode()
+                            + " - "
+                            + response.body());
         }
 
-        String text = extractTextFromGemini(response.body());
+        String text =
+                extractTextFromGemini(response.body());
 
         Map<String, Object> parsed =
-                objectMapper.readValue(text, new TypeReference<>() {});
+                objectMapper.readValue(
+                        text,
+                        new TypeReference<>() {
+                        });
 
-        @SuppressWarnings("unchecked")
         List<AiQuizQuestion> questions =
-                objectMapper.convertValue(parsed.get("questions"),
-                        new TypeReference<List<AiQuizQuestion>>() {});
+                objectMapper.convertValue(
+                        parsed.get("questions"),
+                        new TypeReference<List<AiQuizQuestion>>() {
+                        });
 
         return new AiQuizResponse(questions);
     }
@@ -146,88 +196,123 @@ public class GeminiService {
     // ==============================
     // GENERATE SUMMARY
     // ==============================
-    public QuizSummaryResponse generateSummary(QuizSummaryRequest request)
+
+    public QuizSummaryResponse generateSummary(
+            QuizSummaryRequest request)
             throws IOException, InterruptedException {
 
         validateApiKey();
 
-        Map<String, QuizSummaryResponse.TopicStats> perTopic = new HashMap<>();
-        List<AiQuizQuestion> questions = request.getQuestions();
-        List<Integer> userAnswers = request.getUserAnswers();
+        Map<String, QuizSummaryResponse.TopicStats> perTopic =
+                new HashMap<>();
+
+        List<AiQuizQuestion> questions =
+                request.getQuestions();
+
+        List<Integer> userAnswers =
+                request.getUserAnswers();
 
         for (int i = 0; i < questions.size(); i++) {
-            AiQuizQuestion q = questions.get(i);
-            String topic = q.getTopic() != null ? q.getTopic() : "General";
 
-            perTopic.computeIfAbsent(topic,
+            AiQuizQuestion q = questions.get(i);
+
+            String topic =
+                    q.getTopic() != null
+                            ? q.getTopic()
+                            : "General";
+
+            perTopic.computeIfAbsent(
+                    topic,
                     t -> new QuizSummaryResponse.TopicStats());
 
-            QuizSummaryResponse.TopicStats stats = perTopic.get(topic);
+            QuizSummaryResponse.TopicStats stats =
+                    perTopic.get(topic);
+
             stats.setTotal(stats.getTotal() + 1);
 
             if (i < userAnswers.size()
                     && userAnswers.get(i) != null
-                    && userAnswers.get(i).equals(q.getAnswerIndex())) {
-                stats.setCorrect(stats.getCorrect() + 1);
+                    && userAnswers.get(i)
+                    .equals(q.getAnswerIndex())) {
+
+                stats.setCorrect(
+                        stats.getCorrect() + 1);
             }
         }
 
         String prompt = """
                 You are an expert tutor.
+
                 A student completed a quiz.
 
                 Data:
-                """ + objectMapper.writeValueAsString(request) + """
+                """ + objectMapper.writeValueAsString(request)
+                + """
 
                 Tasks:
-                1. For each topic say strong, medium, or weak.
-                2. Write 3–5 sentence overall summary.
+                1. Determine strong / medium / weak topics.
+                2. Write an overall summary.
                 3. Give review recommendations.
 
-                Return ONLY valid JSON:
-                {
-                  "overallSummary": "...",
-                  "topics": [
-                    { "topic": "...", "strength": "...", "correct": 0, "total": 0 }
-                  ],
-                  "recommendations": ["...", "..."]
-                }
+                Return ONLY valid JSON.
                 """;
 
         ObjectNode body = buildGeminiRequest(prompt);
 
-        HttpRequest httpRequest = HttpRequest.newBuilder()
-                .uri(URI.create(
-                        "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" + apiKey))
-                .header("Content-Type", MediaType.APPLICATION_JSON_VALUE)
-                .POST(HttpRequest.BodyPublishers.ofByteArray(
-                        objectMapper.writeValueAsBytes(body)))
-                .build();
+        HttpRequest httpRequest =
+                HttpRequest.newBuilder()
+                        .uri(URI.create(
+                                "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key="
+                                        + apiKey))
+                        .header(
+                                "Content-Type",
+                                MediaType.APPLICATION_JSON_VALUE)
+                        .POST(HttpRequest.BodyPublishers.ofByteArray(
+                                objectMapper.writeValueAsBytes(body)))
+                        .build();
 
         HttpResponse<String> response =
-                httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+                httpClient.send(
+                        httpRequest,
+                        HttpResponse.BodyHandlers.ofString());
 
         if (response.statusCode() >= 400) {
-            throw new IOException("Gemini API error: "
-                    + response.statusCode() + " - " + response.body());
+
+            throw new IOException(
+                    "Gemini API error: "
+                            + response.statusCode()
+                            + " - "
+                            + response.body());
         }
 
-        String text = extractTextFromGemini(response.body());
+        String text =
+                extractTextFromGemini(response.body());
 
         Map<String, Object> parsed =
-                objectMapper.readValue(text, new TypeReference<>() {});
+                objectMapper.readValue(
+                        text,
+                        new TypeReference<>() {
+                        });
 
-        QuizSummaryResponse summary = new QuizSummaryResponse();
+        QuizSummaryResponse summary =
+                new QuizSummaryResponse();
+
         summary.setPerTopic(perTopic);
-        summary.setOverallSummary((String) parsed.get("overallSummary"));
 
-        summary.setTopics(objectMapper.convertValue(
-                parsed.get("topics"),
-                new TypeReference<List<QuizTopicResult>>() {}));
+        summary.setOverallSummary(
+                (String) parsed.get("overallSummary"));
 
-        summary.setRecommendations(objectMapper.convertValue(
-                parsed.get("recommendations"),
-                new TypeReference<List<String>>() {}));
+        summary.setTopics(
+                objectMapper.convertValue(
+                        parsed.get("topics"),
+                        new TypeReference<List<QuizTopicResult>>() {
+                        }));
+
+        summary.setRecommendations(
+                objectMapper.convertValue(
+                        parsed.get("recommendations"),
+                        new TypeReference<List<String>>() {
+                        }));
 
         return summary;
     }
@@ -237,47 +322,71 @@ public class GeminiService {
     // ==============================
 
     private void validateApiKey() {
+
         if (apiKey == null || apiKey.isBlank()) {
-            throw new IllegalStateException("Gemini API key is not configured.");
+            throw new IllegalStateException(
+                    "Gemini API key is not configured.");
         }
     }
 
-    private ObjectNode buildGeminiRequest(String prompt) {
-        ObjectNode body = objectMapper.createObjectNode();
-        ArrayNode contents = body.putArray("contents");
+    private ObjectNode buildGeminiRequest(
+            String prompt) {
 
-        ObjectNode contentObj = contents.addObject();
-        ArrayNode parts = contentObj.putArray("parts");
+        ObjectNode body =
+                objectMapper.createObjectNode();
 
-        ObjectNode partObj = parts.addObject();
+        ArrayNode contents =
+                body.putArray("contents");
+
+        ObjectNode contentObj =
+                contents.addObject();
+
+        ArrayNode parts =
+                contentObj.putArray("parts");
+
+        ObjectNode partObj =
+                parts.addObject();
+
         partObj.put("text", prompt);
 
         return body;
     }
 
-    private String extractTextFromGemini(String responseBody)
+    private String extractTextFromGemini(
+            String responseBody)
             throws IOException {
 
-        JsonNode root = objectMapper.readTree(responseBody);
-        JsonNode candidates = root.path("candidates");
+        JsonNode root =
+                objectMapper.readTree(responseBody);
 
-        if (!candidates.isArray() || candidates.isEmpty()) {
-            throw new IOException("No candidates returned from Gemini.");
+        JsonNode candidates =
+                root.path("candidates");
+
+        if (!candidates.isArray()
+                || candidates.isEmpty()) {
+
+            throw new IOException(
+                    "No candidates returned from Gemini.");
         }
 
-        String text = candidates.get(0)
-                .path("content")
-                .path("parts")
-                .get(0)
-                .path("text")
-                .asText();
+        String text =
+                candidates.get(0)
+                        .path("content")
+                        .path("parts")
+                        .get(0)
+                        .path("text")
+                        .asText();
 
-        // 🔥 Remove markdown code blocks if present
         text = text.trim();
 
         if (text.startsWith("```")) {
-            text = text.replaceAll("```json", "")
-                    .replaceAll("```", "")
+
+            text = text.replaceAll(
+                            "```json",
+                            "")
+                    .replaceAll(
+                            "```",
+                            "")
                     .trim();
         }
 
