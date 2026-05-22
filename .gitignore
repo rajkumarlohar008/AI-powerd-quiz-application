@@ -26,4 +26,5 @@ target/
 # application.properties
 backend/render.yaml
 application.properties
+# application.properties
 .env
