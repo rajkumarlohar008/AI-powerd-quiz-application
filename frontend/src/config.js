@@ -14,11 +14,11 @@ const configuredUrl = normalizeApiUrl(
   import.meta.env.VITE_API_URL
 );
 
-console.log(import.meta.env.VITE_API_URL);
+// console.log(import.meta.env.VITE_API_URL);
 
 // Detect environment
 const isDevelopment = import.meta.env.DEV;
-console.log(configuredUrl);
+// console.log(configuredUrl);
 
 // Final API URL
 const API_URL = configuredUrl || (

@@ -10,7 +10,7 @@ const HomePage = () => {
             min-h-screen
             w-full
             overflow-hidden
-            bg-liner-to-br
+            bg-linear-to-br
             from-black
             via-slate-900
             to-purple-950
@@ -28,7 +28,7 @@ const HomePage = () => {
                 font-extrabold
                 text-center
                 leading-tight
-                bg-liner-to-r
+                bg-linear-to-r
                 from-cyan-400
                 via-blue-500
                 to-purple-500
@@ -36,16 +36,23 @@ const HomePage = () => {
                 text-transparent
                 drop-shadow-lg'
             >Welcome to Quiz Application</h1>
-            <div className='h-[70vh] w-full '>
-                <Canvas camera={{ fav: 30, position: [0, 1, 5] }}>
-                    <OrbitControls />
+             <div className='h-[70vh] w-full '>
+
+                <Canvas camera={{ fav: 30, position: [0, 2, 5] }}>
+
+                    <OrbitControls enableZoom={false}/>
+
                     <Scene />
+
                     {/* <EffectComposer> */}
+
                     {/* </EffectComposer> */}
+
                 </Canvas>
+
             </div>
             <Link
-                to={'/login'}
+                to={'/dashboard'}
                 className=' z-10
                 mb-10
                 px-10
@@ -55,7 +62,7 @@ const HomePage = () => {
                 md:text-2xl
                 font-bold
                 text-white
-                bg-liner-to-r
+                bg-linear-to-r
                 from-cyan-500
                 to-purple-600
                 hover:scale-105

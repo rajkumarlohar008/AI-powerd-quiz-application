@@ -337,7 +337,7 @@ const AiQuizGenerator = () => {
                 flex
                 items-center
                 justify-center
-                bg-liner-to-br
+                bg-gradient-to-br
                 from-black
                 via-slate-900
                 to-purple-950
@@ -349,10 +349,10 @@ const AiQuizGenerator = () => {
 
                 <div className='
                     absolute
-                    -top-30
-                    -left-30
-                    w-87.5
-                    h-87.5
+                    top-[-120px]
+                    left-[-120px]
+                    w-[350px]
+                    h-[350px]
                     bg-cyan-500/20
                     rounded-full
                     blur-3xl
@@ -360,10 +360,10 @@ const AiQuizGenerator = () => {
 
                 <div className='
                     absolute
-                    -bottom-30
-                    -right-30
-                    w-87.5
-                    h-87.5
+                    bottom-[-120px]
+                    right-[-120px]
+                    w-[350px]
+                    h-[350px]
                     bg-purple-500/20
                     rounded-full
                     blur-3xl
@@ -392,7 +392,7 @@ const AiQuizGenerator = () => {
                         font-extrabold
                         text-center
                         mb-10
-                        bg-liner-to-r
+                        bg-gradient-to-r
                         from-cyan-400
                         via-blue-500
                         to-purple-500
@@ -537,7 +537,7 @@ const AiQuizGenerator = () => {
                                 font-bold
                                 text-lg
                                 text-white
-                                bg-liner-to-r
+                                bg-gradient-to-r
                                 from-cyan-500
                                 to-purple-600
                                 hover:scale-[1.02]
@@ -578,7 +578,7 @@ const AiQuizGenerator = () => {
                 flex
                 items-center
                 justify-center
-                bg-liner-to-br
+                bg-gradient-to-br
                 from-black
                 via-slate-900
                 to-purple-950
@@ -587,10 +587,10 @@ const AiQuizGenerator = () => {
 
                 <div className='
                     absolute
-                    -top-30
-                    -left-30
-                    w-87.5
-                    h-87.5
+                    top-[-120px]
+                    left-[-120px]
+                    w-[350px]
+                    h-[350px]
                     bg-cyan-500/20
                     rounded-full
                     blur-3xl
@@ -598,10 +598,10 @@ const AiQuizGenerator = () => {
 
                 <div className='
                     absolute
-                    -bottom-30
-                    -right-30
-                    w-87.5
-                    h-87.5
+                    bottom-[-120px]
+                    right-[-120px]
+                    w-[350px]
+                    h-[350px]
                     bg-purple-500/20
                     rounded-full
                     blur-3xl
@@ -700,7 +700,7 @@ const AiQuizGenerator = () => {
                                             ] === idx
 
                                                 ? `
-                                                    bg-liner-to-r
+                                                    bg-gradient-to-r
                                                     from-cyan-500
                                                     to-purple-600
                                                     text-white
@@ -745,7 +745,7 @@ const AiQuizGenerator = () => {
                                 font-bold
                                 text-lg
                                 text-white
-                                bg-liner-to-r
+                                bg-gradient-to-r
                                 from-gray-600
                                 to-gray-800
                                 disabled:opacity-40
@@ -770,7 +770,7 @@ const AiQuizGenerator = () => {
                                 font-bold
                                 text-lg
                                 text-white
-                                bg-liner-to-r
+                                bg-gradient-to-r
                                 from-cyan-500
                                 to-purple-600
                                 hover:scale-[1.02]
@@ -832,7 +832,7 @@ const AiQuizGenerator = () => {
                 relative
                 min-h-screen
                 overflow-hidden
-                bg-liner-to-br
+                bg-gradient-to-br
                 from-black
                 via-slate-900
                 to-purple-950
@@ -845,10 +845,10 @@ const AiQuizGenerator = () => {
 
                 <div className='
                     absolute
-                    -top-30
-                    -left-30
-                    w-87.5
-                    h-87.5
+                    top-[-120px]
+                    left-[-120px]
+                    w-[350px]
+                    h-[350px]
                     bg-cyan-500/20
                     rounded-full
                     blur-3xl
@@ -856,10 +856,10 @@ const AiQuizGenerator = () => {
 
                 <div className='
                     absolute
-                    -bottom-30
-                    -right-30
-                    w-87.5
-                    h-87.5
+                    bottom-[-120px]
+                    right-[-120px]
+                    w-[350px]
+                    h-[350px]
                     bg-purple-500/20
                     rounded-full
                     blur-3xl
@@ -887,7 +887,7 @@ const AiQuizGenerator = () => {
                         <h1 className='
                             text-5xl
                             font-extrabold
-                            bg-liner-to-r
+                            bg-gradient-to-r
                             from-cyan-400
                             via-blue-500
                             to-purple-500
@@ -914,7 +914,7 @@ const AiQuizGenerator = () => {
                             w-44
                             h-44
                             rounded-full
-                            bg-liner-to-r
+                            bg-gradient-to-r
                             from-cyan-500
                             to-purple-600
                             flex
@@ -1157,7 +1157,7 @@ const AiQuizGenerator = () => {
                                 font-bold
                                 text-lg
                                 text-white
-                                bg-liner-to-r
+                                bg-gradient-to-r
                                 from-cyan-500
                                 to-blue-600
                             '
@@ -1176,7 +1176,7 @@ const AiQuizGenerator = () => {
                                 font-bold
                                 text-lg
                                 text-white
-                                bg-liner-to-r
+                                bg-gradient-to-r
                                 from-purple-500
                                 to-pink-600
                             '

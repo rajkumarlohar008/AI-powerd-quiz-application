@@ -1,11 +1,14 @@
 # Dependencies
 node_modules/
+target/
 
 # Environment variables
 .env
+application.properties
 
 # Logs
 *.log
 
 # OS files
 .DS_Store
+
