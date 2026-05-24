@@ -1,7 +1,22 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import API_URL from '../config';
+import { 
+    Home, 
+    ShieldCheck, 
+    ChevronDown, 
+    User, 
+    Mail, 
+    Trophy, 
+    FileText, 
+    Bot, 
+    Users, 
+    History, 
+    LogOut,
+    ArrowRight 
+} from 'lucide-react';
+import Nav from './Nav';
 
 const QuizHistory = () => {
 
@@ -9,10 +24,23 @@ const QuizHistory = () => {
     const [history, setHistory] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    // const [user, setUser] = useState(null);
+
     // Track which attempt the user clicked to view details
     const [selectedAttempt, setSelectedAttempt] = useState(null);
 
     const navigate = useNavigate();
+
+    // useEffect(() => {
+    //             const token = localStorage.getItem('token');
+    //             const userData = localStorage.getItem('user');
+        
+    //             if (!token) {
+    //                 navigate('/login');
+    //             } else {
+    //                 setUser(JSON.parse(userData));
+    //             }
+    //         }, [navigate]);
 
     // Fetch History
     useEffect(() => {
@@ -131,19 +159,21 @@ const QuizHistory = () => {
 
     return (
         /* FIX 1: Changed wrapper to h-screen overflow-hidden to let children handle individual inner scrolling */
-        <div className='relative  md:h-[90.65vh] w-screen overflow-hidden bg-linear-to-br from-black via-slate-900 to-purple-950 flex items-center justify-center p-4 md:p-8'>
+        <div className='relative min-h-screen  w-screen overflow-hidden bg-linear-to-br from-black via-slate-900 to-purple-950 flex items-center justify-center p-4 md:p-8'>
 
             {/* Glow Effects */}
             <div className='pointer-events-none absolute -top-30 -left-30 w-80 h-80 bg-cyan-500/20 rounded-full blur-3xl' />
             <div className='pointer-events-none absolute -bottom-30 -right-30 w-80 h-80 bg-purple-500/20 rounded-full blur-3xl' />
+            
+            <Nav />
 
             {/* CONDITIONAL RENDER: SHOW DETAIL VIEW */}
             {selectedAttempt ? (
                 /* FIX 2: Set max-h-full and flex column to structure inner scroll regions nicely */
-                <div className='relative z-10 w-full max-w-4xl max-h-full rounded-3xl border border-white/10 bg-white/10 backdrop-blur-xl shadow-2xl p-6 md:p-10 text-white flex flex-col overflow-hidden'>
+                <div className='overflow-x-hidden mt-15 relative z-10 w-full max-w-4xl max-h-full rounded-3xl border border-white/10 bg-white/10 backdrop-blur-xl shadow-2xl p-6 md:p-10 text-white flex flex-col overflow-hidden'>
 
                     {/* Header Details */}
-                    <div className='flex flex-col md:flex-row md:items-center md:justify-between border-b border-white/10 pb-6 mb-6 gap-4 shrink-0'>
+                    <div className=' flex flex-col md:flex-row md:items-center md:justify-between border-b border-white/10 pb-6 mb-6 gap-4 shrink-0'>
                         <div>
                             <button
                                 onClick={() => setSelectedAttempt(null)}
@@ -235,7 +265,7 @@ const QuizHistory = () => {
 
                 /* STANDARD MAIN ATTEMPTS CONTAINER LIST VIEW */
                 /* FIX 4: Integrated structured maximum height constraints and inner-y scrolling to list frame too */
-                <div className='relative z-10 w-full max-w-5xl max-h-full rounded-3xl border border-white/10 bg-white/10 backdrop-blur-xl shadow-2xl p-6 md:p-10 flex flex-col overflow-hidden'>
+                <div className='mt-15 relative z-10 w-full max-w-5xl max-h-full rounded-3xl border border-white/10 bg-white/10 backdrop-blur-xl shadow-2xl p-6 md:p-10 flex flex-col overflow-hidden'>
 
                     <div className='overflow-y-auto pr-2 space-y-8 scrollbar-thin scrollbar-thumb-white/10'>
                         {/* Heading */}
@@ -319,7 +349,7 @@ const QuizHistory = () => {
                         <button
                             type='button'
                             onClick={handleDashboard}
-                            className='w-full py-3.5 md:py-4 rounded-2xl font-bold text-base md:text-lg text-white bg-linear-to-r from-cyan-500 to-purple-600 hover:scale-[1.01] active:scale-95 transition-all duration-300 shadow-lg'
+                            className='w-full py-3.5 rounded-2xl font-bold bg-white/10 hover:bg-white/20 border border-white/10 transition-all text-center text-white'
                         >
                             Back to Dashboard
                         </button>

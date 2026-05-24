@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import API_URL from '../config';
+import Nav from './Nav';
 
 const Result = ({ questions, userAnswers }) => {
 
@@ -156,6 +157,7 @@ const Result = ({ questions, userAnswers }) => {
             ' />
 
             {/* Main Card */}
+            <Nav />
 
             <div className='
                 relative

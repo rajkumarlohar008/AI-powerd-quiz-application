@@ -1,12 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import API_URL from '../config';
 import Result from './Result';
+import { 
+    Home, 
+    ShieldCheck, 
+    ChevronDown, 
+    User, 
+    Mail, 
+    Trophy, 
+    FileText, 
+    Bot, 
+    Users, 
+    History, 
+    LogOut,
+    ArrowRight 
+} from 'lucide-react';
+import Nav from './Nav';
 
 const Quiz = () => {
 
     const [questions, setQuestions] = useState([]);
+    const [user, setUser] = useState(null);
     const [currentQuestion, setCurrentQuestion] = useState(0);
     const [selectedAnswer, setSelectedAnswer] = useState(null);
     const [userAnswers, setUserAnswers] = useState([]);
@@ -17,6 +33,17 @@ const Quiz = () => {
     const [isFinishDisabled, setIsFinishDisabled] = useState(false);
 
     const navigate = useNavigate();
+
+    useEffect(() => {
+                const token = localStorage.getItem('token');
+                const userData = localStorage.getItem('user');
+        
+                if (!token) {
+                    navigate('/login');
+                } else {
+                    setUser(JSON.parse(userData));
+                }
+            }, [navigate]);
 
     // Fetch Quiz Questions
     useEffect(() => {
@@ -155,6 +182,8 @@ const Quiz = () => {
                     text-3xl
                     font-bold
                     animate-pulse
+                    tracking-wider
+                    drop-shadow-[0_0_15px_rgba(34,211,238,0.5)]
                 '>
 
                     Loading Quiz...
@@ -185,12 +214,15 @@ const Quiz = () => {
                 <div className='
                     bg-red-500/10
                     border
-                    border-red-500/20
+                    border-red-500/30
                     text-red-400
                     p-6
                     rounded-2xl
                     text-xl
+                    font-semibold
                     backdrop-blur-lg
+                    shadow-[0_0_30px_rgba(239,68,68,0.15)]
+                    tracking-wide
                 '>
 
                     {error}
@@ -254,9 +286,12 @@ const Quiz = () => {
                 blur-3xl
             ' />
 
+            <Nav />
+
             {/* Quiz Card */}
 
             <div className='
+                mt-20
                 relative
                 z-10
                 w-full
@@ -284,6 +319,8 @@ const Quiz = () => {
                         text-cyan-400
                         font-bold
                         text-lg
+                        tracking-wide
+                        drop-shadow-[0_0_10px_rgba(34,211,238,0.3)]
                     '>
 
                         Question {currentQuestion + 1}
@@ -298,10 +335,13 @@ const Quiz = () => {
                         rounded-full
                         font-bold
                         text-lg
+                        border
+                        transition-all
+                        duration-300
                         ${
                             timeLeft <= 10
-                                ? 'bg-red-500/20 text-red-400'
-                                : 'bg-cyan-500/20 text-cyan-400'
+                                ? 'bg-red-500/20 text-red-400 border-red-500/30 shadow-[0_0_15px_rgba(239,68,68,0.3)] animate-pulse'
+                                : 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30 shadow-[0_0_15px_rgba(6,182,212,0.2)]'
                         }
                     `}>
 
@@ -322,7 +362,7 @@ const Quiz = () => {
                     mb-10
                 '>
 
-                    {question.question}
+                    {question?.question}
 
                 </h2>
 
@@ -335,7 +375,7 @@ const Quiz = () => {
                     mb-10
                 '>
 
-                    {question.options.map((option, index) => (
+                    {question?.options?.map((option, index) => (
 
                         <button
                             key={index}
@@ -362,7 +402,7 @@ const Quiz = () => {
                                             to-purple-600
                                             text-white
                                             border-transparent
-                                            shadow-lg
+                                            shadow-[0_0_25px_rgba(168,85,247,0.4)]
                                             scale-[1.02]
                                           `
                                         : `
@@ -370,7 +410,9 @@ const Quiz = () => {
                                             border-white/10
                                             text-gray-300
                                             hover:bg-white/10
-                                            hover:border-cyan-400/30
+                                            hover:border-cyan-400/40
+                                            hover:text-white
+                                            hover:scale-[1.01]
                                           `
                                 }
                             `}
@@ -403,15 +445,20 @@ const Quiz = () => {
                             rounded-2xl
                             font-bold
                             text-lg
-                            text-white
-                            bg-linear-to-r
-                            from-gray-600
-                            to-gray-800
+                            text-gray-300
+                            border
+                            border-white/10
+                            bg-white/5
+                            hover:bg-white/10
+                            hover:text-white
                             hover:scale-[1.02]
                             active:scale-95
                             transition-all
                             duration-300
-                            disabled:opacity-40
+                            disabled:opacity-20
+                            disabled:scale-100
+                            disabled:hover:bg-white/5
+                            disabled:hover:text-gray-300
                             disabled:cursor-not-allowed
                         '
                     >
@@ -449,6 +496,8 @@ const Quiz = () => {
                             shadow-lg
                             hover:shadow-[0_0_30px_rgba(168,85,247,0.6)]
                             disabled:opacity-40
+                            disabled:scale-100
+                            disabled:hover:shadow-none
                             disabled:cursor-not-allowed
                         '
                     >

@@ -8,7 +8,6 @@ import Quiz from './components/Quiz';
 import AiQuizGenerator from './components/AiQuizGenerator';
 import QuizHistory from './components/QuizHistory';
 import RegisterAsAnAdmin from './components/RegisterAsAnAdmin';
-import Nav from './components/Nav';
 import AdminDashBoard from './components/AdminDashBoard';
 import RoomQuiz from './components/RoomQuiz';
 
@@ -19,7 +18,7 @@ const AppContent = () => {
   return (
     <>
       {/* If current path is NOT "/", show the Nav component */}
-      {location.pathname !== "/" && <Nav />}
+      {/* {location.pathname !== "/" && <Nav />} */}
       
       <Routes>
         <Route path='/' element={<HomePage />} />

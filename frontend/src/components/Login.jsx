@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
 import API_URL from '../config';
+import Nav from './Nav';
+
 
 const Login = () => {
 
@@ -15,6 +17,7 @@ const Login = () => {
     const [isDisabled, setIsDisabled] = useState(false);
 
     const navigate = useNavigate();
+
 
     const handleChange = (e) => {
         setFormData({
@@ -106,6 +109,7 @@ const Login = () => {
                 blur-3xl
             ' />
 
+            <Nav />
             {/* Login Card */}
 
             <div className='

@@ -1,12 +1,16 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import API_URL from '../config';
+import { ChevronDown, Home, ShieldCheck } from 'lucide-react';
+import Nav from './Nav';
 
 const AiQuizGenerator = () => {
 
     const [text, setText] = useState('');
     const [file, setFile] = useState(null);
+    const [user, setUser] = useState(null);
+    
 
     const [loading, setLoading] = useState(false);
 
@@ -23,6 +27,17 @@ const AiQuizGenerator = () => {
     const [currentQuestion, setCurrentQuestion] = useState(0);
 
     const navigate = useNavigate();
+
+    useEffect(() => {
+                const token = localStorage.getItem('token');
+                const userData = localStorage.getItem('user');
+        
+                if (!token) {
+                    navigate('/login');
+                } else {
+                    setUser(JSON.parse(userData));
+                }
+            }, [navigate]);
 
     // Generate AI Quiz
     const handleGenerate = async (e) => {
@@ -337,7 +352,7 @@ const AiQuizGenerator = () => {
                 flex
                 items-center
                 justify-center
-                bg-gradient-to-br
+                bg-linear-to-br
                 from-black
                 via-slate-900
                 to-purple-950
@@ -349,10 +364,10 @@ const AiQuizGenerator = () => {
 
                 <div className='
                     absolute
-                    top-[-120px]
-                    left-[-120px]
-                    w-[350px]
-                    h-[350px]
+                    -top-30
+                    -left-30
+                    w-87.5
+                    h-87.5
                     bg-cyan-500/20
                     rounded-full
                     blur-3xl
@@ -360,18 +375,21 @@ const AiQuizGenerator = () => {
 
                 <div className='
                     absolute
-                    bottom-[-120px]
-                    right-[-120px]
-                    w-[350px]
-                    h-[350px]
+                    -bottom-30
+                    -right-30
+                    w-87.5
+                    h-87.5
                     bg-purple-500/20
                     rounded-full
                     blur-3xl
                 ' />
 
+                <Nav />
+
                 {/* Card */}
 
                 <div className='
+                    mt-15
                     relative
                     z-10
                     w-full
@@ -392,12 +410,14 @@ const AiQuizGenerator = () => {
                         font-extrabold
                         text-center
                         mb-10
-                        bg-gradient-to-r
+                        bg-linear-to-r
                         from-cyan-400
                         via-blue-500
                         to-purple-500
                         bg-clip-text
                         text-transparent
+                        tracking-wide
+                        drop-shadow-[0_0_15px_rgba(6,182,212,0.3)]
                     '>
 
                         AI Quiz Generator
@@ -419,6 +439,7 @@ const AiQuizGenerator = () => {
                                 font-bold
                                 text-white
                                 mb-4
+                                tracking-wide
                             '>
 
                                 Paste Study Material
@@ -443,11 +464,13 @@ const AiQuizGenerator = () => {
                                     p-5
                                     text-white
                                     placeholder-gray-400
-                                    outline-none
+                                    outline-hidden
                                     resize-none
-                                    focus:border-cyan-400
-                                    focus:ring-2
-                                    focus:ring-cyan-400/30
+                                    transition-all
+                                    duration-300
+                                    focus:border-cyan-400/50
+                                    focus:bg-white/10
+                                    focus:shadow-[0_0_20px_rgba(6,182,212,0.15)]
                                 '
                             />
 
@@ -463,6 +486,7 @@ const AiQuizGenerator = () => {
                                 font-bold
                                 text-white
                                 mb-4
+                                tracking-wide
                             '>
 
                                 Upload PDF / TXT File
@@ -494,9 +518,14 @@ const AiQuizGenerator = () => {
                                     border-cyan-400/40
                                     bg-white/5
                                     text-gray-300
+                                    font-semibold
                                     hover:bg-white/10
+                                    hover:border-cyan-400/60
+                                    hover:text-white
+                                    hover:scale-[1.01]
                                     transition-all
                                     duration-300
+                                    cursor-pointer
                                 '
                             >
 
@@ -517,6 +546,8 @@ const AiQuizGenerator = () => {
                                 text-red-400
                                 rounded-2xl
                                 p-4
+                                font-semibold
+                                shadow-[0_0_15px_rgba(239,68,68,0.1)]
                             '>
 
                                 {error}
@@ -537,16 +568,12 @@ const AiQuizGenerator = () => {
                                 font-bold
                                 text-lg
                                 text-white
-                                bg-gradient-to-r
-                                from-cyan-500
-                                to-purple-600
-                                hover:scale-[1.02]
-                                active:scale-95
-                                transition-all
-                                duration-300
+                                bg-gradient-to-r from-[#101e4a] to-[#07366b] border border-blue-500/20 hover:border-blue-400/40 transition-all duration-300 hover:shadow-[0_0_25px_rgba(59,130,246,0.2)] active:scale-[0.98]
                                 shadow-lg
-                                hover:shadow-[0_0_30px_rgba(168,85,247,0.6)]
-                                disabled:opacity-50
+                                disabled:opacity-40
+                                disabled:scale-100
+                                disabled:hover:shadow-none
+                                disabled:cursor-not-allowed
                             '
                         >
 
@@ -578,7 +605,7 @@ const AiQuizGenerator = () => {
                 flex
                 items-center
                 justify-center
-                bg-gradient-to-br
+                bg-linear-to-br
                 from-black
                 via-slate-900
                 to-purple-950
@@ -587,10 +614,10 @@ const AiQuizGenerator = () => {
 
                 <div className='
                     absolute
-                    top-[-120px]
-                    left-[-120px]
-                    w-[350px]
-                    h-[350px]
+                    -top-30
+                    -left-30
+                    w-87.5
+                    h-87.5
                     bg-cyan-500/20
                     rounded-full
                     blur-3xl
@@ -598,10 +625,10 @@ const AiQuizGenerator = () => {
 
                 <div className='
                     absolute
-                    bottom-[-120px]
-                    right-[-120px]
-                    w-[350px]
-                    h-[350px]
+                    -bottom-30
+                    -right-30
+                    w-87.5
+                    h-87.5
                     bg-purple-500/20
                     rounded-full
                     blur-3xl
@@ -635,6 +662,8 @@ const AiQuizGenerator = () => {
                             text-cyan-400
                             text-xl
                             font-bold
+                            tracking-wide
+                            drop-shadow-[0_0_10px_rgba(34,211,238,0.3)]
                         '>
 
                             Question
@@ -652,7 +681,8 @@ const AiQuizGenerator = () => {
                     {/* Question */}
 
                     <h1 className='
-                        text-3xl
+                        text-2xl
+                        md:text-3xl
                         font-bold
                         text-white
                         mb-10
@@ -700,12 +730,13 @@ const AiQuizGenerator = () => {
                                             ] === idx
 
                                                 ? `
-                                                    bg-gradient-to-r
+                                                    bg-linear-to-r
                                                     from-cyan-500
                                                     to-purple-600
                                                     text-white
                                                     border-transparent
-                                                    shadow-lg
+                                                    shadow-[0_0_25px_rgba(168,85,247,0.4)]
+                                                    scale-[1.02]
                                                   `
 
                                                 : `
@@ -713,6 +744,9 @@ const AiQuizGenerator = () => {
                                                     border-white/10
                                                     text-gray-300
                                                     hover:bg-white/10
+                                                    hover:border-cyan-400/40
+                                                    hover:text-white
+                                                    hover:scale-[1.01]
                                                   `
                                         }
                                     `}
@@ -744,11 +778,21 @@ const AiQuizGenerator = () => {
                                 rounded-2xl
                                 font-bold
                                 text-lg
-                                text-white
-                                bg-gradient-to-r
-                                from-gray-600
-                                to-gray-800
-                                disabled:opacity-40
+                                text-gray-300
+                                border
+                                border-white/10
+                                bg-white/5
+                                hover:bg-white/10
+                                hover:text-white
+                                hover:scale-[1.02]
+                                active:scale-95
+                                transition-all
+                                duration-300
+                                disabled:opacity-20
+                                disabled:scale-100
+                                disabled:hover:bg-white/5
+                                disabled:hover:text-gray-300
+                                disabled:cursor-not-allowed
                             '
                         >
 
@@ -770,14 +814,19 @@ const AiQuizGenerator = () => {
                                 font-bold
                                 text-lg
                                 text-white
-                                bg-gradient-to-r
+                                bg-linear-to-r
                                 from-cyan-500
                                 to-purple-600
                                 hover:scale-[1.02]
                                 active:scale-95
                                 transition-all
                                 duration-300
+                                shadow-lg
+                                hover:shadow-[0_0_30px_rgba(168,85,247,0.6)]
                                 disabled:opacity-40
+                                disabled:scale-100
+                                disabled:hover:shadow-none
+                                disabled:cursor-not-allowed
                             '
                         >
 
@@ -832,7 +881,7 @@ const AiQuizGenerator = () => {
                 relative
                 min-h-screen
                 overflow-hidden
-                bg-gradient-to-br
+                bg-linear-to-br
                 from-black
                 via-slate-900
                 to-purple-950
@@ -845,10 +894,10 @@ const AiQuizGenerator = () => {
 
                 <div className='
                     absolute
-                    top-[-120px]
-                    left-[-120px]
-                    w-[350px]
-                    h-[350px]
+                    -top-30
+                    -left-30
+                    w-87.5
+                    h-87.5
                     bg-cyan-500/20
                     rounded-full
                     blur-3xl
@@ -856,10 +905,10 @@ const AiQuizGenerator = () => {
 
                 <div className='
                     absolute
-                    bottom-[-120px]
-                    right-[-120px]
-                    w-[350px]
-                    h-[350px]
+                    -bottom-30
+                    -right-30
+                    w-87.5
+                    h-87.5
                     bg-purple-500/20
                     rounded-full
                     blur-3xl
@@ -885,15 +934,18 @@ const AiQuizGenerator = () => {
                     <div className='text-center mb-10'>
 
                         <h1 className='
-                            text-5xl
+                            text-4xl
+                            md:text-5xl
                             font-extrabold
-                            bg-gradient-to-r
+                            bg-linear-to-r
                             from-cyan-400
                             via-blue-500
                             to-purple-500
                             bg-clip-text
                             text-transparent
                             mb-5
+                            tracking-wide
+                            drop-shadow-[0_0_15px_rgba(168,85,247,0.3)]
                         '>
 
                             AI Quiz Summary 🎓
@@ -914,13 +966,14 @@ const AiQuizGenerator = () => {
                             w-44
                             h-44
                             rounded-full
-                            bg-gradient-to-r
+                            bg-linear-to-r
                             from-cyan-500
                             to-purple-600
                             flex
                             flex-col
                             items-center
                             justify-center
+                            shadow-[0_0_30px_rgba(168,85,247,0.5)]
                         '>
 
                             <h2 className='
@@ -937,6 +990,7 @@ const AiQuizGenerator = () => {
                                 text-white
                                 mt-2
                                 font-semibold
+                                tracking-wide
                             '>
 
                                 Your Score
@@ -964,6 +1018,7 @@ const AiQuizGenerator = () => {
                             border-emerald-500/20
                             p-6
                             text-center
+                            shadow-[0_0_15px_rgba(16,185,129,0.05)]
                         '>
 
                             <h3 className='
@@ -976,7 +1031,7 @@ const AiQuizGenerator = () => {
 
                             </h3>
 
-                            <p className='text-gray-300'>
+                            <p className='text-gray-300 font-medium mt-1'>
 
                                 Correct
 
@@ -991,6 +1046,7 @@ const AiQuizGenerator = () => {
                             border-red-500/20
                             p-6
                             text-center
+                            shadow-[0_0_15px_rgba(239,68,68,0.05)]
                         '>
 
                             <h3 className='
@@ -1003,7 +1059,7 @@ const AiQuizGenerator = () => {
 
                             </h3>
 
-                            <p className='text-gray-300'>
+                            <p className='text-gray-300 font-medium mt-1'>
 
                                 Incorrect
 
@@ -1018,6 +1074,7 @@ const AiQuizGenerator = () => {
                             border-cyan-500/20
                             p-6
                             text-center
+                            shadow-[0_0_15px_rgba(6,182,212,0.05)]
                         '>
 
                             <h3 className='
@@ -1030,7 +1087,7 @@ const AiQuizGenerator = () => {
 
                             </h3>
 
-                            <p className='text-gray-300'>
+                            <p className='text-gray-300 font-medium mt-1'>
 
                                 Total
 
@@ -1059,6 +1116,7 @@ const AiQuizGenerator = () => {
                                     font-bold
                                     text-white
                                     mb-4
+                                    tracking-wide
                                 '>
 
                                     Overall Feedback
@@ -1101,6 +1159,7 @@ const AiQuizGenerator = () => {
                                     font-bold
                                     text-white
                                     mb-4
+                                    tracking-wide
                                 '>
 
                                     Topic Strengths
@@ -1113,10 +1172,10 @@ const AiQuizGenerator = () => {
 
                                         summary.topics.map((t, idx) => (
 
-                                            <div key={idx} className='flex flex-col md:flex-row md:items-center justify-between border-b border-white/5 pb-2 last:border-0 last:pb-0'>
+                                            <div key={idx} className='flex flex-col md:flex-row md:items-center justify-between border-b border-white/5 pb-3 last:border-0 last:pb-0'>
                                                 <span className='text-white font-semibold text-lg'>{t.topic}</span>
-                                                <span className='text-gray-300 bg-white/5 px-3 py-1 rounded-full text-sm mt-1 md:mt-0'>
-                                                    {t.strength} &nbsp;•&nbsp; <span className='text-cyan-400'>{t.correct}/{t.total}</span>
+                                                <span className='text-gray-300 bg-white/5 border border-white/10 px-4 py-1.5 rounded-full text-sm mt-2 md:mt-0 font-medium'>
+                                                    {t.strength} &nbsp;•&nbsp; <span className='text-cyan-400 font-bold'>{t.correct}/{t.total}</span>
                                                 </span>
                                             </div>
                                         ))
@@ -1150,6 +1209,7 @@ const AiQuizGenerator = () => {
                                     font-bold
                                     text-white
                                     mb-4
+                                    tracking-wide
                                 '>
 
                                     Recommendations
@@ -1168,7 +1228,7 @@ const AiQuizGenerator = () => {
                                         summary.recommendations.map(
                                             (r, idx) => (
 
-                                                <li key={idx}>
+                                                <li key={idx} className='leading-relaxed'>
 
                                                     {r}
 
@@ -1188,7 +1248,7 @@ const AiQuizGenerator = () => {
 
                     {/* Answers & Explanations Detailed Review Section */}
                     <div className='rounded-2xl bg-white/5 border border-white/10 p-6 mb-10'>
-                        <h2 className='text-2xl font-bold text-white mb-6 border-b border-white/10 pb-3'>
+                        <h2 className='text-2xl font-bold text-white mb-6 border-b border-white/10 pb-3 tracking-wide'>
                             Answers & Explanations Review
                         </h2>
                         
@@ -1205,32 +1265,34 @@ const AiQuizGenerator = () => {
                                         key={idx} 
                                         className={`rounded-xl border p-5 relative overflow-hidden ${
                                             isCorrect 
-                                                ? 'bg-emerald-500/5 border-emerald-500/20' 
-                                                : 'bg-red-500/5 border-red-500/20'
+                                                ? 'bg-emerald-500/5 border-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.02)]' 
+                                                : 'bg-red-500/5 border-red-500/20 shadow-[0_0_15px_rgba(239,68,68,0.02)]'
                                         }`}
                                     >
                                         {/* Status Badge */}
-                                        <div className={`absolute top-4 right-4 font-bold text-sm px-3 py-1 rounded-full ${
-                                            isCorrect ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'
+                                        <div className={`absolute top-4 right-4 font-bold text-sm px-3 py-1 rounded-full border ${
+                                            isCorrect 
+                                                ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' 
+                                                : 'bg-red-500/20 text-red-400 border-red-500/30'
                                         }`}>
                                             {isCorrect ? '✓ Correct' : '✗ Incorrect'}
                                         </div>
 
-                                        <h3 className='text-lg font-bold text-white pr-24 mb-3 leading-relaxed'>
+                                        <h3 className='text-lg font-bold text-white pr-24 mb-4 leading-relaxed'>
                                             Q{idx + 1}: {q.question}
                                         </h3>
 
-                                        <div className='space-y-2 text-sm md:text-base'>
+                                        <div className='space-y-2.5 text-sm md:text-base'>
                                             <p className='text-gray-300'>
                                                 <strong className='text-white font-semibold'>Your Answer: </strong> 
-                                                <span className={isCorrect ? 'text-emerald-400' : 'text-red-400'}>{userAnswerText}</span>
+                                                <span className={isCorrect ? 'text-emerald-400 font-medium' : 'text-red-400 font-medium'}>{userAnswerText}</span>
                                             </p>
                                             <p className='text-gray-300'>
                                                 <strong className='text-white font-semibold'>Correct Answer: </strong> 
-                                                <span className='text-emerald-400'>{correctAnswerText}</span>
+                                                <span className='text-emerald-400 font-medium'>{correctAnswerText}</span>
                                             </p>
                                             {q.explanation && (
-                                                <p className='text-gray-400 mt-3 pt-3 border-t border-white/5 bg-black/10 p-3 rounded-lg text-sm italic'>
+                                                <p className='text-gray-400 mt-4 pt-3 border-t border-white/5 bg-black/20 p-3 rounded-xl text-sm italic leading-relaxed'>
                                                     <strong className='text-gray-200 not-italic font-semibold block mb-1'>Explanation:</strong>
                                                     {q.explanation}
                                                 </p>
@@ -1260,9 +1322,16 @@ const AiQuizGenerator = () => {
                                 font-bold
                                 text-lg
                                 text-white
-                                bg-gradient-to-r
+                                bg-linear-to-r
                                 from-cyan-500
                                 to-blue-600
+                                hover:scale-[1.02]
+                                active:scale-95
+                                transition-all
+                                duration-300
+                                shadow-lg
+                                hover:shadow-[0_0_25px_rgba(6,182,212,0.4)]
+                                cursor-pointer
                             '
                         >
 
@@ -1279,9 +1348,16 @@ const AiQuizGenerator = () => {
                                 font-bold
                                 text-lg
                                 text-white
-                                bg-gradient-to-r
+                                bg-linear-to-r
                                 from-purple-500
                                 to-pink-600
+                                hover:scale-[1.02]
+                                active:scale-95
+                                transition-all
+                                duration-300
+                                shadow-lg
+                                hover:shadow-[0_0_25px_rgba(168,85,247,0.4)]
+                                cursor-pointer
                             '
                         >
 
