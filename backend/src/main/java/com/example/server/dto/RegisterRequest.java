@@ -12,8 +12,18 @@ public class RegisterRequest {
     @Email
     private String email;
 
+    public void setRole(String role) {
+        this.role = role;
+    }
+
     @NotBlank
     private String password;
+
+    public String getRole() {
+        return role;
+    }
+
+    private String role;
 
     public String getName() {
         return name;

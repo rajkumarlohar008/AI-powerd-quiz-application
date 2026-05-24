@@ -3,6 +3,7 @@ package com.example.server.controller;
 import com.example.server.dto.*;
 import com.example.server.model.QuestionAttempt;
 import com.example.server.model.QuizAttempt;
+import com.example.server.model.Room;
 import com.example.server.model.User;
 import com.example.server.quiz.AiQuizResponse;
 import com.example.server.quiz.GeminiService;
@@ -10,17 +11,18 @@ import com.example.server.quiz.QuizQuestion;
 import com.example.server.quiz.QuizResponse;
 import com.example.server.quiz.QuizSummaryRequest;
 import com.example.server.quiz.QuizSummaryResponse;
+import com.example.server.repository.RoomRepository;
 import com.example.server.repository.QuizAttemptRepository;
 import com.example.server.repository.UserRepository;
 import com.example.server.security.JwtService;
 import jakarta.validation.Valid;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.slf4j.SLF4JLogger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -41,6 +43,8 @@ public class ApiController {
     private final BCryptPasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final GeminiService geminiService;
+    @Autowired
+    private RoomRepository roomRepository;
 
     public ApiController(UserRepository userRepository,
                          QuizAttemptRepository quizAttemptRepository,
@@ -70,7 +74,7 @@ public class ApiController {
         }
 
         String hashedPassword = passwordEncoder.encode(request.getPassword());
-        User newUser = new User(request.getName(), request.getEmail(), hashedPassword);
+        User newUser = new User(request.getName(), request.getEmail(), hashedPassword,request.getRole());
         User saved = userRepository.save(newUser);
 
         Map<String, Object> body = new HashMap<>();
@@ -100,7 +104,7 @@ public class ApiController {
         LoginResponse response = new LoginResponse(
                 "Login successful",
                 token,
-                new UserInfo(user.getId(), user.getName(), user.getEmail())
+                new UserInfo(user.getId(), user.getName(), user.getEmail(),user.getRole())
         );
 
         return ResponseEntity.ok(response);
@@ -113,6 +117,102 @@ public class ApiController {
         List<QuizQuestion> selected = allQuestions.subList(0, Math.min(5, allQuestions.size()));
         QuizResponse response = new QuizResponse(selected);
         return ResponseEntity.ok(response);
+    }
+
+    @Transactional
+    @PostMapping("/room")
+    public ResponseEntity<?> createRoom(@Valid @RequestBody Room request, @RequestParam("email") String email) {
+        if (email == null || email.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "User email is required."));
+        }
+
+        // 1. Safely handle the Optional and return a 444/404 if user doesn't exist
+        Optional<User> userOpt = userRepository.findByEmail(email);
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "User not found."));
+        }
+        User user = userOpt.get();
+
+        // 2. Save the new room
+        Room savedRoom = roomRepository.save(request);
+
+        // 3. Properly update the relationship
+        if(user.getRooms()!=null){
+            user.getRooms().add(savedRoom);
+        }else{
+            user.setRooms(Arrays.asList(savedRoom));
+        }
+        userRepository.save(user); // Save the user to persist the relationship change
+
+        return ResponseEntity.ok(savedRoom);
+    }
+
+    @GetMapping("/room/id")
+    public ResponseEntity<?> getRoomById(@RequestParam("roomId") String id){
+        if (id == null || id.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "room id is required."));
+        }
+        Optional<Room> room = roomRepository.findById(id);
+        return ResponseEntity.ok(room.get());
+    }
+
+    @GetMapping("/room/all")
+    public ResponseEntity<?> getAllRooms(@RequestParam("email") String id){
+        if (id == null || id.isBlank()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "User ID is required."));
+        }
+
+        Optional<User> userInfo = userRepository.findByEmail(id);
+        User user = userInfo.get();
+        return ResponseEntity.ok(user.getRooms());
+    }
+
+    @Transactional
+    @PostMapping("/room/quiz-attempt") // Don't forget your mapping annotation if it's missing!
+    public ResponseEntity<?> saveRoomQuizAttempt(@RequestParam("roomId") String id, @RequestBody RoomResponseRequest request) {
+        if (request.getUserId() == null || request.getUserId().isBlank()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "User ID is required."));
+        }
+
+        if (userRepository.findById(request.getUserId()).isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "User not found."));
+        }
+
+        // 1. Safely handle the Room Optional first
+        Optional<Room> roomOpt = roomRepository.findById(id);
+        if (roomOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "Room not found."));
+        }
+        Room room = roomOpt.get(); // Extract the raw Room object
+
+        // 2. Add the request directly to the room's response list
+        if(room.getUserResponse()!=null){
+            room.getUserResponse().add(request);
+        }else{
+            room.setUserResponse(List.of(request));
+        }
+
+        // 3. Save the unwrapped raw room object, not the Optional box
+        Room savedRoom = roomRepository.save(room);
+
+        return ResponseEntity.ok(request);
+    }
+
+    @GetMapping("/room/{id}/responses")
+    public ResponseEntity<?> getSortedResponses(@PathVariable("id") String id) {
+        Optional<Room> roomOpt = roomRepository.findById(id);
+
+        if (roomOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "Room not found."));
+        }
+
+        List<RoomResponseRequest> sortedResponses = roomOpt.get().getUserResponse()
+                .stream()
+                // Comparator.comparingDouble sorts ascending; .reversed() makes it descending
+                .sorted(Comparator.comparingDouble(RoomResponseRequest::getPercentage).reversed())
+                .toList(); // Use .collect(Collectors.toList()) if you need a mutable list
+
+        return ResponseEntity.ok(sortedResponses);
     }
 
     @PostMapping(value = "/ai/generate-quiz", consumes = {"multipart/form-data"})

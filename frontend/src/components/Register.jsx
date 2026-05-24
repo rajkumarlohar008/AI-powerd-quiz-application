@@ -7,7 +7,8 @@ const Register = () => {
   const [formData, setFormData] = useState({
         name: '',
         email: '',
-        password: ''
+        password: '',
+        role:'user'
     });
 
     const [message, setMessage] = useState('');
@@ -73,30 +74,7 @@ const Register = () => {
             to-purple-950
             px-4
         '>
-            <Link
-                        to={'/'}
-                        className=' 
-                        absolute
-                        z-10
-                        top-10
-                        left-5
-                        px-5
-                        py-4
-                        rounded-full
-                        text-lg
-                        md:text-2xl
-                        font-bold
-                        text-white
-                        bg-linear-to-r
-                        from-cyan-500
-                        to-purple-600
-                        hover:scale-105
-                        active:scale-95
-                        transition-all
-                        duration-300
-                        shadow-lg
-                        hover:shadow-[0_0_40px_rgba(168,85,247,0.8)]'
-                    >Home</Link>
+            
 
             {/* Glow Effects */}
 
@@ -378,6 +356,28 @@ const Register = () => {
                     >
 
                         Login here
+
+                    </Link>
+
+                </p>
+                <p className='
+                    text-center
+                    text-gray-300
+                    mt-6
+                '>
+
+                    Have to register as an Admin?{' '}
+
+                    <Link
+                        to='/register-admin'
+                        className='
+                            text-cyan-400
+                            hover:text-cyan-300
+                            font-semibold
+                        '
+                    >
+
+                        Register here
 
                     </Link>
 

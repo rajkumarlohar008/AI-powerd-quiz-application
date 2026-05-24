@@ -7,6 +7,7 @@ import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
+import java.util.List;
 
 @Document(collection = "users")
 public class User {
@@ -14,7 +15,15 @@ public class User {
     @Id
     private String id;
 
+    public void setRole(String role) {
+        this.role = role;
+    }
+
     private String name;
+
+    public String getRole() {
+        return role;
+    }
 
     @Indexed(unique = true)
     private String email;
@@ -24,16 +33,31 @@ public class User {
     @CreatedDate
     private Instant createdAt;
 
+    private String role;
+
+    public List<Room> getRooms() {
+        return rooms;
+    }
+
+    public void setRooms(List<Room> rooms) {
+        this.rooms = rooms;
+    }
+
     @LastModifiedDate
     private Instant updatedAt;
+
+    private List<Room> rooms;
+
+
 
     public User() {
     }
 
-    public User(String name, String email, String password) {
+    public User(String name, String email, String password , String role) {
         this.name = name;
         this.email = email;
         this.password = password;
+        this.role = role;
     }
 
     public String getId() {

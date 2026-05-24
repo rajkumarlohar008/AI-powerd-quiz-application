@@ -5,15 +5,26 @@ public class UserInfo {
     private String id;
     private String name;
     private String email;
+    private String role;
 
-    public UserInfo() {
+//    public UserInfo() {
+
+    public void setRole(String role) {
+        this.role = role;
+    }
+//    }
+
+    public String getRole() {
+        return role;
     }
 
-    public UserInfo(String id, String name, String email) {
+    public UserInfo(String id, String name, String email, String role) {
         this.id = id;
         this.name = name;
         this.email = email;
+        this.role = role;
     }
+
 
     public String getId() {
         return id;
@@ -38,5 +49,6 @@ public class UserInfo {
     public void setEmail(String email) {
         this.email = email;
     }
+
 }
 

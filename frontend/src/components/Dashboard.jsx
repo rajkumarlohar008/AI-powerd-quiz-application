@@ -49,42 +49,19 @@ const Dashboard = () => {
 
         <div className='
             relative
-            min-h-screen
+            min-h-[91vh]
             overflow-hidden
             flex
             items-center
             justify-center
-            bg-linear-to-br
-            from-black
-            via-slate-900
-            to-purple-950
+            bg-gradient-to-br
+                from-black
+                via-slate-900
+                to-purple-950
             px-4
         '>
 
-            <Link
-                        to={'/'}
-                        className=' 
-                        absolute
-                        z-10
-                        top-10
-                        left-5
-                        px-5
-                        py-4
-                        rounded-full
-                        text-lg
-                        md:text-2xl
-                        font-bold
-                        text-white
-                        bg-linear-to-r
-                        from-cyan-500
-                        to-purple-600
-                        hover:scale-105
-                        active:scale-95
-                        transition-all
-                        duration-300
-                        shadow-lg
-                        hover:shadow-[0_0_40px_rgba(168,85,247,0.8)]'
-                    >Home</Link>
+            {/* <Nav /> */}
 
             {/* Glow Background */}
 
@@ -135,10 +112,7 @@ const Dashboard = () => {
                     font-extrabold
                     text-center
                     mb-8
-                    bg-linear-to-r
-                    from-cyan-400
-                    via-blue-500
-                    to-purple-500
+                    bg-gray-400
                     bg-clip-text
                     text-transparent
                 '>
@@ -230,9 +204,7 @@ const Dashboard = () => {
                                 font-bold
                                 text-lg
                                 text-white
-                                bg-linear-to-r
-                                from-cyan-500
-                                to-blue-600
+                                bg-[#093C5D]
                                 hover:scale-[1.03]
                                 active:scale-95
                                 transition-all
@@ -257,9 +229,7 @@ const Dashboard = () => {
                                 font-bold
                                 text-lg
                                 text-white
-                                bg-linear-to-r
-                                from-purple-500
-                                to-pink-600
+                                bg-[#093C5D]
                                 hover:scale-[1.03]
                                 active:scale-95
                                 transition-all
@@ -275,32 +245,64 @@ const Dashboard = () => {
 
                     </div>
 
-                    {/* History Button */}
+                    <div className='
+                        flex
+                        flex-col
+                        md:flex-row
+                        gap-4
+                    '>
+                        <Link
+                            to={"/room"}
+                            className='
+                            flex-1
+                                py-4
+                                rounded-2xl
+                                font-bold
+                                text-lg
+                                text-white
+                                bg-[#093C5D]
+                                hover:scale-[1.03]
+                                active:scale-95
+                                transition-all
+                                duration-300
+                                shadow-lg
+                                hover:shadow-[0_0_30px_rgba(168,85,247,0.6)]
+                                text-center                        '
+                        >
 
-                    <button
-                        onClick={handleViewHistory}
-                        className='
-                            w-full
-                            py-4
-                            rounded-2xl
-                            font-bold
-                            text-lg
-                            text-white
-                            bg-linear-to-r
-                            from-emerald-500
-                            to-green-600
-                            hover:scale-[1.02]
-                            active:scale-95
-                            transition-all
-                            duration-300
-                            shadow-lg
-                            hover:shadow-[0_0_30px_rgba(34,197,94,0.6)]
+                            Join Room
+
+                        </Link>
+
+                        {/* History Button */}
+
+
+                        <button
+                            onClick={handleViewHistory}
+                            className='
+                            flex-1
+                                py-4
+                                rounded-2xl
+                                font-bold
+                                text-lg
+                                text-white
+                                bg-[#093C5D]
+                                hover:scale-[1.03]
+                                active:scale-95
+                                transition-all
+                                duration-300
+                                shadow-lg
+                                hover:shadow-[0_0_30px_rgba(34,211,238,0.6)]
                         '
-                    >
+                        >
 
-                        View Quiz History
+                            View Quiz History
 
-                    </button>
+                        </button>
+
+                    </div>
+
+
 
                     {/* Logout Button */}
 

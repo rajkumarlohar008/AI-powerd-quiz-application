@@ -3,11 +3,12 @@ import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
 import API_URL from '../config';
 
-const Login = () => {
-
-    const [formData, setFormData] = useState({
+const RegisterAsAnAdmin = () => {
+  const [formData, setFormData] = useState({
+        name: '',
         email: '',
-        password: ''
+        password: '',
+        role:'admin'
     });
 
     const [message, setMessage] = useState('');
@@ -17,10 +18,12 @@ const Login = () => {
     const navigate = useNavigate();
 
     const handleChange = (e) => {
+
         setFormData({
             ...formData,
             [e.target.name]: e.target.value
         });
+
     };
 
     const handleSubmit = async (e) => {
@@ -35,30 +38,21 @@ const Login = () => {
         try {
 
             const response = await axios.post(
-                `${API_URL}/api/login`,
+                `${API_URL}/api/register`,
                 formData
             );
 
-            localStorage.setItem(
-                'token',
-                response.data.token
-            );
-
-            localStorage.setItem(
-                'user',
-                JSON.stringify(response.data.user)
-            );
-
-            setMessage('Login successful!');
+            setMessage(response.data.message);
 
             setTimeout(() => {
-                navigate('/dashboard');
-            }, 1000);
+                navigate('/login');
+            }, 1500);
 
         } catch (err) {
 
             setError(
-                err.response?.data?.message || 'Login failed'
+                err.response?.data?.message ||
+                'Registration failed'
             );
 
             setIsDisabled(false);
@@ -80,7 +74,30 @@ const Login = () => {
             to-purple-950
             px-4
         '>
-            
+            <Link
+                        to={'/'}
+                        className=' 
+                        absolute
+                        z-10
+                        top-10
+                        left-5
+                        px-5
+                        py-4
+                        rounded-full
+                        text-lg
+                        md:text-2xl
+                        font-bold
+                        text-white
+                        bg-linear-to-r
+                        from-cyan-500
+                        to-purple-600
+                        hover:scale-105
+                        active:scale-95
+                        transition-all
+                        duration-300
+                        shadow-lg
+                        hover:shadow-[0_0_40px_rgba(168,85,247,0.8)]'
+                    >Home</Link>
 
             {/* Glow Effects */}
 
@@ -106,7 +123,7 @@ const Login = () => {
                 blur-3xl
             ' />
 
-            {/* Login Card */}
+            {/* Register Card */}
 
             <div className='
                 relative
@@ -137,7 +154,7 @@ const Login = () => {
                     text-transparent
                 '>
 
-                    Login
+                    Register
 
                 </h2>
 
@@ -147,6 +164,48 @@ const Login = () => {
                     onSubmit={handleSubmit}
                     className='space-y-6'
                 >
+
+                    {/* Name */}
+
+                    <div>
+
+                        <label className='
+                            block
+                            text-sm
+                            font-semibold
+                            text-gray-300
+                            mb-2
+                        '>
+
+                            Name
+
+                        </label>
+
+                        <input
+                            type='text'
+                            name='name'
+                            value={formData.name}
+                            onChange={handleChange}
+                            required
+                            placeholder='Enter your name'
+                            className='
+                                w-full
+                                px-4
+                                py-3
+                                rounded-xl
+                                bg-white/10
+                                border
+                                border-white/10
+                                text-white
+                                placeholder-gray-400
+                                outline-none
+                                focus:ring-2
+                                focus:ring-cyan-500
+                                transition-all
+                            '
+                        />
+
+                    </div>
 
                     {/* Email */}
 
@@ -232,7 +291,7 @@ const Login = () => {
 
                     </div>
 
-                    {/* Button */}
+                    {/* Register Button */}
 
                     <button
                         type='submit'
@@ -259,8 +318,8 @@ const Login = () => {
                     >
 
                         {isDisabled
-                            ? 'Logging in...'
-                            : 'Login'}
+                            ? 'Registering...'
+                            : 'Register'}
 
                     </button>
 
@@ -300,7 +359,7 @@ const Login = () => {
 
                 )}
 
-                {/* Register Link */}
+                {/* Login Link */}
 
                 <p className='
                     text-center
@@ -308,7 +367,29 @@ const Login = () => {
                     mt-6
                 '>
 
-                    Don't have an account?{' '}
+                    Already have an account?{' '}
+
+                    <Link
+                        to='/login'
+                        className='
+                            text-cyan-400
+                            hover:text-cyan-300
+                            font-semibold
+                        '
+                    >
+
+                        Login here
+
+                    </Link>
+
+                </p>
+                <p className='
+                    text-center
+                    text-gray-300
+                    mt-6
+                '>
+
+                    Have to register as a user?{' '}
 
                     <Link
                         to='/register'
@@ -329,6 +410,6 @@ const Login = () => {
 
         </div>
     );
-};
+}
 
-export default Login;
+export default RegisterAsAnAdmin

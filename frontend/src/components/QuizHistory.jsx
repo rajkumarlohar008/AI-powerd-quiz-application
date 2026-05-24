@@ -99,7 +99,7 @@ const QuizHistory = () => {
 
     return (
         /* FIX 1: Changed wrapper to h-screen overflow-hidden to let children handle individual inner scrolling */
-        <div className='relative h-screen w-screen overflow-hidden bg-linear-to-br from-black via-slate-900 to-purple-950 flex items-center justify-center p-4 md:p-8'>
+        <div className='relative  md:h-[90.65vh] w-screen overflow-hidden bg-linear-to-br from-black via-slate-900 to-purple-950 flex items-center justify-center p-4 md:p-8'>
 
             {/* Glow Effects */}
             <div className='pointer-events-none absolute -top-30 -left-30 w-80 h-80 bg-cyan-500/20 rounded-full blur-3xl' />
@@ -120,7 +120,7 @@ const QuizHistory = () => {
                                 ← Back to All Attempts
                             </button>
                             <h1 className='text-2xl md:text-3xl font-extrabold bg-linear-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent'>
-                                {selectedAttempt.quizType === 'AI' ? 'AI Generated Quiz' : 'Predefined Quiz'} Details
+                                {selectedAttempt.quizType === 'AI' ? 'AI Generated Quiz' : selectedAttempt.quizType } Details
                             </h1>
                             <p className='text-gray-400 text-sm mt-1'>
                                 Taken on: {selectedAttempt.createdAt ? new Date(selectedAttempt.createdAt).toLocaleString() : '—'}
@@ -140,7 +140,6 @@ const QuizHistory = () => {
                     </div>
 
                     {/* Dynamic Questions Mapping */}
-                    
                     <div className='flex-1 overflow-y-auto pr-2 space-y-6 scrollbar-thin scrollbar-thumb-white/10'>
                         {selectedAttempt.questions && selectedAttempt.questions.length > 0 ? (
                             selectedAttempt.questions.map((q, idx) => (
@@ -246,7 +245,7 @@ const QuizHistory = () => {
                                         >
                                             <div>
                                                 <h3 className='text-lg md:text-xl font-bold text-white mb-1md:mb-2'>
-                                                    {attempt.quizType === 'AI' ? 'AI Quiz' : 'Predefined Quiz'}
+                                                    {attempt.quizType === 'AI' ? 'AI Quiz' : attempt.quizType}
                                                 </h3>
                                                 <p className='text-gray-400 text-sm'>
                                                     {attempt.createdAt ? new Date(attempt.createdAt).toLocaleString() : '—'}

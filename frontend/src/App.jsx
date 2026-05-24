@@ -1,33 +1,52 @@
 import React from 'react'
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import HomePage from './components/HomePage';
-import { BrowserRouter as Router, Routes, Route, Navigate, Link } from 'react-router-dom';
 import Login from './components/Login';
 import Register from './components/Register';
 import Dashboard from './components/Dashboard';
 import Quiz from './components/Quiz';
 import AiQuizGenerator from './components/AiQuizGenerator';
 import QuizHistory from './components/QuizHistory';
-// import {  Link } from 'react-router-dom';
+import RegisterAsAnAdmin from './components/RegisterAsAnAdmin';
+import Nav from './components/Nav';
+import AdminDashBoard from './components/AdminDashBoard';
+import RoomQuiz from './components/RoomQuiz';
 
+// 1. Create a helper component to manage the conditional Navbar
+const AppContent = () => {
+  const location = useLocation(); // Get the current path safely from React Router
+
+  return (
+    <>
+      {/* If current path is NOT "/", show the Nav component */}
+      {location.pathname !== "/" && <Nav />}
+      
+      <Routes>
+        <Route path='/' element={<HomePage />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/register-admin" element={<RegisterAsAnAdmin />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/quiz" element={<Quiz />}/>
+        <Route path="/ai-quiz" element={<AiQuizGenerator />}/>
+        <Route path="/history" element={<QuizHistory />}/>
+        <Route path="/admin" element={<AdminDashBoard />}/>
+        <Route path="/room" element={<RoomQuiz />}/>
+        <Route path="*" element={<Navigate to="/login" />} />
+      </Routes>
+    </>
+  );
+};
+
+// 2. Keep the main App component clean, wrapping everything in the Router
 const App = () => {
   return (
     <div className='min-h-screen w-full'>
-      
       <Router>
-        
-        <Routes>
-          <Route path='/' element={<HomePage />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/quiz" element={<Quiz />}/>
-          <Route path="/ai-quiz" element={<AiQuizGenerator />}/>
-          <Route path="/history" element={<QuizHistory />}/>
-          <Route path="*" element={<Navigate to="/login" />} />
-        </Routes>
+        <AppContent />
       </Router>
     </div>
   )
 }
 
-export default App
+export default App;
