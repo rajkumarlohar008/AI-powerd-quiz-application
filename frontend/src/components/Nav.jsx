@@ -10,12 +10,7 @@ const Nav = () => {
     useEffect(() => {
         const token = localStorage.getItem('token');
         const userData = localStorage.getItem('user');
-
-        if (!token) {
-            navigate('/login');
-        } else {
             setUser(JSON.parse(userData));
-        }
     }, [navigate]);
 
     return (
