@@ -64,6 +64,38 @@ const QuizHistory = () => {
         navigate('/dashboard');
     };
 
+    const handleDelete = async (id) => {
+        await axios.delete(`${API_URL}/api/history/delete`, {
+            params: {
+                Id: id
+            }
+        });
+        const userData = localStorage.getItem('user');
+        const u = userData
+            ? JSON.parse(userData)
+            : null;
+        axios
+            .get(
+                `${API_URL}/api/quiz-history`,
+                {
+                    params: {
+                        userId: u.id
+                    }
+                }
+            )
+            .then((res) => {
+                setHistory(res.data);
+            })
+            .catch(() => {
+                setError(
+                    'Failed to load quiz history.'
+                );
+            })
+            .finally(() => {
+                setLoading(false);
+            });
+    }
+
     // Loading
     if (loading) {
         return (
@@ -120,7 +152,7 @@ const QuizHistory = () => {
                                 ← Back to All Attempts
                             </button>
                             <h1 className='text-2xl md:text-3xl font-extrabold bg-linear-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent'>
-                                {selectedAttempt.quizType === 'AI' ? 'AI Generated Quiz' : selectedAttempt.quizType } Details
+                                {selectedAttempt.quizType === 'AI' ? 'AI Generated Quiz' : selectedAttempt.quizType} Details
                             </h1>
                             <p className='text-gray-400 text-sm mt-1'>
                                 Taken on: {selectedAttempt.createdAt ? new Date(selectedAttempt.createdAt).toLocaleString() : '—'}
@@ -140,7 +172,7 @@ const QuizHistory = () => {
                     </div>
 
                     {/* Dynamic Questions Mapping */}
-                    <div className='flex-1 overflow-y-auto pr-2 space-y-6 scrollbar-thin scrollbar-thumb-white/10'>
+                    <div className='flex-1 overflow-y-auto pr-2 space-y-6 '>
                         {selectedAttempt.questions && selectedAttempt.questions.length > 0 ? (
                             selectedAttempt.questions.map((q, idx) => (
                                 <div key={q.id || idx} className='rounded-2xl border border-white/5 bg-white/5 p-5 md:p-6 space-y-4'>
@@ -165,8 +197,8 @@ const QuizHistory = () => {
 
                                         {/* Your Answer Box (Dynamically switches color based on accuracy) */}
                                         <div className={`p-4 rounded-xl border text-sm max-w-2xl ${q.userAnswer === q.correctAnswer
-                                                ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-300'
-                                                : 'border-rose-500/20 bg-rose-500/10 text-rose-300'
+                                            ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-300'
+                                            : 'border-rose-500/20 bg-rose-500/10 text-rose-300'
                                             }`}>
                                             <span className={`block text-xs font-bold uppercase tracking-wider mb-1 ${q.userAnswer === q.correctAnswer ? 'text-emerald-400' : 'text-rose-400'
                                                 }`}>
@@ -204,7 +236,7 @@ const QuizHistory = () => {
                 /* STANDARD MAIN ATTEMPTS CONTAINER LIST VIEW */
                 /* FIX 4: Integrated structured maximum height constraints and inner-y scrolling to list frame too */
                 <div className='relative z-10 w-full max-w-5xl max-h-full rounded-3xl border border-white/10 bg-white/10 backdrop-blur-xl shadow-2xl p-6 md:p-10 flex flex-col overflow-hidden'>
-                    
+
                     <div className='overflow-y-auto pr-2 space-y-8 scrollbar-thin scrollbar-thumb-white/10'>
                         {/* Heading */}
                         <div className='text-center mt-2'>
@@ -244,15 +276,28 @@ const QuizHistory = () => {
                                             className='cursor-pointer rounded-2xl border border-white/10 bg-white/5 backdrop-blur-lg p-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4 hover:bg-white/10 hover:border-cyan-500/30 transition-all duration-300'
                                         >
                                             <div>
-                                                <h3 className='text-lg md:text-xl font-bold text-white mb-1md:mb-2'>
-                                                    {attempt.quizType === 'AI' ? 'AI Quiz' : attempt.quizType}
-                                                </h3>
+                                                <div className='flex justify-between'>
+                                                    <h3 className='text-lg md:text-xl font-bold text-white mb-1md:mb-2'>
+                                                        {attempt.quizType === 'AI' ? 'AI Quiz' : attempt.quizType}
+                                                    </h3>
+                                                    <button
+                                                        type="button"
+                                                        className='bg-red-500 text-xs px-2 py-1 rounded-md font-semibold hover:bg-red-400 active:scale-95 transition-all text-white'
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleDelete(attempt.id);
+                                                            // console.log(attempt.id)
+                                                        }}
+                                                    >
+                                                        Delete
+                                                    </button>
+                                                </div>
                                                 <p className='text-gray-400 text-sm'>
                                                     {attempt.createdAt ? new Date(attempt.createdAt).toLocaleString() : '—'}
                                                 </p>
                                                 <span className='text-xs text-cyan-400 mt-2 block hover:underline'>
                                                     Click to view solutions →
-                                               </span>
+                                                </span>
                                             </div>
                                             <div className='flex items-center justify-between md:justify-end gap-4 broad-layout'>
                                                 <div className='px-4 py-2.5 rounded-xl bg-linear-to-r from-cyan-500 to-purple-600 text-white font-bold text-base shadow-lg'>

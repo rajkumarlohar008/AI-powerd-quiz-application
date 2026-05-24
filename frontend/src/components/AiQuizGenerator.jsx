@@ -1040,8 +1040,7 @@ const AiQuizGenerator = () => {
 
                     </div>
 
-                    {/* Overall Summary */}
-
+                    {/* Overall Summary Feedback */}
                     {
 
                         summary.overallSummary && (
@@ -1083,8 +1082,56 @@ const AiQuizGenerator = () => {
 
                     }
 
-                    {/* Recommendations */}
+                    {/* Topic Strengths Breakdown */}
+                    {
 
+                        summary.topics && (
+
+                            <div className='
+                                rounded-2xl
+                                bg-white/5
+                                border
+                                border-white/10
+                                p-6
+                                mb-8
+                            '>
+
+                                <h2 className='
+                                    text-2xl
+                                    font-bold
+                                    text-white
+                                    mb-4
+                                '>
+
+                                    Topic Strengths
+
+                                </h2>
+
+                                <div className='space-y-3'>
+
+                                    {
+
+                                        summary.topics.map((t, idx) => (
+
+                                            <div key={idx} className='flex flex-col md:flex-row md:items-center justify-between border-b border-white/5 pb-2 last:border-0 last:pb-0'>
+                                                <span className='text-white font-semibold text-lg'>{t.topic}</span>
+                                                <span className='text-gray-300 bg-white/5 px-3 py-1 rounded-full text-sm mt-1 md:mt-0'>
+                                                    {t.strength} &nbsp;•&nbsp; <span className='text-cyan-400'>{t.correct}/{t.total}</span>
+                                                </span>
+                                            </div>
+                                        ))
+
+                                    }
+
+                                </div>
+
+                            </div>
+
+                        )
+
+                    }
+
+                    {/* Recommendations */}
                     {
 
                         summary.recommendations && (
@@ -1138,6 +1185,62 @@ const AiQuizGenerator = () => {
                         )
 
                     }
+
+                    {/* Answers & Explanations Detailed Review Section */}
+                    <div className='rounded-2xl bg-white/5 border border-white/10 p-6 mb-10'>
+                        <h2 className='text-2xl font-bold text-white mb-6 border-b border-white/10 pb-3'>
+                            Answers & Explanations Review
+                        </h2>
+                        
+                        <div className='space-y-6'>
+                            {quiz.questions.map((q, idx) => {
+                                const userIdx = userAnswers[idx];
+                                const correctIdx = q.answerIndex;
+                                const isCorrect = userIdx === correctIdx;
+                                const userAnswerText = userIdx !== null && userIdx !== undefined ? q.options[userIdx] : 'Not answered';
+                                const correctAnswerText = q.options[correctIdx];
+
+                                return (
+                                    <div 
+                                        key={idx} 
+                                        className={`rounded-xl border p-5 relative overflow-hidden ${
+                                            isCorrect 
+                                                ? 'bg-emerald-500/5 border-emerald-500/20' 
+                                                : 'bg-red-500/5 border-red-500/20'
+                                        }`}
+                                    >
+                                        {/* Status Badge */}
+                                        <div className={`absolute top-4 right-4 font-bold text-sm px-3 py-1 rounded-full ${
+                                            isCorrect ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'
+                                        }`}>
+                                            {isCorrect ? '✓ Correct' : '✗ Incorrect'}
+                                        </div>
+
+                                        <h3 className='text-lg font-bold text-white pr-24 mb-3 leading-relaxed'>
+                                            Q{idx + 1}: {q.question}
+                                        </h3>
+
+                                        <div className='space-y-2 text-sm md:text-base'>
+                                            <p className='text-gray-300'>
+                                                <strong className='text-white font-semibold'>Your Answer: </strong> 
+                                                <span className={isCorrect ? 'text-emerald-400' : 'text-red-400'}>{userAnswerText}</span>
+                                            </p>
+                                            <p className='text-gray-300'>
+                                                <strong className='text-white font-semibold'>Correct Answer: </strong> 
+                                                <span className='text-emerald-400'>{correctAnswerText}</span>
+                                            </p>
+                                            {q.explanation && (
+                                                <p className='text-gray-400 mt-3 pt-3 border-t border-white/5 bg-black/10 p-3 rounded-lg text-sm italic'>
+                                                    <strong className='text-gray-200 not-italic font-semibold block mb-1'>Explanation:</strong>
+                                                    {q.explanation}
+                                                </p>
+                                            )}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
 
                     {/* Buttons */}
 

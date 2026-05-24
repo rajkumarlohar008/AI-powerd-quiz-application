@@ -22,22 +22,54 @@ const AdminDashBoard = () => {
     const [roomResponses, setRoomResponses] = useState([]);
     const [loadingResponses, setLoadingResponses] = useState(false);
 
+    // Get email safely inside or dynamically
     const user = JSON.parse(localStorage.getItem('user')) || {};
+    const userEmail = user.email;
 
-    // Fetch rooms on mount
+    // Fetch rooms on mount & when email changes
     useEffect(() => {
-        if (!user.email) return;
+        if (!userEmail) return;
 
         axios.get(`${API_URL}/api/room/all`, {
-            params: { email: user.email }
+            params: { email: userEmail }
         })
-        .then((res) => {
+            .then((res) => {
+                setRooms(res.data || []);
+            })
+            .catch((err) => {
+                console.error("Failed to load existing rooms:", err);
+            });
+    }, [userEmail]);
+
+    // FIXED: Added roomId parameter payload to the delete endpoint 
+    // FIXED: Cleaned up modal state if active room is deleted
+    const handleDelete = async (roomId) => {
+        if (!roomId) return;
+        
+        try {
+            console.log("Deleting room:", roomId);
+            await axios.delete(`${API_URL}/api/room/delete`, {
+                params: { 
+                    email: userEmail,
+                    roomId: roomId // Sending the actual room identity to backend
+                }
+            });
+
+            // If the deleted room is currently active in the modal view, close it
+            if (selectedRoom && (selectedRoom.id === roomId || selectedRoom._id === roomId)) {
+                setIsModalOpen(false);
+                setSelectedRoom(null);
+            }
+
+            // Refresh room logs
+            const res = await axios.get(`${API_URL}/api/room/all`, {
+                params: { email: userEmail }
+            });
             setRooms(res.data || []);
-        })
-        .catch((err) => {
-            console.error("Failed to load existing rooms:", err);
-        });
-    }, [user.email]);
+        } catch (err) {
+            console.error("Failed to delete room:", err);
+        }
+    };
 
     // Fetch responses and open pop-up modal
     const handleSelectRoom = async (room) => {
@@ -118,17 +150,17 @@ const AdminDashBoard = () => {
             };
 
             const res = await axios.post(`${API_URL}/api/room`, payload, {
-                params: { email: user.email }
+                params: { email: userEmail }
             });
 
             setCreatedRoom(res.data);
             setMessage('Quiz room created successfully!');
-            
+
             setRoomTitle('');
             setQuestions([{ question: '', options: ['', '', '', ''], correctAnswer: 0 }]);
-            
-            if (user.email) {
-                const refreshedRooms = await axios.get(`${API_URL}/api/room/all`, { params: { email: user.email } });
+
+            if (userEmail) {
+                const refreshedRooms = await axios.get(`${API_URL}/api/room/all`, { params: { email: userEmail } });
                 setRooms(refreshedRooms.data || []);
             }
 
@@ -147,7 +179,7 @@ const AdminDashBoard = () => {
 
             {/* Main Wrapper Panel Container */}
             <div className='relative z-10 max-w-6xl mx-auto rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-2xl p-6 md:p-10'>
-                
+
                 {/* Header Title Block */}
                 <div className='text-center mb-10'>
                     <h1 className='text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 bg-clip-text text-transparent mb-5'>
@@ -158,18 +190,18 @@ const AdminDashBoard = () => {
                     </p>
                 </div>
 
-                {/* 2-Column Responsive Split Layout (Original UI Workspace Structure) */}
+                {/* 2-Column Responsive Split Layout */}
                 <div className='grid grid-cols-1 lg:grid-cols-3 gap-8 items-start'>
-                    
-                    {/* LEFT WORKSPACE: Full original styling forms workspace (Takes 2/3 width) */}
+
+                    {/* LEFT WORKSPACE */}
                     <div className='lg:col-span-2 space-y-6'>
-                        
+
                         {/* Box Panel 1: Room Config Setup */}
                         <div className='rounded-2xl border border-white/10 bg-white/5 p-5 md:p-6 space-y-4'>
                             <h2 className='text-xl font-bold text-cyan-400 border-b border-white/5 pb-2'>Room Configuration</h2>
                             <div>
                                 <label className='block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2'>Quiz Room Title</label>
-                                <input 
+                                <input
                                     type="text"
                                     placeholder="e.g., Javascript Advanced Core Patterns"
                                     value={roomTitle}
@@ -183,7 +215,7 @@ const AdminDashBoard = () => {
                         <div className='space-y-4'>
                             <div className='flex items-center justify-between'>
                                 <h2 className='text-xl font-bold text-purple-400'>Quiz Blueprint Questions ({questions.length})</h2>
-                                <button 
+                                <button
                                     type="button"
                                     onClick={addQuestion}
                                     className='px-4 py-2 text-xs font-bold bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/40 text-cyan-300 rounded-xl transition-all'
@@ -199,8 +231,8 @@ const AdminDashBoard = () => {
                                             {qIdx + 1}
                                         </span>
                                         {questions.length > 1 && (
-                                            <button 
-                                                type="button" 
+                                            <button
+                                                type="button"
                                                 onClick={() => removeQuestion(qIdx)}
                                                 className='text-xs text-rose-400 hover:text-rose-300 transition-colors'
                                             >
@@ -212,7 +244,7 @@ const AdminDashBoard = () => {
                                     {/* Question Title Input */}
                                     <div>
                                         <label className='block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5'>Question Statement</label>
-                                        <input 
+                                        <input
                                             type="text"
                                             placeholder="Enter the quiz question text..."
                                             value={q.question}
@@ -226,7 +258,7 @@ const AdminDashBoard = () => {
                                         {q.options.map((opt, oIdx) => (
                                             <div key={oIdx} className='space-y-1'>
                                                 <label className='text-[11px] font-bold text-gray-500 uppercase tracking-wider block'>Option {oIdx + 1}</label>
-                                                <input 
+                                                <input
                                                     type="text"
                                                     placeholder={`Option value ${oIdx + 1}`}
                                                     value={opt}
@@ -273,21 +305,21 @@ const AdminDashBoard = () => {
                         )}
                     </div>
 
-                    {/* RIGHT SIDEBAR: Registry Side Panel Directory (Takes 1/3 width) */}
+                    {/* RIGHT SIDEBAR */}
                     <div className='space-y-6'>
-                        
+
                         {/* Live Room Info Callout Box */}
                         {createdRoom && (
                             <div className='rounded-3xl border border-purple-500/20 bg-purple-500/10 p-6 space-y-4'>
                                 <h2 className='text-xl font-bold text-white'>Room Created Successfully 🎉</h2>
                                 <div className='space-y-3 text-gray-300 text-base'>
-                                    <p>
+                                    <div>
                                         <span className='text-cyan-400 font-bold block mb-1'>Room ID:</span>
                                         <span className='font-mono block bg-black/30 p-3 rounded-xl border border-white/10 text-sm break-all select-all'>{createdRoom.id || createdRoom._id}</span>
-                                    </p>
-                                    <p>
+                                    </div>
+                                    <div>
                                         <span className='text-cyan-400 font-bold'>Title:</span>{' '}{createdRoom.roomName || createdRoom.title}
-                                    </p>
+                                    </div>
                                 </div>
                             </div>
                         )}
@@ -296,20 +328,32 @@ const AdminDashBoard = () => {
                         <div className='rounded-2xl border border-white/10 bg-white/5 p-5 space-y-4 shadow-xl'>
                             <h3 className='text-lg font-bold text-white border-b border-white/5 pb-2'>Active Quiz Registries</h3>
                             <p className='text-xs text-gray-400 italic -mt-2 mb-1'>💡 Click a room card to view user scores inside the live pop-up.</p>
-                            
+
                             {rooms && rooms.length > 0 ? (
-                                <div className='space-y-3 max-h-[500px] overflow-y-auto pr-1 scrollbar-thin'>
+                                <div className='space-y-3 max-h-[500px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-white/10 overflow-x-hidden'>
                                     {rooms.map((room, idx) => {
                                         const roomId = room.id || room._id;
                                         return (
-                                            <div 
-                                                key={roomId || idx} 
+                                            <div
+                                                key={roomId || idx}
                                                 onClick={() => handleSelectRoom(room)}
-                                                className='p-4 rounded-xl cursor-pointer bg-black/30 border border-white/5 hover:border-cyan-500/50 hover:bg-white/5 hover:scale-[1.02] transition-all duration-200 group'
+                                                className='p-4 rounded-xl cursor-pointer bg-black/30 border border-white/5 hover:border-cyan-500/50 hover:bg-white/5 hover:scale-[1.02] transition-all duration-200 '
                                             >
-                                                <h4 className='font-bold text-sm text-gray-200 group-hover:text-cyan-300 truncate'>
-                                                    {room.roomName || room.title || 'Untitled Room'}
-                                                </h4>
+                                                <div className='flex items-center justify-between'>
+                                                    <h4 className='font-bold text-sm text-gray-200 group-hover:text-cyan-300 truncate mr-2'>
+                                                        {room.roomName || room.title || 'Untitled Room'}
+                                                    </h4>
+                                                    <button
+                                                        type="button"
+                                                        className='bg-red-500 text-xs px-2 py-1 rounded-md font-semibold hover:bg-red-400 active:scale-95 transition-all'
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleDelete(roomId);
+                                                        }}
+                                                    >
+                                                        Delete
+                                                    </button>
+                                                </div>
                                                 <div className='flex items-center justify-between text-[11px] text-gray-400 font-mono mt-2.5'>
                                                     <span className='truncate max-w-[150px] text-gray-500 font-semibold'>{roomId}</span>
                                                     <span className='shrink-0 bg-purple-500/10 border border-purple-500/20 px-2 py-0.5 rounded text-purple-300 font-sans font-semibold'>
@@ -329,16 +373,11 @@ const AdminDashBoard = () => {
                 </div>
             </div>
 
-            {/* ============================================================== */}
-            {/* MODAL OVERLAY POP-UP PORTAL FOR RESPONSES (Matches backend format) */}
-            {/* ============================================================== */}
+            {/* MODAL OVERLAY POP-UP PORTAL */}
             {isModalOpen && selectedRoom && (
                 <div className='fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md transition-all'>
-                    
-                    {/* Modal Content Box */}
                     <div className='relative w-full max-w-2xl rounded-3xl border border-white/10 bg-slate-900/90 text-white shadow-2xl p-6 md:p-8 space-y-6 max-h-[85vh] flex flex-col overflow-hidden'>
                         
-                        {/* Header Controls */}
                         <div className='flex items-start justify-between border-b border-white/10 pb-4 shrink-0'>
                             <div>
                                 <span className='text-[10px] uppercase tracking-wider font-extrabold bg-cyan-500/20 text-cyan-300 px-2 py-0.5 rounded-md'>
@@ -349,9 +388,7 @@ const AdminDashBoard = () => {
                                 </h3>
                                 <p className='text-xs text-gray-400 font-mono mt-0.5'>Room ID: {selectedRoom.id || selectedRoom._id}</p>
                             </div>
-                            
-                            {/* Exit pop-up close trigger */}
-                            <button 
+                            <button
                                 onClick={() => { setIsModalOpen(false); setSelectedRoom(null); }}
                                 className='h-8 w-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center font-bold hover:bg-rose-500/20 hover:text-rose-400 transition-colors text-lg'
                             >
@@ -359,7 +396,6 @@ const AdminDashBoard = () => {
                             </button>
                         </div>
 
-                        {/* Modal Dynamic Body Content List Segment */}
                         <div className='flex-1 overflow-y-auto pr-1 scrollbar-thin min-h-[200px] flex flex-col'>
                             {loadingResponses ? (
                                 <div className='flex-1 flex flex-col items-center justify-center space-y-3 py-12'>
@@ -372,22 +408,19 @@ const AdminDashBoard = () => {
                                         <span>🏆</span> Leaderboard Standings (Sorted by Percentage Accuracy):
                                     </div>
 
-                                    {/* Map out values matching your exact array scheme response */}
                                     {[...roomResponses]
                                         .sort((a, b) => (b.percentage || 0) - (a.percentage || 0))
                                         .map((item, idx) => (
-                                            <div 
-                                                key={item.userId || idx} 
+                                            <div
+                                                key={item.userId || idx}
                                                 className='p-4 rounded-xl border border-white/5 bg-black/40 flex items-center justify-between gap-4 shadow-sm hover:bg-black/60 transition-colors'
                                             >
-                                                {/* Profile Segment */}
                                                 <div className='flex items-center gap-3 truncate'>
-                                                    <span className={`h-7 w-7 rounded-lg text-xs font-extrabold flex items-center justify-center shrink-0 ${
-                                                        idx === 0 ? 'bg-amber-400/20 text-amber-300 border border-amber-400/40' :
+                                                    <span className={`h-7 w-7 rounded-lg text-xs font-extrabold flex items-center justify-center shrink-0 ${idx === 0 ? 'bg-amber-400/20 text-amber-300 border border-amber-400/40' :
                                                         idx === 1 ? 'bg-slate-300/20 text-slate-200 border border-slate-300/40' :
-                                                        idx === 2 ? 'bg-amber-700/20 text-amber-600 border border-amber-700/40' : 
-                                                        'bg-white/5 text-gray-400 border border-white/5'
-                                                    }`}>
+                                                            idx === 2 ? 'bg-amber-700/20 text-amber-600 border border-amber-700/40' :
+                                                                'bg-white/5 text-gray-400 border border-white/5'
+                                                        }`}>
                                                         #{idx + 1}
                                                     </span>
                                                     <div className='truncate'>
@@ -396,7 +429,6 @@ const AdminDashBoard = () => {
                                                     </div>
                                                 </div>
 
-                                                {/* Data Score Segment */}
                                                 <div className='text-right flex items-center gap-4 shrink-0'>
                                                     <div className='text-xs font-medium text-gray-400 hidden sm:block'>
                                                         Score: <span className='text-white font-bold'>{item.correct}</span> / {item.total}
@@ -417,9 +449,8 @@ const AdminDashBoard = () => {
                             )}
                         </div>
 
-                        {/* Modal Footer Controls */}
                         <div className='border-t border-white/10 pt-4 text-right shrink-0'>
-                            <button 
+                            <button
                                 onClick={() => { setIsModalOpen(false); setSelectedRoom(null); }}
                                 className='px-5 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-bold rounded-xl transition-all'
                             >

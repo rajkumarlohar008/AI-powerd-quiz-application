@@ -206,13 +206,59 @@ public class ApiController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "Room not found."));
         }
 
-        List<RoomResponseRequest> sortedResponses = roomOpt.get().getUserResponse()
-                .stream()
-                // Comparator.comparingDouble sorts ascending; .reversed() makes it descending
-                .sorted(Comparator.comparingDouble(RoomResponseRequest::getPercentage).reversed())
-                .toList(); // Use .collect(Collectors.toList()) if you need a mutable list
+        if(roomOpt.get().getUserResponse() != null){
+            List<RoomResponseRequest> sortedResponses = roomOpt.get().getUserResponse()
+                    .stream()
+                    // Comparator.comparingDouble sorts ascending; .reversed() makes it descending
+                    .sorted(Comparator.comparingDouble(RoomResponseRequest::getPercentage).reversed())
+                    .toList(); // Use .collect(Collectors.toList()) if you need a mutable list
 
-        return ResponseEntity.ok(sortedResponses);
+            return ResponseEntity.ok(sortedResponses);
+        }else{
+            return ResponseEntity.ok(new ArrayList<RoomResponseRequest>());
+        }
+    }
+
+    @Transactional
+    @DeleteMapping("/room/delete")
+    public ResponseEntity<?> deleteRoom(@RequestParam("roomId") String id, @RequestParam("email") String email) {
+
+        if (id == null || id.isBlank()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("message", "Room ID is required."));
+        }
+        if (email == null || email.isBlank()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("message", "Email is required."));
+        }
+
+        try {
+            Optional<User> userInfo = userRepository.findByEmail(email);
+
+            // Safe check if user actually exists
+            if (userInfo.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("message", "User not found with provided email."));
+            }
+
+            User user = userInfo.get();
+
+            // FIX: Use .equals() for String comparison instead of ==
+            user.getRooms().removeIf(room -> room.getId().equals(id));
+
+            // Save the updated user (with the room removed from their list)
+            userRepository.save(user);
+
+            // Delete the room entity entirely from the database
+            roomRepository.deleteById(id);
+
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(Map.of("message", "Room Deleted.", "user", user));
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "Failed to delete room: " + e.getMessage()));
+        }
     }
 
     @PostMapping(value = "/ai/generate-quiz", consumes = {"multipart/form-data"})
@@ -309,6 +355,16 @@ public class ApiController {
 
         QuizHistoryResponse response = new QuizHistoryResponse(attempts, attempts.size(), averagePercentage);
         return ResponseEntity.ok(response);
+    }
+
+    @DeleteMapping("/history/delete")
+    public ResponseEntity<?> deleteQuizHistory(@RequestParam("Id") String id){
+        if (id == null || id.isBlank()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("message", "Room ID is required."));
+        }
+        quizAttemptRepository.deleteById(id);
+        return ResponseEntity.ok(Map.of("massage","History deleted !"));
     }
 
     private List<QuizQuestion> createAllQuestions() {
