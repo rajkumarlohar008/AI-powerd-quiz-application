@@ -79,11 +79,14 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
 
-        CorsConfiguration configuration =
-                new CorsConfiguration();
+        CorsConfiguration configuration = new CorsConfiguration();
 
+        // ADD BOTH YOUR LOCALHOST AND VERCEL URLS HERE
         configuration.setAllowedOrigins(
-                List.of("http://localhost:5173")
+                List.of(
+                        "http://localhost:5173",
+                        "https://ai-powerd-quiz-application-7drs.vercel.app"
+                )
         );
 
         configuration.setAllowedMethods(
