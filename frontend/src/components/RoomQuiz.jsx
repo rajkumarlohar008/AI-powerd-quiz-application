@@ -571,7 +571,7 @@ const RoomQuiz = () => {
                     <button
                         onClick={handleJoinRoom}
                         disabled={loading}
-                        className='w-full py-5 rounded-2xl font-bold text-xl text-white bg-linear-to-r from-cyan-500 via-blue-500 to-purple-600 hover:scale-[1.02] active:scale-95 transition-all duration-300 shadow-lg hover:shadow-[0_0_40px_rgba(168,85,247,0.8)] disabled:opacity-50'
+                        className='w-full py-5 rounded-2xl font-bold text-xl text-white bg-gradient-to-r from-[#101e4a] to-[#07366b] border border-blue-500/20 hover:border-blue-400/40 transition-all duration-300 hover:shadow-[0_0_25px_rgba(59,130,246,0.2)] active:scale-[0.98] disabled:opacity-50'
                     >
                         {loading ? 'Joining Room...' : 'Start Quiz'}
                     </button>

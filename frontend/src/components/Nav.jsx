@@ -1,16 +1,17 @@
 import React, { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Home, ShieldCheck, ChevronDown, X } from 'lucide-react';
 
 const Nav = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [user, setUser] = useState(null);
     const navigate = useNavigate();
+    const location = useLocation();
 
     useEffect(() => {
         const token = localStorage.getItem('token');
         const userData = localStorage.getItem('user');
-            setUser(JSON.parse(userData));
+        setUser(JSON.parse(userData));
     }, [navigate]);
 
     return (
@@ -22,7 +23,7 @@ const Nav = () => {
                     {/* Logo */}
                     <div className='flex items-center gap-2 font-black text-xl tracking-wide text-white'>
 
-                        <span className='bg-gradient-to-r from-amber-400 via-pink-500 to-purple-600 p-1.5 rounded-lg text-white inline-flex items-center justify-center'>
+                        <span className='bg-linear-to-r from-amber-400 via-pink-500 to-purple-600 p-1.5 rounded-lg text-white inline-flex items-center justify-center'>
 
                             <svg className='w-5 h-5 fill-current' viewBox='0 0 24 24'>
                                 <path d='M19 11h-6V3a1 1 0 0 0-1.707-.707l-9 9a1 1 0 0 0 .707 1.707h6v8a1 1 0 0 0 1.707.707l9-9A1 1 0 0 0 19 11z' />
@@ -37,13 +38,21 @@ const Nav = () => {
                     {/* Nav (Desktop Only) */}
                     <nav className='hidden sm:flex items-center gap-2 text-sm font-medium text-gray-400'>
 
+                        {location.pathname === "/dashboard" ? 
                         <Link
+                            to='/'
+                            className='flex items-center gap-1.5 px-4 py-2 rounded-full bg-blue-600/20 text-blue-400 hover:bg-blue-600/30 transition'
+                        >
+                            <Home className='w-4 h-4' />
+                            Home
+                        </Link>
+                        : <Link
                             to='/dashboard'
                             className='flex items-center gap-1.5 px-4 py-2 rounded-full bg-blue-600/20 text-blue-400 hover:bg-blue-600/30 transition'
                         >
                             <Home className='w-4 h-4' />
                             Dashboard
-                        </Link>
+                        </Link>}
 
                         {user?.role === 'admin' && (
 

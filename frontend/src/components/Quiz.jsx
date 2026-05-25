@@ -3,20 +3,6 @@ import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
 import API_URL from '../config';
 import Result from './Result';
-import { 
-    Home, 
-    ShieldCheck, 
-    ChevronDown, 
-    User, 
-    Mail, 
-    Trophy, 
-    FileText, 
-    Bot, 
-    Users, 
-    History, 
-    LogOut,
-    ArrowRight 
-} from 'lucide-react';
 import Nav from './Nav';
 
 const Quiz = () => {
@@ -34,16 +20,6 @@ const Quiz = () => {
 
     const navigate = useNavigate();
 
-    useEffect(() => {
-                const token = localStorage.getItem('token');
-                const userData = localStorage.getItem('user');
-        
-                if (!token) {
-                    navigate('/login');
-                } else {
-                    setUser(JSON.parse(userData));
-                }
-            }, [navigate]);
 
     // Fetch Quiz Questions
     useEffect(() => {
@@ -486,15 +462,7 @@ const Quiz = () => {
                             font-bold
                             text-lg
                             text-white
-                            bg-linear-to-r
-                            from-cyan-500
-                            to-purple-600
-                            hover:scale-[1.02]
-                            active:scale-95
-                            transition-all
-                            duration-300
-                            shadow-lg
-                            hover:shadow-[0_0_30px_rgba(168,85,247,0.6)]
+                            bg-gradient-to-r from-[#101e4a] to-[#07366b] border border-blue-500/20 hover:border-blue-400/40 transition-all duration-300 hover:shadow-[0_0_25px_rgba(59,130,246,0.2)] active:scale-[0.98]
                             disabled:opacity-40
                             disabled:scale-100
                             disabled:hover:shadow-none
