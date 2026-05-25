@@ -1,34 +1,3 @@
-
-
-
-image(10).png
-write an svg code for this image
-
-<svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
-  
-  <!-- Background with rounded corners -->
-  <defs>
-    <linearGradient id="bgGradient" x1="0" y1="0" x2="256" y2="256">
-      <stop offset="0%" stop-color="#FF7A18"/>
-      <stop offset="100%" stop-color="#A100FF"/>
-    </linearGradient>
-  </defs>
-
-  <rect width="256" height="256" rx="64" fill="url(#bgGradient)"/>
-
-  <!-- Lightning Bolt -->
-  <path 
-    d="M140 40L80 140H122L108 216L176 112H132L140 40Z"
-    fill="white"
-    stroke="white"
-    stroke-width="4"
-    stroke-linejoin="round"
-  />
-
-</svg>
-
-can you also add the background color which shows in the reference image
-
 <svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
 
   <defs>
@@ -62,4 +31,3 @@ can you also add the background color which shows in the reference image
   />
 
 </svg>
-
