@@ -47,11 +47,11 @@ const Nav = () => {
                             Home
                         </Link>
                         : <Link
-                            to='/dashboard'
+                            to='/'
                             className='flex items-center gap-1.5 px-4 py-2 rounded-full bg-blue-600/20 text-blue-400 hover:bg-blue-600/30 transition'
                         >
                             <Home className='w-4 h-4' />
-                            Dashboard
+                            Home
                         </Link>}
 
                         {user?.role === 'admin' && (
@@ -139,12 +139,12 @@ const Nav = () => {
                     {/* Mobile Navigation List Actions */}
                     <nav className='flex flex-col gap-3 text-base font-semibold'>
                         <Link
-                            to='/dashboard'
+                            to='/'
                             onClick={() => setIsSidebarOpen(false)}
                             className='flex items-center gap-3 w-full px-4 py-3.5 rounded-2xl bg-blue-600/10 text-blue-400 border border-blue-500/20 active:bg-blue-600/20 transition'
                         >
                             <Home className='w-5 h-5' />
-                            Dashboard
+                            Home
                         </Link>
 
                         {user?.role === 'admin' && (
