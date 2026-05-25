@@ -308,6 +308,15 @@ const RoomQuiz = () => {
                             );
                         })}
                     </div>
+                    <div className='mt-8 w-full'>
+                        <Link
+                            to='/dashboard'
+                            
+                            className='px-17 mt-8 w-full py-3.5 rounded-2xl font-bold bg-white/10 hover:bg-white/20 border border-white/10 transition-all text-center text-white'
+                        >
+                            Back to Dashboard
+                        </Link>
+                    </div>
                 </div>
             </div>
         );
@@ -409,10 +418,10 @@ const RoomQuiz = () => {
             <div className='absolute top-[-120px] left-[-120px] w-[350px] h-[350px] bg-cyan-500/20 rounded-full blur-3xl' />
             <div className='absolute bottom-[-120px] right-[-120px] w-[350px] h-[350px] bg-purple-500/20 rounded-full blur-3xl' />
 
-                <Nav />
+            <Nav />
 
-                {/* Responsive Mobile Drawer Menu */}
-                
+            {/* Responsive Mobile Drawer Menu */}
+
 
             {/* Card */}
             <div className='relative z-10 w-full max-w-2xl rounded-3xl border border-white/10 bg-white/10 backdrop-blur-xl shadow-2xl p-6 md:p-10'>

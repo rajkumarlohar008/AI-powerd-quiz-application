@@ -9,6 +9,7 @@ const Result = ({ questions, userAnswers }) => {
     const navigate = useNavigate();
 
     const savedRef = useRef(false);
+    const token = localStorage.getItem('token') || '';
 
     // Calculate Score
     const calculateScore = () => {
