@@ -1,0 +1,65 @@
+
+
+
+image(10).png
+write an svg code for this image
+
+<svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
+  
+  <!-- Background with rounded corners -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0" y1="0" x2="256" y2="256">
+      <stop offset="0%" stop-color="#FF7A18"/>
+      <stop offset="100%" stop-color="#A100FF"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="256" height="256" rx="64" fill="url(#bgGradient)"/>
+
+  <!-- Lightning Bolt -->
+  <path 
+    d="M140 40L80 140H122L108 216L176 112H132L140 40Z"
+    fill="white"
+    stroke="white"
+    stroke-width="4"
+    stroke-linejoin="round"
+  />
+
+</svg>
+
+can you also add the background color which shows in the reference image
+
+<svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
+
+  <defs>
+    <!-- Main background gradient -->
+    <linearGradient id="bgGradient" x1="0" y1="0" x2="256" y2="256">
+      <stop offset="0%" stop-color="#FF8A1F"/>
+      <stop offset="45%" stop-color="#FF4FD8"/>
+      <stop offset="100%" stop-color="#7B2CFF"/>
+    </linearGradient>
+
+    <!-- Soft glow behind icon -->
+    <radialGradient id="glowGradient" cx="50%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="rgba(255,255,255,0.25)"/>
+      <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
+    </radialGradient>
+  </defs>
+
+  <!-- App background -->
+  <rect width="256" height="256" rx="64" fill="url(#bgGradient)"/>
+
+  <!-- Subtle glow -->
+  <circle cx="128" cy="96" r="90" fill="url(#glowGradient)"/>
+
+  <!-- Lightning icon -->
+  <path
+    d="M144 36L86 132H122L108 220L178 112H138L144 36Z"
+    fill="white"
+    stroke="white"
+    stroke-width="3"
+    stroke-linejoin="round"
+  />
+
+</svg>
+
