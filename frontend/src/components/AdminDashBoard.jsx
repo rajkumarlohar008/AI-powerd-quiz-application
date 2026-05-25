@@ -48,6 +48,20 @@ const AdminDashBoard = () => {
             });
     }, [userEmail]);
 
+    const [deletingRoomId, setDeletingRoomId] = useState(null);
+
+    const handleRoomDeleteClick = async (e, roomId) => {
+        e.stopPropagation();
+
+        setDeletingRoomId(roomId);
+
+        try {
+            await handleDelete(roomId);
+        } finally {
+            setDeletingRoomId(null);
+        }
+    };
+
     // FIXED: Added roomId parameter payload to the delete endpoint 
     // FIXED: Cleaned up modal state if active room is deleted
     const handleDelete = async (roomId) => {
@@ -371,13 +385,11 @@ const AdminDashBoard = () => {
                                                     </h4>
                                                     <button
                                                         type="button"
-                                                        className='bg-red-500 text-xs px-2 py-1 rounded-md font-semibold hover:bg-red-400 active:scale-95 transition-all'
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            handleDelete(roomId);
-                                                        }}
+                                                        className='bg-red-500 text-xs px-2 py-1 rounded-md font-semibold hover:bg-red-400 active:scale-95 transition-all disabled:opacity-70'
+                                                        onClick={(e) => handleRoomDeleteClick(e, roomId)}
+                                                        disabled={deletingRoomId === roomId}
                                                     >
-                                                        Delete
+                                                        {deletingRoomId === roomId ? 'Deleting...' : 'Delete'}
                                                     </button>
                                                 </div>
                                                 <div className='flex items-center justify-between text-[11px] text-gray-400 font-mono mt-2.5'>

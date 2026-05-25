@@ -33,6 +33,26 @@ const AiQuizGenerator = () => {
 
     const navigate = useNavigate();
 
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const handleNextClick = async () => {
+
+        // Last question
+        if (currentQuestion === quiz.questions.length - 1) {
+
+            setIsSubmitting(true);
+
+            try {
+                await handleNext();
+            } finally {
+                setIsSubmitting(false);
+            }
+
+        } else {
+            handleNext();
+        }
+    };
+
 
     // Generate AI Quiz
     const handleGenerate = async (e) => {
@@ -117,7 +137,7 @@ const AiQuizGenerator = () => {
     };
 
     // Next Question
-    const handleNext = () => {
+    const handleNext = async () => {
 
         if (!quiz) return;
 
@@ -132,7 +152,7 @@ const AiQuizGenerator = () => {
 
         } else {
 
-            handleSubmitAnswers();
+            await handleSubmitAnswers();
         }
     };
 
@@ -807,34 +827,33 @@ const AiQuizGenerator = () => {
                         </button>
 
                         <button
-                            onClick={handleNext}
+                            onClick={handleNextClick}
                             disabled={
-                                userAnswers[
-                                currentQuestion
-                                ] === null
+                                userAnswers[currentQuestion] === null || isSubmitting
                             }
                             className='
-                                flex-1
-                                py-4
-                                rounded-2xl
-                                font-bold
-                                text-lg
-                                text-white
-                                bg-gradient-to-r from-[#101e4a] to-[#07366b] border border-blue-500/20 hover:border-blue-400/40 transition-all duration-300 hover:shadow-[0_0_25px_rgba(59,130,246,0.2)]
-                                active:scale-75
-                                disabled:opacity-40
-                                disabled:scale-100
-                                disabled:hover:shadow-none
-                                disabled:cursor-not-allowed
-                            '
+        flex-1
+        py-4
+        rounded-2xl
+        font-bold
+        text-lg
+        text-white
+        bg-gradient-to-r from-[#101e4a] to-[#07366b]
+        border border-blue-500/20
+        hover:border-blue-400/40
+        transition-all duration-300
+        hover:shadow-[0_0_25px_rgba(59,130,246,0.2)]
+        active:scale-75
+        disabled:opacity-40
+        disabled:scale-100
+        disabled:hover:shadow-none
+        disabled:cursor-not-allowed
+    '
                         >
 
                             {
-                                currentQuestion ===
-                                    quiz.questions.length - 1
-
-                                    ? 'Finish'
-
+                                currentQuestion === quiz.questions.length - 1
+                                    ? (isSubmitting ? 'Submitting...' : 'Finish')
                                     : 'Next'
                             }
 

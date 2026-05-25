@@ -25,11 +25,26 @@ const QuizHistory = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
+
     // Track which attempt the user clicked to view details
     const [selectedAttempt, setSelectedAttempt] = useState(null);
 
     const navigate = useNavigate();
     const token = localStorage.getItem('token') || '';
+
+    const [deletingId, setDeletingId] = useState(null);
+
+    const handleDeleteClick = async (e, id) => {
+        e.stopPropagation();
+
+        setDeletingId(id);
+
+        try {
+            await handleDelete(id);
+        } finally {
+            setDeletingId(null);
+        }
+    };
 
     // Fetch History
     useEffect(() => {
@@ -283,12 +298,10 @@ const QuizHistory = () => {
                                                     <button
                                                         type="button"
                                                         className='bg-red-500/80 text-xs px-2.5 py-1 rounded-md font-semibold hover:bg-red-500 active:scale-95 transition-all text-white relative z-20'
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            handleDelete(attempt.id || attempt._id);
-                                                        }}
+                                                        onClick={(e) => handleDeleteClick(e, attempt.id || attempt._id)}
+                                                        disabled={deletingId === (attempt.id || attempt._id)}
                                                     >
-                                                        Delete
+                                                        {deletingId === (attempt.id || attempt._id) ? 'Deleting...' : 'Delete'}
                                                     </button>
                                                 </div>
                                                 <p className='text-gray-400 text-sm'>
