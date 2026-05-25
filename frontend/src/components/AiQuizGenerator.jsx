@@ -10,7 +10,12 @@ const AiQuizGenerator = () => {
     const [text, setText] = useState('');
     const [file, setFile] = useState(null);
     const [user, setUser] = useState(null);
-    
+    const token = localStorage.getItem('token');
+
+    const storedUser = JSON.parse(
+        localStorage.getItem('user') || '{}'
+    );
+
 
     const [loading, setLoading] = useState(false);
 
@@ -28,16 +33,6 @@ const AiQuizGenerator = () => {
 
     const navigate = useNavigate();
 
-    useEffect(() => {
-                const token = localStorage.getItem('token');
-                const userData = localStorage.getItem('user');
-        
-                if (!token) {
-                    navigate('/login');
-                } else {
-                    setUser(JSON.parse(userData));
-                }
-            }, [navigate]);
 
     // Generate AI Quiz
     const handleGenerate = async (e) => {
@@ -77,6 +72,7 @@ const AiQuizGenerator = () => {
                     timeout: 80000,
                     headers: {
                         Accept: 'application/json',
+                        Authorization: `Bearer ${token}`
                     }
                 }
             );
@@ -166,7 +162,12 @@ const AiQuizGenerator = () => {
                 `${API_URL}/api/ai/quiz-summary`,
                 {
                     questions: quiz.questions,
-                    userAnswers,
+                    userAnswers
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
                 }
             );
 
@@ -198,7 +199,7 @@ const AiQuizGenerator = () => {
                     total > 0
                         ? Math.round(
                             (correct / total) * 100
-                          )
+                        )
                         : 0;
 
                 const payload = {
@@ -243,8 +244,13 @@ const AiQuizGenerator = () => {
 
                 axios.post(
                     `${API_URL}/api/quiz-attempts`,
-                    payload
-                ).catch(() => { });
+                    payload,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`
+                        }
+                    }
+                );
             }
 
         } catch (err) {
@@ -725,12 +731,11 @@ const AiQuizGenerator = () => {
                                         font-semibold
                                         text-lg
 
-                                        ${
-                                            userAnswers[
-                                                currentQuestion
-                                            ] === idx
+                                        ${userAnswers[
+                                            currentQuestion
+                                        ] === idx
 
-                                                ? `
+                                            ? `
                                                     bg-linear-to-r
                                                     from-cyan-500
                                                     to-purple-600
@@ -740,7 +745,7 @@ const AiQuizGenerator = () => {
                                                     scale-[1.02]
                                                   `
 
-                                                : `
+                                            : `
                                                     bg-white/5
                                                     border-white/10
                                                     text-gray-300
@@ -805,7 +810,7 @@ const AiQuizGenerator = () => {
                             onClick={handleNext}
                             disabled={
                                 userAnswers[
-                                    currentQuestion
+                                currentQuestion
                                 ] === null
                             }
                             className='
@@ -826,7 +831,7 @@ const AiQuizGenerator = () => {
 
                             {
                                 currentQuestion ===
-                                quiz.questions.length - 1
+                                    quiz.questions.length - 1
 
                                     ? 'Finish'
 
@@ -866,7 +871,7 @@ const AiQuizGenerator = () => {
             total > 0
                 ? Math.round(
                     (correct / total) * 100
-                  )
+                )
                 : 0;
 
         return (
@@ -1247,7 +1252,7 @@ const AiQuizGenerator = () => {
                         <h2 className='text-2xl font-bold text-white mb-6 border-b border-white/10 pb-3 tracking-wide'>
                             Answers & Explanations Review
                         </h2>
-                        
+
                         <div className='space-y-6'>
                             {quiz.questions.map((q, idx) => {
                                 const userIdx = userAnswers[idx];
@@ -1257,20 +1262,18 @@ const AiQuizGenerator = () => {
                                 const correctAnswerText = q.options[correctIdx];
 
                                 return (
-                                    <div 
-                                        key={idx} 
-                                        className={`rounded-xl border p-5 relative overflow-hidden ${
-                                            isCorrect 
-                                                ? 'bg-emerald-500/5 border-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.02)]' 
-                                                : 'bg-red-500/5 border-red-500/20 shadow-[0_0_15px_rgba(239,68,68,0.02)]'
-                                        }`}
+                                    <div
+                                        key={idx}
+                                        className={`rounded-xl border p-5 relative overflow-hidden ${isCorrect
+                                            ? 'bg-emerald-500/5 border-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.02)]'
+                                            : 'bg-red-500/5 border-red-500/20 shadow-[0_0_15px_rgba(239,68,68,0.02)]'
+                                            }`}
                                     >
                                         {/* Status Badge */}
-                                        <div className={`absolute top-4 right-4 font-bold text-sm px-3 py-1 rounded-full border ${
-                                            isCorrect 
-                                                ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' 
-                                                : 'bg-red-500/20 text-red-400 border-red-500/30'
-                                        }`}>
+                                        <div className={`absolute top-4 right-4 font-bold text-sm px-3 py-1 rounded-full border ${isCorrect
+                                            ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
+                                            : 'bg-red-500/20 text-red-400 border-red-500/30'
+                                            }`}>
                                             {isCorrect ? '✓ Correct' : '✗ Incorrect'}
                                         </div>
 
@@ -1280,11 +1283,11 @@ const AiQuizGenerator = () => {
 
                                         <div className='space-y-2.5 text-sm md:text-base'>
                                             <p className='text-gray-300'>
-                                                <strong className='text-white font-semibold'>Your Answer: </strong> 
+                                                <strong className='text-white font-semibold'>Your Answer: </strong>
                                                 <span className={isCorrect ? 'text-emerald-400 font-medium' : 'text-red-400 font-medium'}>{userAnswerText}</span>
                                             </p>
                                             <p className='text-gray-300'>
-                                                <strong className='text-white font-semibold'>Correct Answer: </strong> 
+                                                <strong className='text-white font-semibold'>Correct Answer: </strong>
                                                 <span className='text-emerald-400 font-medium'>{correctAnswerText}</span>
                                             </p>
                                             {q.explanation && (

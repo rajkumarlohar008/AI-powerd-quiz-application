@@ -94,7 +94,11 @@ const Result = ({ questions, userAnswers }) => {
 
         axios.post(
             `${API_URL}/api/quiz-attempts`,
-            payload
+            payload, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        }
         ).catch(() => { });
 
     }, [
@@ -390,15 +394,15 @@ const Result = ({ questions, userAnswers }) => {
 
                             const userAnswerText =
                                 userAnswers[index] !== null &&
-                                userAnswers[index] !== undefined
+                                    userAnswers[index] !== undefined
                                     ? question.options[
-                                        userAnswers[index]
-                                      ]
+                                    userAnswers[index]
+                                    ]
                                     : 'Not Answered';
 
                             const correctAnswerText =
                                 question.options[
-                                    question.correctAnswer
+                                question.correctAnswer
                                 ];
 
                             return (
@@ -413,13 +417,12 @@ const Result = ({ questions, userAnswers }) => {
                                         transition-all
                                         duration-300
 
-                                        ${
-                                            isCorrect
-                                                ? `
+                                        ${isCorrect
+                                            ? `
                                                     bg-emerald-500/10
                                                     border-emerald-500/20
                                                   `
-                                                : `
+                                            : `
                                                     bg-red-500/10
                                                     border-red-500/20
                                                   `
@@ -498,13 +501,12 @@ const Result = ({ questions, userAnswers }) => {
                                             text-sm
                                             font-bold
 
-                                            ${
-                                                isCorrect
-                                                    ? `
+                                            ${isCorrect
+                                                ? `
                                                         bg-emerald-500/20
                                                         text-emerald-400
                                                       `
-                                                    : `
+                                                : `
                                                         bg-red-500/20
                                                         text-red-400
                                                       `

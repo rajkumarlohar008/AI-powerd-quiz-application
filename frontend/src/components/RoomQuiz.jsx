@@ -23,6 +23,7 @@ const RoomQuiz = () => {
     const [scoreData, setScoreData] = useState(null);
 
     const user = JSON.parse(localStorage.getItem('user')) || {};
+    const token = localStorage.getItem('token') || '';
 
     // Join Room
     const handleJoinRoom = async () => {
@@ -38,7 +39,10 @@ const RoomQuiz = () => {
         try {
 
             const res = await axios.get(`${API_URL}/api/room/id`, {
-                params: { roomId }
+                params: { roomId },
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
             });
 
             setRoom(res.data);
@@ -134,10 +138,17 @@ const RoomQuiz = () => {
         try {
 
             await axios.post(`${API_URL}/api/room/quiz-attempt`, roomPayload, {
-                params: { roomId }
+                params: { roomId },
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
             });
 
-            await axios.post(`${API_URL}/api/quiz-attempts`, historyPayload);
+            await axios.post(`${API_URL}/api/quiz-attempts`, historyPayload, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
 
             setScoreData({
                 correct,
@@ -398,71 +409,10 @@ const RoomQuiz = () => {
             <div className='absolute top-[-120px] left-[-120px] w-[350px] h-[350px] bg-cyan-500/20 rounded-full blur-3xl' />
             <div className='absolute bottom-[-120px] right-[-120px] w-[350px] h-[350px] bg-purple-500/20 rounded-full blur-3xl' />
 
-            <>
                 <Nav />
 
                 {/* Responsive Mobile Drawer Menu */}
-                <div
-                    className={`fixed inset-0 z-50 transition-opacity duration-300 ${isSidebarOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
-                        }`}
-                >
-                    {/* Backdrop Overlay filter */}
-                    <div
-                        onClick={() => setIsSidebarOpen(false)}
-                        className='absolute inset-0 bg-black/60 backdrop-blur-xs'
-                    />
-
-                    {/* Sidebar Content Panel */}
-                    <div
-                        className={`absolute top-0 right-0 h-full w-72 max-w-[80vw] border-l border-white/10 bg-slate-950/90 backdrop-blur-xl p-6 shadow-2xl transition-transform duration-300 transform ${isSidebarOpen ? 'translate-x-0' : 'translate-x-full'
-                            }`}
-                    >
-                        {/* Header within Drawer */}
-                        <div className='flex items-center justify-between pb-6 border-b border-white/5 mb-6'>
-                            <div className='flex items-center gap-3'>
-                                <img
-                                    src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name}`}
-                                    alt='Avatar'
-                                    className='w-10 h-10 rounded-full bg-slate-800 border border-white/20'
-                                />
-                                <div className='text-left'>
-                                    <p className='text-[10px] text-gray-400 leading-none'>User Profile</p>
-                                    <p className='text-sm font-bold text-white mt-1'>{user?.name}</p>
-                                </div>
-                            </div>
-                            <button
-                                onClick={() => setIsSidebarOpen(false)}
-                                className='p-1 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition'
-                            >
-                                <X className='w-5 h-5' />
-                            </button>
-                        </div>
-
-                        {/* Mobile Navigation List Actions */}
-                        <nav className='flex flex-col gap-3 text-base font-semibold'>
-                            <Link
-                                to='/dashboard'
-                                onClick={() => setIsSidebarOpen(false)}
-                                className='flex items-center gap-3 w-full px-4 py-3.5 rounded-2xl bg-blue-600/10 text-blue-400 border border-blue-500/20 active:bg-blue-600/20 transition'
-                            >
-                                <Home className='w-5 h-5' />
-                                Dashboard
-                            </Link>
-
-                            {user?.role === 'admin' && (
-                                <Link
-                                    to='/admin'
-                                    onClick={() => setIsSidebarOpen(false)}
-                                    className='flex items-center gap-3 w-full px-4 py-3.5 rounded-2xl bg-white/5 text-gray-200 border border-white/5 hover:bg-white/10 active:scale-98 transition'
-                                >
-                                    <ShieldCheck className='w-5 h-5 text-purple-400' />
-                                    Admin Panel
-                                </Link>
-                            )}
-                        </nav>
-                    </div>
-                </div>
-            </>
+                
 
             {/* Card */}
             <div className='relative z-10 w-full max-w-2xl rounded-3xl border border-white/10 bg-white/10 backdrop-blur-xl shadow-2xl p-6 md:p-10'>

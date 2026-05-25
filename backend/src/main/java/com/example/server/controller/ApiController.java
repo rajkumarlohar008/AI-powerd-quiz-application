@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -40,20 +41,20 @@ public class ApiController {
     private static final Logger log = LoggerFactory.getLogger(ApiController.class);
     private final UserRepository userRepository;
     private final QuizAttemptRepository quizAttemptRepository;
-    private final BCryptPasswordEncoder passwordEncoder;
+
     private final JwtService jwtService;
     private final GeminiService geminiService;
     @Autowired
     private RoomRepository roomRepository;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     public ApiController(UserRepository userRepository,
                          QuizAttemptRepository quizAttemptRepository,
-                         BCryptPasswordEncoder passwordEncoder,
                          JwtService jwtService,
                          GeminiService geminiService) {
         this.userRepository = userRepository;
         this.quizAttemptRepository = quizAttemptRepository;
-        this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.geminiService = geminiService;
     }

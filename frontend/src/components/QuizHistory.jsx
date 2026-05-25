@@ -2,19 +2,19 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import API_URL from '../config';
-import { 
-    Home, 
-    ShieldCheck, 
-    ChevronDown, 
-    User, 
-    Mail, 
-    Trophy, 
-    FileText, 
-    Bot, 
-    Users, 
-    History, 
+import {
+    Home,
+    ShieldCheck,
+    ChevronDown,
+    User,
+    Mail,
+    Trophy,
+    FileText,
+    Bot,
+    Users,
+    History,
     LogOut,
-    ArrowRight 
+    ArrowRight
 } from 'lucide-react';
 import Nav from './Nav';
 
@@ -29,6 +29,7 @@ const QuizHistory = () => {
     const [selectedAttempt, setSelectedAttempt] = useState(null);
 
     const navigate = useNavigate();
+    const token = localStorage.getItem('token') || '';
 
     // Fetch History
     useEffect(() => {
@@ -50,7 +51,10 @@ const QuizHistory = () => {
 
         axios
             .get(`${API_URL}/api/quiz-history`, {
-                params: { userId: u.id }
+                params: { userId: u.id },
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
             })
             .then((res) => {
                 setHistory(res.data);
@@ -72,13 +76,19 @@ const QuizHistory = () => {
     const handleDelete = async (id) => {
         try {
             await axios.delete(`${API_URL}/api/history/delete`, {
-                params: { Id: id }
+                params: { Id: id },
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
             });
             const userData = localStorage.getItem('user');
             const u = userData ? JSON.parse(userData) : null;
-            
+
             const res = await axios.get(`${API_URL}/api/quiz-history`, {
-                params: { userId: u.id }
+                params: { userId: u.id },
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
             });
             setHistory(res.data);
         } catch (err) {
@@ -128,7 +138,7 @@ const QuizHistory = () => {
             {/* Glow Effects */}
             <div className='pointer-events-none absolute -top-30 -left-30 w-80 h-80 bg-cyan-500/20 rounded-full blur-3xl' />
             <div className='pointer-events-none absolute -bottom-30 -right-30 w-80 h-80 bg-purple-500/20 rounded-full blur-3xl' />
-            
+
             <Nav />
 
             {/* CONDITIONAL RENDER: SHOW DETAIL VIEW */}
@@ -288,7 +298,7 @@ const QuizHistory = () => {
                                                     Click to view solutions →
                                                 </span>
                                             </div>
-                                            
+
                                             <div className='flex sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-2 border-t sm:border-t-0 border-white/5 pt-3 sm:pt-0'>
                                                 <div className='px-3 py-1.5 rounded-xl bg-linear-to-r from-cyan-500 to-purple-600 text-white font-bold text-sm shadow-lg'>
                                                     {attempt.correct ?? 0} / {attempt.total ?? 0}

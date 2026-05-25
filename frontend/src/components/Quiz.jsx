@@ -36,7 +36,12 @@ const Quiz = () => {
             try {
 
                 const response = await axios.get(
-                    `${API_URL}/api/quiz`
+                    `${API_URL}/api/quiz`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`
+                        }
+                    }
                 );
 
                 setQuestions(response.data.questions);
@@ -314,10 +319,9 @@ const Quiz = () => {
                         border
                         transition-all
                         duration-300
-                        ${
-                            timeLeft <= 10
-                                ? 'bg-red-500/20 text-red-400 border-red-500/30 shadow-[0_0_15px_rgba(239,68,68,0.3)] animate-pulse'
-                                : 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30 shadow-[0_0_15px_rgba(6,182,212,0.2)]'
+                        ${timeLeft <= 10
+                            ? 'bg-red-500/20 text-red-400 border-red-500/30 shadow-[0_0_15px_rgba(239,68,68,0.3)] animate-pulse'
+                            : 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30 shadow-[0_0_15px_rgba(6,182,212,0.2)]'
                         }
                     `}>
 
@@ -370,9 +374,8 @@ const Quiz = () => {
                                 font-semibold
                                 text-lg
 
-                                ${
-                                    selectedAnswer === index
-                                        ? `
+                                ${selectedAnswer === index
+                                    ? `
                                             bg-linear-to-r
                                             from-cyan-500
                                             to-purple-600
@@ -381,7 +384,7 @@ const Quiz = () => {
                                             shadow-[0_0_25px_rgba(168,85,247,0.4)]
                                             scale-[1.02]
                                           `
-                                        : `
+                                    : `
                                             bg-white/5
                                             border-white/10
                                             text-gray-300
