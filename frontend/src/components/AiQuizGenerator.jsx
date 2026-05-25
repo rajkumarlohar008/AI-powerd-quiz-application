@@ -633,8 +633,9 @@ const AiQuizGenerator = () => {
                     rounded-full
                     blur-3xl
                 ' />
-
+                <Nav />
                 <div className='
+                    mt-24
                     relative
                     z-10
                     w-full
@@ -785,7 +786,7 @@ const AiQuizGenerator = () => {
                                 hover:bg-white/10
                                 hover:text-white
                                 hover:scale-[1.02]
-                                active:scale-95
+                                active:scale-90
                                 transition-all
                                 duration-300
                                 disabled:opacity-20
@@ -815,6 +816,7 @@ const AiQuizGenerator = () => {
                                 text-lg
                                 text-white
                                 bg-gradient-to-r from-[#101e4a] to-[#07366b] border border-blue-500/20 hover:border-blue-400/40 transition-all duration-300 hover:shadow-[0_0_25px_rgba(59,130,246,0.2)]
+                                active:scale-75
                                 disabled:opacity-40
                                 disabled:scale-100
                                 disabled:hover:shadow-none
@@ -906,7 +908,9 @@ const AiQuizGenerator = () => {
                     blur-3xl
                 ' />
 
+                <Nav />
                 <div className='
+                    mt-15
                     relative
                     z-10
                     w-full
@@ -1314,15 +1318,7 @@ const AiQuizGenerator = () => {
                                 font-bold
                                 text-lg
                                 text-white
-                                bg-linear-to-r
-                                from-cyan-500
-                                to-blue-600
-                                hover:scale-[1.02]
-                                active:scale-95
-                                transition-all
-                                duration-300
-                                shadow-lg
-                                hover:shadow-[0_0_25px_rgba(6,182,212,0.4)]
+                                bg-gradient-to-r from-[#101e4a] to-[#07366b] border border-blue-500/20 hover:border-blue-400/40 transition-all duration-300 hover:shadow-[0_0_25px_rgba(59,130,246,0.2)]
                                 cursor-pointer
                             '
                         >
@@ -1340,15 +1336,7 @@ const AiQuizGenerator = () => {
                                 font-bold
                                 text-lg
                                 text-white
-                                bg-linear-to-r
-                                from-purple-500
-                                to-pink-600
-                                hover:scale-[1.02]
-                                active:scale-95
-                                transition-all
-                                duration-300
-                                shadow-lg
-                                hover:shadow-[0_0_25px_rgba(168,85,247,0.4)]
+                                bg-gradient-to-r from-[#0d283d] to-[#063a47] border border-teal-500/20 hover:border-teal-400/40 transition-all duration-300 hover:shadow-[0_0_25px_rgba(20,184,166,0.2)] active:scale-[0.98]
                                 cursor-pointer
                             '
                         >

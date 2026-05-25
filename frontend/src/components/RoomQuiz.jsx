@@ -8,6 +8,7 @@ import {
     ChevronDown,
     X
 } from 'lucide-react';
+import Nav from './Nav';
 
 const RoomQuiz = () => {
 
@@ -165,8 +166,9 @@ const RoomQuiz = () => {
                 <div className='absolute top-[-120px] left-[-120px] w-[350px] h-[350px] bg-cyan-500/20 rounded-full blur-3xl' />
                 <div className='absolute bottom-[-120px] right-[-120px] w-[350px] h-[350px] bg-purple-500/20 rounded-full blur-3xl' />
 
+                <Nav />
                 {/* Main Card */}
-                <div className='relative z-10 w-full max-w-3xl rounded-3xl border border-white/10 bg-white/10 backdrop-blur-xl shadow-2xl p-6 md:p-10 text-center'>
+                <div className='mt-15 relative z-10 w-full max-w-3xl rounded-3xl border border-white/10 bg-white/10 backdrop-blur-xl shadow-2xl p-6 md:p-10 text-center'>
 
                     <h1 className='text-5xl font-extrabold bg-linear-to-r from-cyan-400 via-blue-500 to-purple-500 bg-clip-text text-transparent mb-10'>
                         Quiz Completed 🎉
@@ -314,7 +316,7 @@ const RoomQuiz = () => {
                 <div className='absolute bottom-[-120px] right-[-120px] w-[350px] h-[350px] bg-purple-500/20 rounded-full blur-3xl' />
 
                 {/* Header */}
-
+                <Nav />
                 {/* Quiz Card */}
                 <div className='relative z-10 flex justify-center'>
 
@@ -372,7 +374,7 @@ const RoomQuiz = () => {
                             <button
                                 onClick={handleNext}
                                 disabled={userAnswers[currentQuestion] === null}
-                                className='flex-1 py-4 rounded-2xl font-bold text-lg text-white bg-linear-to-r from-cyan-500 to-purple-600 hover:scale-[1.02] active:scale-95 transition-all duration-300 disabled:opacity-40'
+                                className='flex-1 py-4 rounded-2xl font-bold text-lg text-white bg-gradient-to-r from-[#101e4a] to-[#07366b] border border-blue-500/20 hover:border-blue-400/40 transition-all duration-300 hover:shadow-[0_0_25px_rgba(59,130,246,0.2)] active:scale-[0.90] disabled:opacity-40'
                             >
                                 {currentQuestion === room.questions.length - 1
                                     ? 'Finish'
@@ -397,80 +399,7 @@ const RoomQuiz = () => {
             <div className='absolute bottom-[-120px] right-[-120px] w-[350px] h-[350px] bg-purple-500/20 rounded-full blur-3xl' />
 
             <>
-                <header className='fixed top-0 left-0 z-50 w-full px-6 py-4 flex items-center justify-between border-b border-white/5 bg-slate-950/60 backdrop-blur-md'>
-
-                    <div className='px-0 md:px-10 flex items-center gap-6'>
-
-                        {/* Logo */}
-                        <div className='flex items-center gap-2 font-black text-xl tracking-wide text-white'>
-
-                            <span className='bg-gradient-to-r from-amber-400 via-pink-500 to-purple-600 p-1.5 rounded-lg text-white inline-flex items-center justify-center'>
-
-                                <svg className='w-5 h-5 fill-current' viewBox='0 0 24 24'>
-                                    <path d='M19 11h-6V3a1 1 0 0 0-1.707-.707l-9 9a1 1 0 0 0 .707 1.707h6v8a1 1 0 0 0 1.707.707l9-9A1 1 0 0 0 19 11z' />
-                                </svg>
-
-                            </span>
-
-                            Quiz App
-
-                        </div>
-
-                        {/* Nav (Desktop Only) */}
-                        <nav className='hidden sm:flex items-center gap-2 text-sm font-medium text-gray-400'>
-
-                            <Link
-                                to='/dashboard'
-                                className='flex items-center gap-1.5 px-4 py-2 rounded-full bg-blue-600/20 text-blue-400 hover:bg-blue-600/30 transition'
-                            >
-                                <Home className='w-4 h-4' />
-                                Dashboard
-                            </Link>
-
-                            {user?.role === 'admin' && (
-
-                                <Link
-                                    to='/admin'
-                                    className='flex items-center gap-1.5 px-4 py-2 rounded-full hover:bg-white/10 hover:text-white transition'
-                                >
-                                    <ShieldCheck className='w-4 h-4' />
-                                    Admin
-                                </Link>
-
-                            )}
-
-                        </nav>
-                    </div>
-
-                    {/* Profile Element (Click handler opens menu on mobile, or can toggle drawer) */}
-                    {user && (
-
-                        <div
-                            onClick={() => setIsSidebarOpen(true)}
-                            className='flex items-center gap-3 bg-white/5 border border-white/10 rounded-full pl-2 pr-4 py-1.5 hover:bg-white/10 transition cursor-pointer'
-                        >
-
-                            <img
-                                src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`}
-                                alt='Avatar'
-                                className='w-8 h-8 rounded-full bg-slate-800 border border-white/20'
-                            />
-
-                            <div className='hidden sm:block text-left'>
-                                <p className='text-[10px] text-gray-400 leading-none'>
-                                    Welcome,
-                                </p>
-                                <p className='text-xs font-semibold text-gray-200'>
-                                    {user.name}
-                                </p>
-                            </div>
-
-                            <ChevronDown className='w-3.5 h-3.5 text-gray-400' />
-
-                        </div>
-                    )}
-
-                </header>
+                <Nav />
 
                 {/* Responsive Mobile Drawer Menu */}
                 <div
