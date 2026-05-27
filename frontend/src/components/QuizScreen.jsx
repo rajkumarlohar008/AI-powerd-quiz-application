@@ -82,7 +82,7 @@ const QuizScreen = ({
                             disabled={isBackDisabled}
                             className='flex-1  text-lg text-gray-300 border border-white/10 bg-white/5 hover:bg-white/10 hover:text-white hover:scale-[1.02] active:scale-95 transition-all duration-300 disabled:opacity-20 disabled:scale-100 disabled:hover:bg-white/5 disabled:hover:text-gray-300 disabled:cursor-not-allowed
                             
-                            px-17 mt-8 w-full py-3.5 rounded-2xl font-bold  text-center '
+                            px-10 md:px-17 mt-3 w-full py-3.5 rounded-2xl font-bold  text-center '
                         >
                             Back
                         </button>
@@ -92,7 +92,7 @@ const QuizScreen = ({
                             disabled={isNextDisabled}
                             className='flex-1  text-lg  hover:border-blue-400/40  duration-300 hover:shadow-[0_0_25px_rgba(59,130,246,0.2)] active:scale-[0.98] disabled:opacity-40 disabled:scale-100 disabled:hover:shadow-none disabled:cursor-not-allowed
                             
-                            px-17 mt-8 w-full py-3.5 rounded-2xl font-bold bg-white/10 hover:bg-white/20 border border-white/10 transition-all text-center text-white'
+                            px-10 md:px-17 mt-3 w-full py-3.5 rounded-2xl font-bold bg-white/10 hover:bg-white/20 border border-white/10 transition-all text-center text-white'
                         >
                             {nextText}
                         </button>
