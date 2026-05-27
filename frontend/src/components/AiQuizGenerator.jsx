@@ -404,10 +404,10 @@ const AiQuizGenerator = () => {
                     </div>
 
                     <div className='flex flex-col md:flex-row gap-5'>
-                        <button onClick={handleRetake} className='flex-1 px-17 mt-8 w-full py-4 rounded-2xl font-bold bg-white/10 hover:bg-white/20 border border-white/10 transition-all text-center text-white'>
+                        <button onClick={handleRetake} className='flex-1 px-17  w-full py-4 rounded-2xl font-bold bg-white/10 hover:bg-white/20 border border-white/10 transition-all text-center text-white'>
                             Retake AI Quiz
                         </button>
-                        <button onClick={handleDashboard} className='flex-1 px-17 mt-8 w-full py-4 rounded-2xl font-bold bg-white/10 hover:bg-white/20 border border-white/10 transition-all text-center text-white'>
+                        <button onClick={handleDashboard} className='flex-1 px-17  w-full py-4 rounded-2xl font-bold bg-white/10 hover:bg-white/20 border border-white/10 transition-all text-center text-white'>
                             Back to Dashboard
                         </button>
                     </div>
