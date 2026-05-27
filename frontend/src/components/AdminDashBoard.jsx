@@ -452,7 +452,7 @@ const AdminDashBoard = () => {
                                         .sort((a, b) => (b.percentage || 0) - (a.percentage || 0))
                                         .map((item, idx) => (
                                             <div
-                                                key={item.userId || idx}
+                                                key={idx}
                                                 className='p-4 rounded-xl border border-white/5 bg-black/40 flex items-center justify-between gap-4 shadow-sm hover:bg-black/60 transition-colors'
                                             >
                                                 <div className='flex items-center gap-3 truncate'>
