@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import API_URL from '../config';
@@ -10,6 +10,7 @@ const Result = ({ questions, userAnswers }) => {
 
     const savedRef = useRef(false);
     const token = localStorage.getItem('token') || '';
+    const [scoreData, setScoreData] = useState(null);
 
     // Calculate Score
     const calculateScore = () => {
@@ -122,468 +123,154 @@ const Result = ({ questions, userAnswers }) => {
 
     return (
 
-        <div className='
-            relative
-            min-h-screen
-            overflow-hidden
-            bg-linear-to-br
-            from-black
-            via-slate-900
-            to-purple-950
-            flex
-            items-center
-            justify-center
-            px-4
-            py-10
-        '>
+        <div className='relative min-h-screen overflow-y-auto bg-linear-to-br from-black via-slate-900 to-purple-950 flex items-center justify-center px-4 py-10'>
 
-            {/* Glow Effects */}
+                {/* Glow */}
+                <div className='absolute top-[-120px] left-[-120px] w-[350px] h-[350px] bg-cyan-500/20 rounded-full blur-3xl' />
+                <div className='absolute bottom-[-120px] right-[-120px] w-[350px] h-[350px] bg-purple-500/20 rounded-full blur-3xl' />
 
-            <div className='
-                absolute
-                -top-30
-                -left-30
-                w-87.5
-                h-87.5
-                bg-cyan-500/20
-                rounded-full
-                blur-3xl
-            ' />
+                <Nav />
+                {/* Main Card */}
+                <div className='mt-15 relative z-10 w-full max-w-3xl rounded-3xl border border-white/10 bg-white/10 backdrop-blur-xl shadow-2xl p-6 md:p-10 text-center'>
 
-            <div className='
-                
-                absolute
-                -bottom-30
-                -right-30
-                w-87.5
-                h-87.5
-                bg-purple-500/20
-                rounded-full
-                blur-3xl
-            ' />
-
-            {/* Main Card */}
-            <Nav />
-
-            <div className='
-                mt-15
-                relative
-                z-10
-                w-full
-                max-w-5xl
-                rounded-3xl
-                border
-                border-white/10
-                bg-white/10
-                backdrop-blur-xl
-                shadow-2xl
-                p-6
-                md:p-10
-            '>
-
-                {/* Header */}
-
-                <div className='text-center mb-10'>
-
-                    <h1 className='
-                        text-4xl
-                        md:text-5xl
-                        font-extrabold
-                        bg-linear-to-r
-                        from-cyan-400
-                        via-blue-500
-                        to-purple-500
-                        bg-clip-text
-                        text-transparent
-                        mb-4
-                    '>
-
+                    <h1 className='text-5xl font-extrabold bg-linear-to-r from-cyan-400 via-blue-500 to-purple-500 bg-clip-text text-transparent mb-10'>
                         Quiz Completed 🎉
-
                     </h1>
 
-                    <p className='
-                        text-gray-300
-                        text-lg
-                    '>
+                    {/* Score Circle */}
+                    <div className='flex justify-center mb-10'>
+                        <div className='w-44 h-44 rounded-full bg-linear-to-r from-cyan-500 to-purple-600 flex flex-col items-center justify-center shadow-2xl'>
+                            <h2 className='text-5xl font-extrabold text-white'>
+                                {percentage}%
+                            </h2>
+                            <p className='text-white font-semibold mt-2'>
+                                Your Score
+                            </p>
+                        </div>
+                    </div>
 
-                        Great effort! Here is your result.
+                    {/* Stats */}
+                    <div className='grid grid-cols-1 md:grid-cols-3 gap-5 mb-12'>
 
-                    </p>
+                        <div className='rounded-2xl bg-emerald-500/10 border border-emerald-500/20 p-6'>
+                            <h2 className='text-4xl font-bold text-emerald-400'>
+                                {score.correct}
+                            </h2>
+                            <p className='text-gray-300'>Correct</p>
+                        </div>
 
-                </div>
+                        <div className='rounded-2xl bg-red-500/10 border border-red-500/20 p-6'>
+                            <h2 className='text-4xl font-bold text-red-400'>
+                                {score.total - score.correct}
+                            </h2>
+                            <p className='text-gray-300'>Incorrect</p>
+                        </div>
 
-                {/* Percentage */}
+                        <div className='rounded-2xl bg-cyan-500/10 border border-cyan-500/20 p-6'>
+                            <h2 className='text-4xl font-bold text-cyan-400'>
+                                {score.total}
+                            </h2>
+                            <p className='text-gray-300'>Total</p>
+                        </div>
 
-                <div className='
-                    flex
-                    justify-center
-                    mb-10
-                '>
+                    </div>
 
-                    <div className='
-                        w-44
-                        h-44
-                        rounded-full
-                        bg-linear-to-r
-                        from-cyan-500
-                        to-purple-600
-                        flex
-                        flex-col
-                        items-center
-                        justify-center
-                        shadow-[0_0_40px_rgba(168,85,247,0.6)]
-                    '>
+                    <hr className='border-white/10 mb-10' />
 
-                        <h2 className='
-                            text-5xl
-                            font-extrabold
-                            text-white
-                        '>
+                    {/* Review */}
+                    <div className='text-left space-y-8'>
 
-                            {percentage}%
-
+                        <h2 className='text-2xl font-bold text-white mb-6 text-center md:text-left'>
+                            Review Answers
                         </h2>
 
-                        <p className='
-                            text-white
-                            mt-2
-                            font-semibold
-                        '>
+                        {questions.map((q, qIdx) => {
 
-                            Your Score
-
-                        </p>
-
-                    </div>
-
-                </div>
-
-                {/* Score Breakdown */}
-
-                <div className='
-                    grid
-                    grid-cols-1
-                    md:grid-cols-3
-                    gap-5
-                    mb-12
-                '>
-
-                    {/* Correct */}
-
-                    <div className='
-                        rounded-2xl
-                        bg-emerald-500/10
-                        border
-                        border-emerald-500/20
-                        p-6
-                        text-center
-                    '>
-
-                        <h3 className='
-                            text-4xl
-                            font-bold
-                            text-emerald-400
-                        '>
-
-                            {score.correct}
-
-                        </h3>
-
-                        <p className='
-                            text-gray-300
-                            mt-2
-                            font-semibold
-                        '>
-
-                            Correct
-
-                        </p>
-
-                    </div>
-
-                    {/* Incorrect */}
-
-                    <div className='
-                        rounded-2xl
-                        bg-red-500/10
-                        border
-                        border-red-500/20
-                        p-6
-                        text-center
-                    '>
-
-                        <h3 className='
-                            text-4xl
-                            font-bold
-                            text-red-400
-                        '>
-
-                            {score.incorrect}
-
-                        </h3>
-
-                        <p className='
-                            text-gray-300
-                            mt-2
-                            font-semibold
-                        '>
-
-                            Incorrect
-
-                        </p>
-
-                    </div>
-
-                    {/* Total */}
-
-                    <div className='
-                        rounded-2xl
-                        bg-cyan-500/10
-                        border
-                        border-cyan-500/20
-                        p-6
-                        text-center
-                    '>
-
-                        <h3 className='
-                            text-4xl
-                            font-bold
-                            text-cyan-400
-                        '>
-
-                            {score.total}
-
-                        </h3>
-
-                        <p className='
-                            text-gray-300
-                            mt-2
-                            font-semibold
-                        '>
-
-                            Total
-
-                        </p>
-
-                    </div>
-
-                </div>
-
-                {/* Answers Review */}
-
-                <div className='mb-10'>
-
-                    <h2 className='
-                        text-3xl
-                        font-bold
-                        text-white
-                        mb-8
-                    '>
-
-                        Review Your Answers
-
-                    </h2>
-
-                    <div className='space-y-6'>
-
-                        {questions.map((question, index) => {
-
-                            const isCorrect =
-                                userAnswers[index] ===
-                                question.correctAnswer;
-
-                            const userAnswerText =
-                                userAnswers[index] !== null &&
-                                    userAnswers[index] !== undefined
-                                    ? question.options[
-                                    userAnswers[index]
-                                    ]
-                                    : 'Not Answered';
-
-                            const correctAnswerText =
-                                question.options[
-                                question.correctAnswer
-                                ];
+                            const isCorrect = userAnswers[qIdx] === q.correctAnswer;
 
                             return (
 
                                 <div
-                                    key={index}
-                                    className={`
-                                        rounded-2xl
-                                        border
-                                        p-6
-                                        backdrop-blur-lg
-                                        transition-all
-                                        duration-300
-
-                                        ${isCorrect
-                                            ? `
-                                                    bg-emerald-500/10
-                                                    border-emerald-500/20
-                                                  `
-                                            : `
-                                                    bg-red-500/10
-                                                    border-red-500/20
-                                                  `
-                                        }
-                                    `}
+                                    key={qIdx}
+                                    className={`rounded-2xl border p-5 md:p-6 bg-white/5 space-y-4 ${isCorrect
+                                        ? 'border-emerald-500/30'
+                                        : 'border-red-500/30'
+                                        }`}
                                 >
 
-                                    {/* Question */}
+                                    <div className='flex flex-col md:flex-row md:items-start justify-between gap-3'>
 
-                                    <h3 className='
-                                        text-xl
-                                        font-bold
-                                        text-white
-                                        mb-4
-                                    '>
-
-                                        Q{index + 1}.{' '}
-                                        {question.question}
-
-                                    </h3>
-
-                                    {/* User Answer */}
-
-                                    <p className='
-                                        text-gray-300
-                                        mb-2
-                                    '>
-
-                                        <span className='
-                                            font-bold
-                                            text-cyan-400
-                                        '>
-
-                                            Your Answer:
-
-                                        </span>
-
-                                        {' '}
-                                        {userAnswerText}
-
-                                    </p>
-
-                                    {/* Correct Answer */}
-
-                                    {!isCorrect && (
-
-                                        <p className='
-                                            text-gray-300
-                                            mb-2
-                                        '>
-
-                                            <span className='
-                                                font-bold
-                                                text-emerald-400
-                                            '>
-
-                                                Correct Answer:
-
+                                        <h3 className='text-xl font-bold text-white leading-relaxed'>
+                                            <span className='text-gray-400 font-medium mr-2'>
+                                                {qIdx + 1}.
                                             </span>
+                                            {q.question}
+                                        </h3>
 
-                                            {' '}
-                                            {correctAnswerText}
-
-                                        </p>
-
-                                    )}
-
-                                    {/* Status */}
-
-                                    <div className='mt-4'>
-
-                                        <span className={`
-                                            px-4
-                                            py-2
-                                            rounded-full
-                                            text-sm
-                                            font-bold
-
-                                            ${isCorrect
-                                                ? `
-                                                        bg-emerald-500/20
-                                                        text-emerald-400
-                                                      `
-                                                : `
-                                                        bg-red-500/20
-                                                        text-red-400
-                                                      `
-                                            }
-                                        `}>
-
-                                            {
-                                                isCorrect
-                                                    ? '✓ Correct'
-                                                    : '✗ Incorrect'
-                                            }
-
+                                        <span className={`self-start px-3 py-1 rounded-full text-xs font-bold uppercase ${isCorrect
+                                            ? 'bg-emerald-500/20 text-emerald-400'
+                                            : 'bg-red-500/20 text-red-400'
+                                            }`}>
+                                            {isCorrect ? 'Correct' : 'Incorrect'}
                                         </span>
+                                    </div>
 
+                                    <div className='grid grid-cols-1 gap-3 pt-2'>
+
+                                        {q.options.map((opt, optIdx) => {
+
+                                            const isSelected = userAnswers[qIdx] === optIdx;
+                                            const isTargetAnswer = q.correctAnswer === optIdx;
+
+                                            let optionStyles = "bg-white/5 border-white/10 text-gray-300";
+
+                                            if (isTargetAnswer) {
+                                                optionStyles = "bg-emerald-500/20 border-emerald-500/50 text-emerald-300 font-bold";
+                                            } else if (isSelected && !isTargetAnswer) {
+                                                optionStyles = "bg-red-500/20 border-red-500/50 text-red-300 font-bold";
+                                            }
+
+                                            return (
+
+                                                <div
+                                                    key={optIdx}
+                                                    className={`flex items-center justify-between border px-5 py-3.5 rounded-xl text-base ${optionStyles}`}
+                                                >
+
+                                                    <span>{opt}</span>
+
+                                                    {isTargetAnswer && (
+                                                        <span className='text-xs bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-md font-semibold'>
+                                                            Correct Answer
+                                                        </span>
+                                                    )}
+
+                                                    {isSelected && !isTargetAnswer && (
+                                                        <span className='text-xs bg-red-500/20 text-red-400 border border-red-500/30 px-2 py-0.5 rounded-md font-semibold'>
+                                                            Your Choice
+                                                        </span>
+                                                    )}
+
+                                                </div>
+                                            );
+                                        })}
                                     </div>
 
                                 </div>
                             );
                         })}
-
                     </div>
-
+                    <div className='mt-8 w-full'>
+                        <Link
+                            to='/dashboard'
+                            
+                            className='px-17 mt-8 w-full py-3.5 rounded-2xl font-bold bg-white/10 hover:bg-white/20 border border-white/10 transition-all text-center text-white'
+                        >
+                            Back to Dashboard
+                        </Link>
+                    </div>
                 </div>
-
-                {/* Actions */}
-
-                <div className='
-                    flex
-                    flex-col
-                    md:flex-row
-                    gap-5
-                '>
-
-                    {/* Retake */}
-
-                    <button
-                        onClick={handleRetake}
-                        className='
-                            flex-1
-                            py-4
-                            rounded-2xl
-                            font-bold
-                            text-lg
-                            text-white
-                            bg-gradient-to-r from-[#101e4a] to-[#07366b] border border-blue-500/20 hover:border-blue-400/40 transition-all duration-300 hover:shadow-[0_0_25px_rgba(59,130,246,0.2)]
-                        '
-                    >
-
-                        Retake Quiz
-
-                    </button>
-
-                    {/* Dashboard */}
-
-                    <button
-                        onClick={handleDashboard}
-                        className='
-                            flex-1
-                            py-4
-                            rounded-2xl
-                            font-bold
-                            text-lg
-                            text-white
-                            bg-gradient-to-r from-[#0d283d] to-[#063a47] border border-teal-500/20 hover:border-teal-400/40 transition-all duration-300 hover:shadow-[0_0_25px_rgba(20,184,166,0.2)] active:scale-[0.98]
-                        '
-                    >
-
-                        Back to Dashboard
-
-                    </button>
-
-                </div>
-
             </div>
-
-        </div>
     );
 };
 

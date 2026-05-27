@@ -332,7 +332,9 @@ const AdminDashBoard = () => {
                             <button
                                 onClick={handleCreateRoom}
                                 disabled={loading}
-                                className='w-full py-5 mx-auto rounded-2xl font-bold text-xl text-white bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-600 hover:scale-[1.02] active:scale-95 transition-all duration-300 shadow-lg hover:shadow-[0_0_40px_rgba(168,85,247,0.8)] disabled:opacity-50'
+                                className='py-5  text-xl  duration-300 hover:shadow-[0_0_25px_rgba(59,130,246,0.2)] active:scale-[0.98] disabled:opacity-50
+                        
+                        px-17  w-full  rounded-2xl font-bold bg-white/10 hover:bg-white/20 border border-white/10 transition-all text-center text-white'
                             >
                                 {loading ? 'Creating Room...' : 'Create Quiz Room'}
                             </button>
@@ -442,7 +444,7 @@ const AdminDashBoard = () => {
                                 </div>
                             ) : roomResponses && roomResponses.length > 0 ? (
                                 <div className='space-y-3'>
-                                    <div className='text-xs text-emerald-400 font-bold tracking-wide flex items-center gap-1.5 mb-2'>
+                                    <div className='text-xs text-emerald-400 font-bold tracking-wide flex items-center gap-1.5 mb-2 pr-1 scrollbar-thin scrollbar-thumb-white/10 overflow-x-hidden'>
                                         <span>🏆</span> Leaderboard Standings (Sorted by Percentage Accuracy):
                                     </div>
 
