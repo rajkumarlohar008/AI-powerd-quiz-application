@@ -47,7 +47,7 @@ const AiQuizGenerator = () => {
                 setTimeLeft((prev) => {
                     if (prev <= 1) {
                         handleNext();
-                        return 30;
+                        return 60;
                     }
                     return prev - 1;
                 });
@@ -89,6 +89,7 @@ const AiQuizGenerator = () => {
             );
 
             setQuiz(res.data);
+            setTimeLeft(60);
             setUserAnswers(new Array(res.data.questions.length).fill(null));
             setCurrentQuestion(0);
 
@@ -115,7 +116,7 @@ const AiQuizGenerator = () => {
         if (!quiz) return;
         if (currentQuestion < quiz.questions.length - 1) {
             setCurrentQuestion(currentQuestion + 1);
-            setTimeLeft(30);
+            setTimeLeft(60);
         } else {
             await handleSubmitAnswers();
         }
@@ -125,7 +126,7 @@ const AiQuizGenerator = () => {
     const handleBack = () => {
         if (currentQuestion > 0) {
             setCurrentQuestion(currentQuestion - 1);
-            setTimeLeft(30);
+            setTimeLeft(60);
         }
     };
 
@@ -294,6 +295,7 @@ const AiQuizGenerator = () => {
 
     // QUIZ SCREEN
     if (quiz && !showSummary && current) {
+
         return (
             <QuizScreen 
                 currentQuestion={currentQuestion}

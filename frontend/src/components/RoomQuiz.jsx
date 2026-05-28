@@ -56,6 +56,7 @@ const RoomQuiz = () => {
             });
 
             setRoom(res.data);
+            setTimeLeft(30);
             setUserAnswers(new Array(res.data.questions.length).fill(null));
 
         } catch (err) {

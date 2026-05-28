@@ -37,7 +37,7 @@ const QuizScreen = ({
                         {/* Optional Title (For Room Quiz) */}
                         {title && (
                             <div className='text-purple-400 font-semibold  text-center'>
-                                {questionData.topic || title}
+                                {questionData.topic || title }
                             </div>
                         )}
 

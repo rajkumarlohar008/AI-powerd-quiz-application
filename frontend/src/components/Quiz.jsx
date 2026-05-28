@@ -142,6 +142,7 @@ const Quiz = () => {
             isBackDisabled={currentQuestion === 0}
             nextText={currentQuestion === questions.length - 1 ? (isFinishDisabled ? 'Submitting...' : 'Finish') : 'Next'}
             timeLeft={timeLeft}
+            title={'Predefined Quiz'}
         />
     );
 };
