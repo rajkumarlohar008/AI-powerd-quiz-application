@@ -23,6 +23,7 @@ const AiQuizGenerator = () => {
     const [currentQuestion, setCurrentQuestion] = useState(0);
     const navigate = useNavigate();
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [timeLeft, setTimeLeft] = useState(30);
 
     const handleNextClick = async () => {
         // Last question
@@ -37,6 +38,24 @@ const AiQuizGenerator = () => {
             handleNext();
         }
     };
+
+    // Timer
+        useEffect(() => {
+            if (loading ) return;
+    
+            const timer = setInterval(() => {
+                setTimeLeft((prev) => {
+                    if (prev <= 1) {
+                        handleNext();
+                        return 30;
+                    }
+                    return prev - 1;
+                });
+            }, 1000);
+    
+            return () => clearInterval(timer);
+        }, [currentQuestion, loading]);
+    
 
     // Generate AI Quiz
     const handleGenerate = async (e) => {
@@ -96,6 +115,7 @@ const AiQuizGenerator = () => {
         if (!quiz) return;
         if (currentQuestion < quiz.questions.length - 1) {
             setCurrentQuestion(currentQuestion + 1);
+            setTimeLeft(30);
         } else {
             await handleSubmitAnswers();
         }
@@ -105,6 +125,7 @@ const AiQuizGenerator = () => {
     const handleBack = () => {
         if (currentQuestion > 0) {
             setCurrentQuestion(currentQuestion - 1);
+            setTimeLeft(30);
         }
     };
 
@@ -285,6 +306,8 @@ const AiQuizGenerator = () => {
                 isNextDisabled={userAnswers[currentQuestion] === null || isSubmitting}
                 isBackDisabled={currentQuestion === 0}
                 nextText={currentQuestion === quiz.questions.length - 1 ? (isSubmitting ? 'Submitting...' : 'Finish') : 'Next'}
+                timeLeft={timeLeft}
+                title={'hello'}
             />
         );
     }

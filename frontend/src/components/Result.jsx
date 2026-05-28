@@ -4,7 +4,8 @@ import axios from 'axios';
 import API_URL from '../config';
 import Nav from './Nav';
 
-const Result = ({ questions, userAnswers }) => {
+// Added quizType as an optional prop with a default value of 'PREDEFINED'
+const Result = ({ questions, userAnswers, quizType = 'PREDEFINED' }) => {
 
     const navigate = useNavigate();
 
@@ -49,6 +50,12 @@ const Result = ({ questions, userAnswers }) => {
     // Save Quiz Attempt
     useEffect(() => {
 
+        // 🟢 FIX: If this component is running inside a Room Quiz,
+        // do not run this side-effect. The parent component handles it!
+        if (quizType === 'General Room Quiz') {
+            return;
+        }
+
         if (
             savedRef.current ||
             !questions?.length
@@ -68,7 +75,7 @@ const Result = ({ questions, userAnswers }) => {
 
             userId: user.id,
 
-            quizType: 'PREDEFINED',
+            quizType: quizType, // Use the dynamic prop here
 
             correct: score.correct,
 
@@ -108,7 +115,8 @@ const Result = ({ questions, userAnswers }) => {
         userAnswers,
         score.correct,
         score.total,
-        percentage
+        percentage,
+        quizType // added to dependencies
     ]);
 
     // Retake Quiz
@@ -242,7 +250,7 @@ const Result = ({ questions, userAnswers }) => {
                                                     {isTargetAnswer && (
                                                         <span className='text-xs bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-md font-semibold'>
                                                             Correct Answer
-                                                        </span>
+                                                        </span >
                                                     )}
 
                                                     {isSelected && !isTargetAnswer && (

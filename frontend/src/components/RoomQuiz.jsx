@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import API_URL from '../config';
 import { Link } from 'react-router-dom';
@@ -18,9 +18,26 @@ const RoomQuiz = () => {
     const [userAnswers, setUserAnswers] = useState([]);
     const [showResult, setShowResult] = useState(false);
     const [scoreData, setScoreData] = useState(null);
+    const [timeLeft, setTimeLeft] = useState(30);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    
 
     const user = JSON.parse(localStorage.getItem('user')) || {};
     const token = localStorage.getItem('token') || '';
+
+    const handleNextClick = async () => {
+        // Last question
+        if (currentQuestion === room.questions.length - 1) {
+            setIsSubmitting(true);
+            try {
+                await handleNext();
+            } finally {
+                setIsSubmitting(false);
+            }
+        } else {
+            handleNext();
+        }
+    };
 
     // Join Room
     const handleJoinRoom = async () => {
@@ -55,11 +72,32 @@ const RoomQuiz = () => {
         setUserAnswers(updated);
     };
 
+    //timer
+    useEffect(() => {
+            if (loading || showResult) return;
+            const timer = setInterval(() => {
+                setTimeLeft((prev) => {
+                    if (prev <= 1) {
+                        handleNext();
+                        return 30;
+                    }
+                    return prev - 1;
+                });
+            }, 1000);
+    
+            return () => clearInterval(timer);
+        }, [currentQuestion, loading, showResult]);
+
     // Next Question
     const handleNext = async () => {
+        if (currentQuestion === room.questions.length - 1 && isSubmitting) {
+            return;
+        }
         if (currentQuestion < room.questions.length - 1) {
             setCurrentQuestion(currentQuestion + 1);
+            setTimeLeft(30);
         } else {
+            // Note: We run finishQuiz first to ensure payloads send safely before displaying results
             await finishQuiz();
         }
     };
@@ -68,6 +106,7 @@ const RoomQuiz = () => {
     const handleBack = () => {
         if (currentQuestion > 0) {
             setCurrentQuestion(currentQuestion - 1);
+            setTimeLeft(30);
         }
     };
 
@@ -110,15 +149,18 @@ const RoomQuiz = () => {
         };
 
         try {
+            // 1. Submit custom room performance tracking payload
             await axios.post(`${API_URL}/api/room/quiz-attempt`, roomPayload, {
                 params: { roomId },
                 headers: { Authorization: `Bearer ${token}` }
             });
 
+            // 2. Submit global attempt tracking explicitly with historyPayload
             await axios.post(`${API_URL}/api/quiz-attempts`, historyPayload, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
+            // 3. Set data locally to display screens cleanly
             setScoreData({ correct, total, percentage });
             setShowResult(true);
         } catch (err) {
@@ -129,7 +171,7 @@ const RoomQuiz = () => {
 
     // RESULT SCREEN
     if (showResult && scoreData) {
-        return <Result questions={room.questions} userAnswers={userAnswers} />;
+        return <Result questions={room.questions} userAnswers={userAnswers} quizType="General Room Quiz"/>;
     }
 
     // QUIZ SCREEN
@@ -142,12 +184,13 @@ const RoomQuiz = () => {
                 questionData={question}
                 selectedAnswer={userAnswers[currentQuestion]}
                 onSelectAnswer={handleSelectAnswer}
-                onNext={handleNext}
+                onNext={handleNextClick}
                 onBack={handleBack}
-                isNextDisabled={userAnswers[currentQuestion] === null}
+                isNextDisabled={userAnswers[currentQuestion] === null || (currentQuestion === room.questions.length - 1 && isSubmitting) }
                 isBackDisabled={currentQuestion === 0}
-                nextText={currentQuestion === room.questions.length - 1 ? 'Finish' : 'Next'}
-                title={room.title}
+                nextText={currentQuestion === room.questions.length - 1 ? (isSubmitting ? 'Submitting...' : 'Finish') : 'Next'}
+                title={room.roomName}
+                timeLeft={timeLeft}
             />
         );
     }
