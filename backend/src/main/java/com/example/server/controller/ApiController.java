@@ -148,7 +148,7 @@ public class ApiController {
         return ResponseEntity.ok(savedRoom);
     }
 
-    @GetMapping("/room/id")
+    @GetMapping("/getRoom/id")
     public ResponseEntity<?> getRoomById(@RequestParam("roomId") String id){
         if (id == null || id.isBlank()) {
             return ResponseEntity.badRequest().body(Map.of("message", "room id is required."));
@@ -169,7 +169,7 @@ public class ApiController {
     }
 
     @Transactional
-    @PostMapping("/room/quiz-attempt") // Don't forget your mapping annotation if it's missing!
+    @PostMapping("/quizRoom/quiz-attempt") // Don't forget your mapping annotation if it's missing!
     public ResponseEntity<?> saveRoomQuizAttempt(@RequestParam("roomId") String id, @RequestBody RoomResponseRequest request) {
         if (request.getUserId() == null || request.getUserId().isBlank()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "User ID is required."));
@@ -207,15 +207,20 @@ public class ApiController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "Room not found."));
         }
 
-        if(roomOpt.get().getUserResponse() != null){
-            List<RoomResponseRequest> sortedResponses = roomOpt.get().getUserResponse()
+        Room room = roomOpt.get();
+        if (room.getUserResponse() != null) {
+            List<RoomResponseRequest> sortedResponses = room.getUserResponse()
                     .stream()
-                    // Comparator.comparingDouble sorts ascending; .reversed() makes it descending
-                    .sorted(Comparator.comparingDouble(RoomResponseRequest::getPercentage).reversed())
-                    .toList(); // Use .collect(Collectors.toList()) if you need a mutable list
+                    .sorted(
+                            // 1. Sort by percentage descending
+                            Comparator.comparingDouble(RoomResponseRequest::getPercentage).reversed()
+                                    // 2. If percentages are equal, sort by timeTaken ascending (nulls placed at the end)
+                                    .thenComparing(RoomResponseRequest::getTimeTaken, Comparator.nullsLast(Comparator.naturalOrder()))
+                    )
+                    .toList();
 
             return ResponseEntity.ok(sortedResponses);
-        }else{
+        } else {
             return ResponseEntity.ok(new ArrayList<RoomResponseRequest>());
         }
     }

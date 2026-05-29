@@ -57,6 +57,7 @@ public class SecurityConfig {
                                 "/api/helth"
                         ).permitAll()
 
+
                         .requestMatchers("/api/room/**")
                         .hasRole("ADMIN")
 

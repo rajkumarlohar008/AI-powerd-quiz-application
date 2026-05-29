@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import API_URL from '../config';
 import { Link } from 'react-router-dom';
 import { Home, ShieldCheck, ChevronDown, X } from 'lucide-react';
 import Nav from './Nav';
 import Result from './Result';
-import QuizScreen from './QuizScreen'; // <-- Imported
+import QuizScreen from './QuizScreen'; 
 
 const RoomQuiz = () => {
 
@@ -19,20 +19,26 @@ const RoomQuiz = () => {
     const [showResult, setShowResult] = useState(false);
     const [scoreData, setScoreData] = useState(null);
     const [timeLeft, setTimeLeft] = useState(30);
+    const [timeTaken, setTimeTaken] = useState(0);
     const [isSubmitting, setIsSubmitting] = useState(false);
     
+    // Use a ref to keep track of submission state instantly for the timer interval closure
+    const isSubmittingRef = useRef(false);
 
     const user = JSON.parse(localStorage.getItem('user')) || {};
     const token = localStorage.getItem('token') || '';
 
     const handleNextClick = async () => {
+        if (!room) return;
         // Last question
         if (currentQuestion === room.questions.length - 1) {
             setIsSubmitting(true);
+            isSubmittingRef.current = true;
             try {
                 await handleNext();
             } finally {
                 setIsSubmitting(false);
+                isSubmittingRef.current = false;
             }
         } else {
             handleNext();
@@ -50,13 +56,15 @@ const RoomQuiz = () => {
         setError('');
 
         try {
-            const res = await axios.get(`${API_URL}/api/room/id`, {
+            const res = await axios.get(`${API_URL}/api/getRoom/id`, {
                 params: { roomId },
                 headers: { Authorization: `Bearer ${token}` }
             });
 
             setRoom(res.data);
             setTimeLeft(30);
+            setCurrentQuestion(0);
+            setTimeTaken(0);
             setUserAnswers(new Array(res.data.questions.length).fill(null));
 
         } catch (err) {
@@ -73,35 +81,42 @@ const RoomQuiz = () => {
         setUserAnswers(updated);
     };
 
-    //timer
-    useEffect(() => {
-            if (loading || showResult) return;
-            const timer = setInterval(() => {
-                setTimeLeft((prev) => {
-                    if (prev <= 1) {
-                        handleNext();
-                        return 30;
-                    }
-                    return prev - 1;
-                });
-            }, 1000);
-    
-            return () => clearInterval(timer);
-        }, [currentQuestion, loading, showResult]);
-
-    // Next Question
+    // Next Question Logic
     const handleNext = async () => {
-        if (currentQuestion === room.questions.length - 1 && isSubmitting) {
-            return;
-        }
+        if (!room) return;
+
+        // Calculate time spent on the current question
+        const secondsSpentOnThisQuestion = 30 - timeLeft;
+        setTimeTaken(prevTime => prevTime + secondsSpentOnThisQuestion);
+
         if (currentQuestion < room.questions.length - 1) {
-            setCurrentQuestion(currentQuestion + 1);
+            setCurrentQuestion(prev => prev + 1);
             setTimeLeft(30);
         } else {
-            // Note: We run finishQuiz first to ensure payloads send safely before displaying results
+            // Last question completed, proceed to finish
             await finishQuiz();
         }
     };
+
+    // Timer handling with clean closures
+    useEffect(() => {
+        if (loading || showResult || !room || isSubmitting) return;
+
+        const timer = setInterval(() => {
+            // Guard against running timer updates while a submission api request is active
+            if (isSubmittingRef.current) return;
+
+            setTimeLeft((prev) => {
+                if (prev <= 1) {
+                    handleNext();
+                    return 30;
+                }
+                return prev - 1;
+            });
+        }, 1000);
+
+        return () => clearInterval(timer);
+    }, [currentQuestion, loading, showResult, room, timeLeft, isSubmitting]);
 
     // Back Question
     const handleBack = () => {
@@ -132,12 +147,16 @@ const RoomQuiz = () => {
         const total = room.questions.length;
         const percentage = Math.round((correct / total) * 100);
 
+        // Calculate final total time snapshot safely inside the updater context
+        const finalTimeTaken = timeTaken + (30 - timeLeft);
+
         const roomPayload = {
             userId: user.id,
             userName: user.name,
             correct,
             total,
             percentage,
+            timeTaken: finalTimeTaken
         };
 
         const historyPayload = {
@@ -151,7 +170,7 @@ const RoomQuiz = () => {
 
         try {
             // 1. Submit custom room performance tracking payload
-            await axios.post(`${API_URL}/api/room/quiz-attempt`, roomPayload, {
+            await axios.post(`${API_URL}/api/quizRoom/quiz-attempt`, roomPayload, {
                 params: { roomId },
                 headers: { Authorization: `Bearer ${token}` }
             });

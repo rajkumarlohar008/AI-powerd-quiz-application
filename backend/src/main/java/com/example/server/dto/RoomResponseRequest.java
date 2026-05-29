@@ -7,14 +7,24 @@ public class RoomResponseRequest {
     private int correct;
     private int total;
     private double percentage;
+    private int timeTaken;
 
-    public RoomResponseRequest(String userId, String userName, String quizType, int correct, int total, double percentage) {
+    public int getTimeTaken() {
+        return timeTaken;
+    }
+
+    public void setTimeTaken(int timeTaken) {
+        this.timeTaken = timeTaken;
+    }
+
+    public RoomResponseRequest(String userId, String userName, String quizType, int correct, int total, double percentage, int timeTaken) {
         this.userId = userId;
         this.userName = userName;
         this.quizType = quizType;
         this.correct = correct;
         this.total = total;
         this.percentage = percentage;
+        this.timeTaken = timeTaken;
     }
 
     public RoomResponseRequest() {
