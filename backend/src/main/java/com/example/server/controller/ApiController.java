@@ -27,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.swing.text.html.Option;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.*;
@@ -267,6 +268,57 @@ public class ApiController {
         }
     }
 
+    @DeleteMapping("/room/response/delete")
+    public ResponseEntity<?> deleteRoomResponse(
+            @RequestParam("index") int index,
+            @RequestParam("id") String id) {
+
+        Optional<Room> roomOpt = roomRepository.findById(id);
+
+        if (roomOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("message", "Room not found."));
+        }
+
+        Room room = roomOpt.get();
+
+        if (room.getUserResponse() == null || room.getUserResponse().isEmpty()) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("message", "No responses found."));
+        }
+
+        List<RoomResponseRequest> sortedResponses = new ArrayList<>(
+                room.getUserResponse()
+                        .stream()
+                        .sorted(
+                                Comparator.comparingDouble(RoomResponseRequest::getPercentage)
+                                        .reversed()
+                                        .thenComparing(
+                                                RoomResponseRequest::getTimeTaken,
+                                                Comparator.nullsLast(Comparator.naturalOrder())
+                                        )
+                        )
+                        .toList()
+        );
+
+        if (index < 0 || index >= sortedResponses.size()) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("message", "Invalid index."));
+        }
+
+        sortedResponses.remove(index);
+
+        // Replace old list with new list
+        room.setUserResponse(sortedResponses);
+
+        // Save updated room
+        roomRepository.save(room);
+
+        return ResponseEntity.ok(Map.of(
+                "message", "Deleted successfully",
+                "remainingResponses", sortedResponses
+        ));
+    }
     @PostMapping(value = "/ai/generate-quiz", consumes = {"multipart/form-data"})
     public ResponseEntity<?> generateAiQuiz(@RequestPart(value = "text", required = false) String text,
                                             @RequestPart(value = "file", required = false) MultipartFile file) {
