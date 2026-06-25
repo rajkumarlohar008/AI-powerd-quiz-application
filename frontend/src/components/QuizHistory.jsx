@@ -226,6 +226,16 @@ const QuizHistory = () => {
                                                 q.userAnswer || <span className='italic text-gray-500'>No answer provided</span>
                                             )}
                                         </div>
+                                        {
+                                            q.explanation ? <div className={`p-4 rounded-xl border text-sm max-w-2xl text-center 'border-blue-500/20 bg-blue-500/20 text-blue-300 bg'
+                                                }`}>
+                                                <span className={`block text-xs font-bold uppercase tracking-wider mb-1 text-blue-400 text-left
+                                                    `}>
+                                                    Explanation : 
+                                                </span>
+                                                {q.explanation}
+                                            </div> : ''
+                                        }
                                     </div>
                                 </div>
                             ))
