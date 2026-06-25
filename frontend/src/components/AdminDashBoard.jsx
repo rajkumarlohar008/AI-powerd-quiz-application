@@ -25,7 +25,7 @@ const AdminDashBoard = () => {
     const [roomResponses, setRoomResponses] = useState([]);
     const [loadingResponses, setLoadingResponses] = useState(false);
     const [deletingId, setDeletingId] = useState(null);
-    
+
 
     // Get email safely inside or dynamically
     const user = JSON.parse(localStorage.getItem('user')) || {};
@@ -47,7 +47,7 @@ const AdminDashBoard = () => {
     const handleDeleteResponse = async (idx) => {
         try {
             await axios.delete(`${API_URL}/api/room/response/delete`, {
-                params: { index: idx ,id:selectedRoom.id||selectedRoom._id},
+                params: { index: idx, id: selectedRoom.id || selectedRoom._id },
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
@@ -203,50 +203,95 @@ const AdminDashBoard = () => {
 
     // Create Room Submit
     const handleCreateRoom = async () => {
+
         if (!roomTitle.trim()) {
             setMessage('Please enter a room title.');
             return;
+        }
+
+        // Validate all questions
+        for (let i = 0; i < questions.length; i++) {
+
+            const question = questions[i];
+
+            // Question text required
+            if (!question.question.trim()) {
+                setMessage(`Please fill Question ${i + 1}.`);
+                return;
+            }
+
+            // All options required
+            for (let j = 0; j < question.options.length; j++) {
+
+                if (!question.options[j].trim()) {
+                    setMessage(
+                        `Please fill Option ${j + 1} of Question ${i + 1}.`
+                    );
+                    return;
+                }
+            }
         }
 
         setLoading(true);
         setMessage('');
 
         try {
+
             const payload = {
                 roomName: roomTitle,
                 questions,
             };
 
-            const res = await axios.post(`${API_URL}/api/room`, payload, {
-                params: { email: userEmail },
-                headers: {
-                    Authorization: `Bearer ${token}`
+            const res = await axios.post(
+                `${API_URL}/api/room`,
+                payload,
+                {
+                    params: { email: userEmail },
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
                 }
-            });
+            );
 
             setCreatedRoom(res.data);
             setMessage('Quiz room created successfully!');
 
             setRoomTitle('');
-            setQuestions([{ question: '', options: ['', '', '', ''], correctAnswer: 0 }]);
+            setQuestions([
+                {
+                    question: '',
+                    options: ['', '', '', ''],
+                    correctAnswer: 0
+                }
+            ]);
 
             if (userEmail) {
-                const refreshedRooms = await axios.get(`${API_URL}/api/room/all`, {
-                    params: { email: userEmail },
-                    headers: {
-                        Authorization: `Bearer ${token}`
+                const refreshedRooms = await axios.get(
+                    `${API_URL}/api/room/all`,
+                    {
+                        params: { email: userEmail },
+                        headers: {
+                            Authorization: `Bearer ${token}`
+                        }
                     }
-                });
+                );
+
                 setRooms(refreshedRooms.data || []);
             }
 
         } catch (err) {
-            setMessage(err.response?.data?.message || 'Failed to create room');
+
+            setMessage(
+                err.response?.data?.message ||
+                'Failed to create room'
+            );
+
         } finally {
+
             setLoading(false);
+
         }
     };
-
     return (
         <div className='relative min-h-screen w-full overflow-x-hidden bg-gradient-to-br from-black via-slate-900 to-purple-950 px-4 py-10 text-white'>
             {/* Glow Background Rings */}
@@ -323,6 +368,7 @@ const AdminDashBoard = () => {
                                         <label className='block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5'>Question Statement</label>
                                         <input
                                             type="text"
+                                            required
                                             placeholder="Enter the quiz question text..."
                                             value={q.question}
                                             onChange={(e) => updateQuestion(qIdx, 'question', e.target.value)}
@@ -337,6 +383,7 @@ const AdminDashBoard = () => {
                                                 <label className='text-[11px] font-bold text-gray-500 uppercase tracking-wider block'>Option {oIdx + 1}</label>
                                                 <input
                                                     type="text"
+                                                    required
                                                     placeholder={`Option value ${oIdx + 1}`}
                                                     value={opt}
                                                     onChange={(e) => updateOption(qIdx, oIdx, e.target.value)}
@@ -517,14 +564,14 @@ const AdminDashBoard = () => {
                                                     </div>
                                                 </div>
                                                 <button
-                                                        type="button"
-                                                        className='w-full bg-red-500/40 text-xs px-5 py-2 rounded-xl border-red-500/20 font-semibold hover:bg-red-500 active:scale-95 transition-all text-white relative z-20'
-                                                        onClick={(e) => handleDeleteClick(e, idx)}
-                                                        disabled={deletingId === (idx)}
-                                                    >
-                                                        
-                                                        {deletingId === (idx) ? 'Deleting...' : 'Delete'}
-                                                    </button>
+                                                    type="button"
+                                                    className='w-full bg-red-500/40 text-xs px-5 py-2 rounded-xl border-red-500/20 font-semibold hover:bg-red-500 active:scale-95 transition-all text-white relative z-20'
+                                                    onClick={(e) => handleDeleteClick(e, idx)}
+                                                    disabled={deletingId === (idx)}
+                                                >
+
+                                                    {deletingId === (idx) ? 'Deleting...' : 'Delete'}
+                                                </button>
                                             </div>
                                         ))}
                                 </div>

@@ -1,15 +1,15 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
 import API_URL from '../config';
 import Nav from './Nav';
 
 const Register = () => {
-  const [formData, setFormData] = useState({
+    const [role, setRole] = useState("");
+    const [formData, setFormData] = useState({
         name: '',
         email: '',
         password: '',
-        role:'user'
     });
 
     const [message, setMessage] = useState('');
@@ -18,14 +18,12 @@ const Register = () => {
 
     const navigate = useNavigate();
 
-    const handleChange = (e) => {
-
-        setFormData({
-            ...formData,
-            [e.target.name]: e.target.value
-        });
-
-    };
+    useEffect(() => {
+        setFormData(prev => ({
+            ...prev,
+            role
+        }));
+    }, [role]);
 
     const handleSubmit = async (e) => {
 
@@ -75,7 +73,7 @@ const Register = () => {
             to-purple-950
             px-4
         '>
-            
+
 
             {/* Glow Effects */}
 
@@ -271,6 +269,45 @@ const Register = () => {
 
                     </div>
 
+                    <div>
+                        <label className='
+                            block
+                            text-sm
+                            font-semibold
+                            text-gray-300
+                            mb-2
+                        '>
+
+                            Role
+
+                        </label>
+                        <div className='flex justify-around'>
+                            <label className={` font-bold text-md px-14 md:px-18 py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/10 transition-all  ${role === "user" ? "text-amber-500" : 'text-gray-300'}`}>
+                                <input
+                                    className='hidden cursor-pointer'
+                                    type="radio"
+                                    name="role"
+                                    value="user"
+                                    checked={role === "user"}
+                                    onChange={(e) => setRole(e.target.value)}
+                                />
+                                User
+                            </label>
+
+                            <label className={` font-bold text-md px-14 md:px-18 py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/10 transition-all  ${role === "admin" ? "text-amber-500" : 'text-gray-300'}`}>
+                                <input
+                                    className='hidden cursor-pointer'
+                                    type="radio"
+                                    name="role"
+                                    value="admin"
+                                    checked={role === "admin"}
+                                    onChange={(e) => setRole(e.target.value)}
+                                />
+                                Admin
+                            </label>
+                        </div>
+                    </div>
+
                     {/* Register Button */}
 
                     <button
@@ -359,28 +396,6 @@ const Register = () => {
                     >
 
                         Login here
-
-                    </Link>
-
-                </p>
-                <p className='
-                    text-center
-                    text-gray-300
-                    mt-6
-                '>
-
-                    Have to register as an Admin?{' '}
-
-                    <Link
-                        to='/register-admin'
-                        className='
-                            text-cyan-400
-                            hover:text-cyan-300
-                            font-semibold
-                        '
-                    >
-
-                        Register here
 
                     </Link>
 

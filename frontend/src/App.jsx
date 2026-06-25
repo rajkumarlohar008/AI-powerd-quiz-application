@@ -7,7 +7,6 @@ import Dashboard from './components/Dashboard';
 import Quiz from './components/Quiz';
 import AiQuizGenerator from './components/AiQuizGenerator';
 import QuizHistory from './components/QuizHistory';
-import RegisterAsAnAdmin from './components/RegisterAsAnAdmin';
 import AdminDashBoard from './components/AdminDashBoard';
 import RoomQuiz from './components/RoomQuiz';
 
@@ -24,7 +23,6 @@ const AppContent = () => {
         <Route path='/' element={<HomePage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/register-admin" element={<RegisterAsAnAdmin />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/quiz" element={<Quiz />}/>
         <Route path="/ai-quiz" element={<AiQuizGenerator />}/>
