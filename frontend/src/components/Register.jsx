@@ -290,8 +290,8 @@ const Register = () => {
                             Role
 
                         </label>
-                        <div className='flex justify-around'>
-                            <label className={` font-bold text-md px-14 md:px-18 py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/10 transition-all  ${role === "user" ? "text-amber-500" : 'text-gray-300'}`}>
+                        <div className='flex gap-1 justify-around'>
+                            <label className={` font-bold text-md  w-1/2 text-center py-2 rounded-l-xl bg-white/10 hover:bg-white/20 border border-white/10 transition-all  ${role === "user" ? "text-amber-500" : 'text-gray-300'}`}>
                                 <input
                                     className='hidden cursor-pointer'
                                     type="radio"
@@ -303,7 +303,7 @@ const Register = () => {
                                 User
                             </label>
 
-                            <label className={` font-bold text-md px-14 md:px-18 py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/10 transition-all  ${role === "admin" ? "text-amber-500" : 'text-gray-300'}`}>
+                            <label className={` font-bold text-md w-1/2 text-center py-2 rounded-r-xl bg-white/10 hover:bg-white/20 border border-white/10 transition-all  ${role === "admin" ? "text-amber-500" : 'text-gray-300'}`}>
                                 <input
                                     className='hidden cursor-pointer'
                                     type="radio"
