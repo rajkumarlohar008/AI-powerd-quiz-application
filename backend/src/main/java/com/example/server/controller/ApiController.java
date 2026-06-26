@@ -85,15 +85,16 @@ public class ApiController {
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setRole(request.getRole());
 
-        user.setVerified(false);
 
-        String token = UUID.randomUUID().toString();
-
-        user.setVerificationToken(token);
-
+        if(request.getRole().equals("admin")){
+            user.setVerified(false);
+            String token = UUID.randomUUID().toString();
+            user.setVerificationToken(token);
+            emailService.sendVerificationEmail(user.getEmail(), token);
+        }
         userRepository.save(user);
 
-        emailService.sendVerificationEmail(user.getEmail(), token);
+
 
         if(user.getRole().equals("admin")) {
             Map<String, Object> body = new HashMap<>();
