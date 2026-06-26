@@ -5,7 +5,7 @@ import API_URL from '../config';
 import Nav from './Nav';
 
 const Register = () => {
-    const [role, setRole] = useState("");
+    const [role, setRole] = useState("user");
     const [formData, setFormData] = useState({
         name: '',
         email: '',
