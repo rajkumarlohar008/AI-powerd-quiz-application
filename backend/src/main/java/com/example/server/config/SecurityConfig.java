@@ -55,7 +55,8 @@ public class SecurityConfig {
                                 "/api/login",
                                 "/api/register",
                                 "/api/helth",
-                                "/api/verify"
+                                "/api/verify",
+                                "/"
                         ).permitAll()
 
 
