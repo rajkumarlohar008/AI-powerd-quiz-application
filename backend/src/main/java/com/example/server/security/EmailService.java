@@ -38,8 +38,8 @@ public class EmailService {
 
         String verificationLink = baseUrl + "/api/verify?token=" + token;
 
-        // Cleaned up the HTML formatting placeholders to prevent interpolation conflicts
-        String html = """
+        // Base structural template block using an explicit lookup key placeholder: {{VERIFICATION_LINK}}
+        String htmlTemplate = """
                 <!DOCTYPE html>
                 <html>
                 <head>
@@ -71,14 +71,14 @@ public class EmailService {
                 <table width="100%">
                 <tr>
                 <td align="center" style="padding:30px;">
-                <a href="%s" style="background:#4f46e5;color:white;text-decoration:none;padding:15px 35px;border-radius:8px;font-size:18px;font-weight:bold;display:inline-block;">
+                <a href="{{VERIFICATION_LINK}}" style="background:#4f46e5;color:white;text-decoration:none;padding:15px 35px;border-radius:8px;font-size:18px;font-weight:bold;display:inline-block;">
                 Verify Email
                 </a>
                 </td>
                 </tr>
                 </table>
                 <p style="font-size:15px;color:#777;">If the button doesn't work, copy and paste this link into your browser:</p>
-                <p style="word-break:break-all;"><a href="%s">%s</a></p>
+                <p style="word-break:break-all;"><a href="{{VERIFICATION_LINK}}">{{VERIFICATION_LINK}}</a></p>
                 <hr style="border:none;border-top:1px solid #eee;margin:30px 0;">
                 <p style="font-size:14px;color:#777;">This verification link will expire in 24 hours.</p>
                 <p style="font-size:14px;color:#777;">If you didn't create this account, you can safely ignore this email.</p>
@@ -96,12 +96,14 @@ public class EmailService {
                 </table>
                 </body>
                 </html>
-                """.formatted(verificationLink, verificationLink, verificationLink);
+                """;
+
+        // Inject the generated link safely using standard sequence replacement
+        String html = htmlTemplate.replace("{{VERIFICATION_LINK}}", verificationLink);
 
         try {
             // 1. Define Sender Email and Name
             SendSmtpEmailSender sender = new SendSmtpEmailSender();
-            // MUST be your verified sender email address in Brevo
             sender.setEmail(fromEmail);
             sender.setName("Quiz Application Support");
 
@@ -118,7 +120,7 @@ public class EmailService {
             SendSmtpEmail sendSmtpEmail = new SendSmtpEmail();
             sendSmtpEmail.setSender(sender);
             sendSmtpEmail.setTo(Collections.singletonList(recipient));
-            sendSmtpEmail.setReplyTo(replyTo); // Attached here
+            sendSmtpEmail.setReplyTo(replyTo);
             sendSmtpEmail.setSubject("Verify Your Quiz Application Account");
             sendSmtpEmail.setHtmlContent(html);
 
