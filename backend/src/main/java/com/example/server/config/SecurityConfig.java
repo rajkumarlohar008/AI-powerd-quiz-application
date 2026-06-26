@@ -54,7 +54,8 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/api/login",
                                 "/api/register",
-                                "/api/helth"
+                                "/api/helth",
+                                "/api/verify"
                         ).permitAll()
 
 

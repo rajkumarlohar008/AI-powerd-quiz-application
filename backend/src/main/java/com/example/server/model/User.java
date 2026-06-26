@@ -33,7 +33,27 @@ public class User {
     @CreatedDate
     private Instant createdAt;
 
+    public boolean isVerified() {
+        return verified;
+    }
+
+    public void setVerified(boolean verified) {
+        this.verified = verified;
+    }
+
+    public void setVerificationToken(String verificationToken) {
+        this.verificationToken = verificationToken;
+    }
+
+    public String getVerificationToken() {
+        return verificationToken;
+    }
+
     private String role;
+
+    private boolean verified;
+
+    private String verificationToken;
 
     public List<Room> getRooms() {
         return rooms;

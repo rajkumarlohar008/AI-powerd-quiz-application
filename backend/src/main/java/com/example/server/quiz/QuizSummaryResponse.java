@@ -7,7 +7,6 @@ public class QuizSummaryResponse {
 
     private Map<String, TopicStats> perTopic;
     private String overallSummary;
-    private List<QuizTopicResult> topics;
     private List<String> recommendations;
 
     public static class TopicStats {
@@ -53,13 +52,6 @@ public class QuizSummaryResponse {
         this.overallSummary = overallSummary;
     }
 
-    public List<QuizTopicResult> getTopics() {
-        return topics;
-    }
-
-    public void setTopics(List<QuizTopicResult> topics) {
-        this.topics = topics;
-    }
 
     public List<String> getRecommendations() {
         return recommendations;

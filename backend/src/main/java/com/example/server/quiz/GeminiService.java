@@ -32,9 +32,7 @@ public class GeminiService {
     private final ObjectMapper objectMapper;
     private final HttpClient httpClient;
 
-    public GeminiService(
-            @Value("${gemini.api.key:}") String apiKey,
-            ObjectMapper objectMapper) {
+    public GeminiService(@Value("${gemini.api.key:}") String apiKey, ObjectMapper objectMapper) {
 
         this.apiKey = apiKey;
         this.objectMapper = objectMapper;
@@ -56,8 +54,7 @@ public class GeminiService {
         // PDF Support
         if ("application/pdf".equalsIgnoreCase(contentType)) {
 
-            try (PDDocument document =
-                         Loader.loadPDF(file.getBytes())) {
+            try (PDDocument document = Loader.loadPDF(file.getBytes())) {
 
                 PDFTextStripper stripper = new PDFTextStripper();
                 return stripper.getText(document);
@@ -65,33 +62,26 @@ public class GeminiService {
         }
 
         // Text File Support
-        if (contentType != null &&
-                contentType.startsWith("text/")) {
+        if (contentType != null && contentType.startsWith("text/")) {
 
-            return new String(
-                    file.getBytes(),
-                    StandardCharsets.UTF_8
-            );
+            return new String(file.getBytes(), StandardCharsets.UTF_8);
         }
 
-        throw new IOException(
-                "Unsupported file type: " + contentType
-        );
+        throw new IOException("Unsupported file type: " + contentType);
     }
 
     // ==============================
     // GENERATE QUIZ
     // ==============================
 
-    public AiQuizResponse generateQuiz(String combinedText)
-            throws IOException, InterruptedException {
+    public AiQuizResponse generateQuiz(String combinedText) throws IOException, InterruptedException {
 
         validateApiKey();
 
         String prompt = """
                 You are an expert tutor.
                 Read the following study material and create a quiz.
-
+                
                 - Generate 10 multiple-choice questions.
                 - Each question must contain:
                   - "question": string
@@ -99,9 +89,9 @@ public class GeminiService {
                   - "answerIndex": correct option index (0-3)
                   - "topic": short topic name
                   - "explanation": short explanation
-
+                
                 Return ONLY valid JSON:
-
+                
                 {
                   "questions":[
                     {
@@ -113,51 +103,28 @@ public class GeminiService {
                     }
                   ]
                 }
-
+                
                 Study material:
                 """ + combinedText;
 
         ObjectNode body = buildGeminiRequest(prompt);
 
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(
-                        "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key="
-                                + apiKey))
-                .header(
-                        "Content-Type",
-                        MediaType.APPLICATION_JSON_VALUE)
-                .POST(HttpRequest.BodyPublishers.ofByteArray(
-                        objectMapper.writeValueAsBytes(body)))
-                .build();
+        HttpRequest request = HttpRequest.newBuilder().uri(URI.create("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" + apiKey)).header("Content-Type", MediaType.APPLICATION_JSON_VALUE).POST(HttpRequest.BodyPublishers.ofByteArray(objectMapper.writeValueAsBytes(body))).build();
 
-        HttpResponse<String> response =
-                httpClient.send(
-                        request,
-                        HttpResponse.BodyHandlers.ofString());
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
         if (response.statusCode() >= 400) {
 
-            throw new IOException(
-                    "Gemini API error: "
-                            + response.statusCode()
-                            + " - "
-                            + response.body());
+            throw new IOException("Gemini API error: " + response.statusCode() + " - " + response.body());
         }
 
-        String text =
-                extractTextFromGemini(response.body());
+        String text = extractTextFromGemini(response.body());
 
-        Map<String, Object> parsed =
-                objectMapper.readValue(
-                        text,
-                        new TypeReference<>() {
-                        });
+        Map<String, Object> parsed = objectMapper.readValue(text, new TypeReference<>() {
+        });
 
-        List<AiQuizQuestion> questions =
-                objectMapper.convertValue(
-                        parsed.get("questions"),
-                        new TypeReference<List<AiQuizQuestion>>() {
-                        });
+        List<AiQuizQuestion> questions = objectMapper.convertValue(parsed.get("questions"), new TypeReference<List<AiQuizQuestion>>() {
+        });
 
         return new AiQuizResponse(questions);
     }
@@ -166,122 +133,91 @@ public class GeminiService {
     // GENERATE SUMMARY
     // ==============================
 
-    public QuizSummaryResponse generateSummary(
-            QuizSummaryRequest request)
-            throws IOException, InterruptedException {
+    public QuizSummaryResponse generateSummary(QuizSummaryRequest request) throws IOException, InterruptedException {
 
         validateApiKey();
 
-        Map<String, QuizSummaryResponse.TopicStats> perTopic =
-                new HashMap<>();
+        Map<String, QuizSummaryResponse.TopicStats> perTopic = new HashMap<>();
 
-        List<AiQuizQuestion> questions =
-                request.getQuestions();
+        List<AiQuizQuestion> questions = request.getQuestions();
 
-        List<Integer> userAnswers =
-                request.getUserAnswers();
+        List<Integer> userAnswers = request.getUserAnswers();
 
         for (int i = 0; i < questions.size(); i++) {
 
             AiQuizQuestion q = questions.get(i);
 
-            String topic =
-                    q.getTopic() != null
-                            ? q.getTopic()
-                            : "General";
+            String topic = q.getTopic() != null ? q.getTopic() : "General";
 
-            perTopic.computeIfAbsent(
-                    topic,
-                    t -> new QuizSummaryResponse.TopicStats());
+            perTopic.computeIfAbsent(topic, t -> new QuizSummaryResponse.TopicStats());
 
-            QuizSummaryResponse.TopicStats stats =
-                    perTopic.get(topic);
+            QuizSummaryResponse.TopicStats stats = perTopic.get(topic);
 
             stats.setTotal(stats.getTotal() + 1);
 
-            if (i < userAnswers.size()
-                    && userAnswers.get(i) != null
-                    && userAnswers.get(i)
-                    .equals(q.getAnswerIndex())) {
+            if (i < userAnswers.size() && userAnswers.get(i) != null && userAnswers.get(i).equals(q.getAnswerIndex())) {
 
-                stats.setCorrect(
-                        stats.getCorrect() + 1);
+                stats.setCorrect(stats.getCorrect() + 1);
             }
         }
 
         String prompt = """
                 You are an expert tutor.
-
+                
                 A student completed a quiz.
-
+                
                 Data:
-                """ + objectMapper.writeValueAsString(request)
-                + """
-
+                """ + objectMapper.writeValueAsString(request) + """
+                
                 Tasks:
-                1. Determine strong / medium / weak topics.
+                1. Determine strong, medium and weak topics.
                 2. Write an overall summary.
                 3. Give review recommendations.
-
-                Return ONLY valid JSON.
+                
+                Return ONLY this JSON format.
+                
+                {
+                  "overallSummary": "string",
+                  "recommendations": [
+                    "string",
+                    "string"
+                  ]
+                }
+                
+                Do not write markdown.
+                Do not write explanations.
+                Return only the JSON object.
                 """;
 
         ObjectNode body = buildGeminiRequest(prompt);
 
-        HttpRequest httpRequest =
-                HttpRequest.newBuilder()
-                        .uri(URI.create(
-                                "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key="
-                                        + apiKey))
-                        .header(
-                                "Content-Type",
-                                MediaType.APPLICATION_JSON_VALUE)
-                        .POST(HttpRequest.BodyPublishers.ofByteArray(
-                                objectMapper.writeValueAsBytes(body)))
-                        .build();
+        HttpRequest httpRequest = HttpRequest.newBuilder().uri(URI.create("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" + apiKey)).header("Content-Type", MediaType.APPLICATION_JSON_VALUE).POST(HttpRequest.BodyPublishers.ofByteArray(objectMapper.writeValueAsBytes(body))).build();
 
-        HttpResponse<String> response =
-                httpClient.send(
-                        httpRequest,
-                        HttpResponse.BodyHandlers.ofString());
+        HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
 
         if (response.statusCode() >= 400) {
 
-            throw new IOException(
-                    "Gemini API error: "
-                            + response.statusCode()
-                            + " - "
-                            + response.body());
+            throw new IOException("Gemini API error: " + response.statusCode() + " - " + response.body());
         }
 
-        String text =
-                extractTextFromGemini(response.body());
+        String text = extractTextFromGemini(response.body());
 
-        Map<String, Object> parsed =
-                objectMapper.readValue(
-                        text,
-                        new TypeReference<>() {
-                        });
+        text = text.replace("```json", "")
+                .replace("```", "")
+                .trim();
 
-        QuizSummaryResponse summary =
-                new QuizSummaryResponse();
+        Map<String, Object> parsed = objectMapper.readValue(text, new TypeReference<>() {
+        });
+
+        QuizSummaryResponse summary = new QuizSummaryResponse();
 
         summary.setPerTopic(perTopic);
 
-        summary.setOverallSummary(
-                (String) parsed.get("overallSummary"));
+        summary.setOverallSummary((String) parsed.get("overallSummary"));
 
-        summary.setTopics(
-                objectMapper.convertValue(
-                        parsed.get("topics"),
-                        new TypeReference<List<QuizTopicResult>>() {
-                        }));
 
-        summary.setRecommendations(
-                objectMapper.convertValue(
-                        parsed.get("recommendations"),
-                        new TypeReference<List<String>>() {
-                        }));
+        summary.setRecommendations(objectMapper.convertValue(parsed.get("recommendations"), new TypeReference<List<String>>() {
+        }));
 
         return summary;
     }
@@ -293,70 +229,45 @@ public class GeminiService {
     private void validateApiKey() {
 
         if (apiKey == null || apiKey.isBlank()) {
-            throw new IllegalStateException(
-                    "Gemini API key is not configured.");
+            throw new IllegalStateException("Gemini API key is not configured.");
         }
     }
 
-    private ObjectNode buildGeminiRequest(
-            String prompt) {
+    private ObjectNode buildGeminiRequest(String prompt) {
 
-        ObjectNode body =
-                objectMapper.createObjectNode();
+        ObjectNode body = objectMapper.createObjectNode();
 
-        ArrayNode contents =
-                body.putArray("contents");
+        ArrayNode contents = body.putArray("contents");
 
-        ObjectNode contentObj =
-                contents.addObject();
+        ObjectNode contentObj = contents.addObject();
 
-        ArrayNode parts =
-                contentObj.putArray("parts");
+        ArrayNode parts = contentObj.putArray("parts");
 
-        ObjectNode partObj =
-                parts.addObject();
+        ObjectNode partObj = parts.addObject();
 
         partObj.put("text", prompt);
 
         return body;
     }
 
-    private String extractTextFromGemini(
-            String responseBody)
-            throws IOException {
+    private String extractTextFromGemini(String responseBody) throws IOException {
 
-        JsonNode root =
-                objectMapper.readTree(responseBody);
+        JsonNode root = objectMapper.readTree(responseBody);
 
-        JsonNode candidates =
-                root.path("candidates");
+        JsonNode candidates = root.path("candidates");
 
-        if (!candidates.isArray()
-                || candidates.isEmpty()) {
+        if (!candidates.isArray() || candidates.isEmpty()) {
 
-            throw new IOException(
-                    "No candidates returned from Gemini.");
+            throw new IOException("No candidates returned from Gemini.");
         }
 
-        String text =
-                candidates.get(0)
-                        .path("content")
-                        .path("parts")
-                        .get(0)
-                        .path("text")
-                        .asText();
+        String text = candidates.get(0).path("content").path("parts").get(0).path("text").asText();
 
         text = text.trim();
 
         if (text.startsWith("```")) {
 
-            text = text.replaceAll(
-                            "```json",
-                            "")
-                    .replaceAll(
-                            "```",
-                            "")
-                    .trim();
+            text = text.replaceAll("```json", "").replaceAll("```", "").trim();
         }
 
         return text;

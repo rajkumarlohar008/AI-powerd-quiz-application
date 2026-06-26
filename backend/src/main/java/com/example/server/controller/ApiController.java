@@ -14,6 +14,7 @@ import com.example.server.quiz.QuizSummaryResponse;
 import com.example.server.repository.RoomRepository;
 import com.example.server.repository.QuizAttemptRepository;
 import com.example.server.repository.UserRepository;
+import com.example.server.security.EmailService;
 import com.example.server.security.JwtService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -49,6 +50,8 @@ public class ApiController {
     private RoomRepository roomRepository;
     @Autowired
     private PasswordEncoder passwordEncoder;
+    @Autowired
+    private EmailService emailService;
 
     public ApiController(UserRepository userRepository,
                          QuizAttemptRepository quizAttemptRepository,
@@ -64,29 +67,47 @@ public class ApiController {
     public String helth(){
         return "ok";
     }
-    
+
 
     @PostMapping("/register")
-    public ResponseEntity<Map<String, Object>> register(@Valid @RequestBody RegisterRequest request) {
-        Optional<User> existingUser = userRepository.findByEmail(request.getEmail());
-        if (existingUser.isPresent()) {
+    public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
+
+        if(userRepository.existsByEmail(request.getEmail())) {
             Map<String, Object> body = new HashMap<>();
-            body.put("message", "User already exists");
+            body.put("message", "Email Already Exists");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
         }
 
-        String hashedPassword = passwordEncoder.encode(request.getPassword());
-        User newUser = new User(request.getName(), request.getEmail(), hashedPassword,request.getRole());
-        User saved = userRepository.save(newUser);
+        User user = new User();
 
+        user.setName(request.getName());
+        user.setEmail(request.getEmail());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setRole(request.getRole());
+
+        user.setVerified(false);
+
+        String token = UUID.randomUUID().toString();
+
+        user.setVerificationToken(token);
+
+        userRepository.save(user);
+
+        emailService.sendVerificationEmail(user.getEmail(), token);
+
+        if(user.getRole().equals("admin")) {
+            Map<String, Object> body = new HashMap<>();
+            body.put("message", "Verification Email Sent");
+            return ResponseEntity.status(HttpStatus.OK).body(body);
+        }
         Map<String, Object> body = new HashMap<>();
-        body.put("message", "User registered successfully");
-        body.put("userId", saved.getId());
-        return ResponseEntity.status(HttpStatus.CREATED).body(body);
+        body.put("message", "Registered Successfully");
+        return ResponseEntity.status(HttpStatus.OK).body(body);
     }
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
+
         Optional<User> userOpt = userRepository.findByEmail(request.getEmail());
         if (userOpt.isEmpty()) {
             Map<String, Object> body = new HashMap<>();
@@ -95,8 +116,9 @@ public class ApiController {
         }
 
         User user = userOpt.get();
+
         boolean matches = passwordEncoder.matches(request.getPassword(), user.getPassword());
-        if (!matches) {
+        if (!matches || Objects.equals(user.getRole(), "admin") && !user.isVerified()) {
             Map<String, Object> body = new HashMap<>();
             body.put("message", "Invalid credentials");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
@@ -110,6 +132,24 @@ public class ApiController {
         );
 
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/verify")
+    public ResponseEntity<?> verify(@RequestParam String token) {
+
+        User user = userRepository.findByVerificationToken(token);
+
+        if(user == null) {
+            return ResponseEntity.badRequest()
+                    .body("Invalid verification link.");
+        }
+
+        user.setVerified(true);
+        user.setVerificationToken(null);
+
+        userRepository.save(user);
+
+        return ResponseEntity.ok("Email verified successfully!");
     }
 
     @GetMapping("/quiz")
