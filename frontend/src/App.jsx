@@ -9,6 +9,7 @@ import AiQuizGenerator from './components/AiQuizGenerator';
 import QuizHistory from './components/QuizHistory';
 import AdminDashBoard from './components/AdminDashBoard';
 import RoomQuiz from './components/RoomQuiz';
+import { ToastContainer } from 'react-toastify';
 
 // 1. Create a helper component to manage the conditional Navbar
 const AppContent = () => {
@@ -18,19 +19,24 @@ const AppContent = () => {
     <>
       {/* If current path is NOT "/", show the Nav component */}
       {/* {location.pathname !== "/" && <Nav />} */}
-      
+
       <Routes>
         <Route path='/' element={<HomePage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/quiz" element={<Quiz />}/>
-        <Route path="/ai-quiz" element={<AiQuizGenerator />}/>
-        <Route path="/history" element={<QuizHistory />}/>
-        <Route path="/admin" element={<AdminDashBoard />}/>
-        <Route path="/room" element={<RoomQuiz />}/>
+        <Route path="/quiz" element={<Quiz />} />
+        <Route path="/ai-quiz" element={<AiQuizGenerator />} />
+        <Route path="/history" element={<QuizHistory />} />
+        <Route path="/admin" element={<AdminDashBoard />} />
+        <Route path="/room" element={<RoomQuiz />} />
         <Route path="*" element={<Navigate to="/login" />} />
       </Routes>
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        theme="light"
+      />
     </>
   );
 };

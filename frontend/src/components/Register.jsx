@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
 import API_URL from '../config';
 import Nav from './Nav';
+import { toast } from 'react-toastify';
 
 const Register = () => {
     const [role, setRole] = useState("user");
@@ -51,6 +52,7 @@ const Register = () => {
             );
 
             setMessage(response.data.message);
+            toast.success(response.data.message);
 
             setTimeout(() => {
                 navigate('/login');
@@ -62,7 +64,8 @@ const Register = () => {
                 err.response?.data?.message ||
                 'Registration failed'
             );
-
+            toast.error(err.response?.data?.message ||
+                'Registration failed')
             setIsDisabled(false);
         }
     };
@@ -113,6 +116,7 @@ const Register = () => {
             <Nav />
 
             <div className='
+                mt-10
                 relative
                 z-10
                 w-full

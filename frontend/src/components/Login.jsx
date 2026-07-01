@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
 import API_URL from '../config';
 import Nav from './Nav';
+import { toast } from 'react-toastify';
 
 
 const Login = () => {
@@ -53,6 +54,7 @@ const Login = () => {
             );
 
             setMessage('Login successful!');
+            toast.success("Login successful !")
 
             setTimeout(() => {
                 navigate('/dashboard');
@@ -63,7 +65,7 @@ const Login = () => {
             setError(
                 err.response?.data?.message || 'Login failed'
             );
-
+            toast.error(err.response?.data?.message || 'Login failed');
             setIsDisabled(false);
         }
     };

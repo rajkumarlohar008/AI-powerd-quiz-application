@@ -5,7 +5,8 @@ import API_URL from '../config';
 import { ChevronDown, Home, ShieldCheck } from 'lucide-react';
 import Nav from './Nav';
 import QuizScreen from './QuizScreen'; // <-- Imported
-
+import { toast } from "react-toastify";
+// import '../style/CustomToast.css';
 const AiQuizGenerator = () => {
 
     const [text, setText] = useState('');
@@ -24,6 +25,10 @@ const AiQuizGenerator = () => {
     const navigate = useNavigate();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [timeLeft, setTimeLeft] = useState(30);
+    const [showRoomModal, setShowRoomModal] = useState(false);
+    const [roomTitle, setRoomTitle] = useState("");
+    const [creatingRoom, setCreatingRoom] = useState(false);
+    const [createdRoom, setCreatedRoom] = useState(null);
 
     const handleNextClick = async () => {
         // Last question
@@ -40,22 +45,22 @@ const AiQuizGenerator = () => {
     };
 
     // Timer
-        useEffect(() => {
-            if (loading ) return;
-    
-            const timer = setInterval(() => {
-                setTimeLeft((prev) => {
-                    if (prev <= 1) {
-                        handleNext();
-                        return 60;
-                    }
-                    return prev - 1;
-                });
-            }, 1000);
-    
-            return () => clearInterval(timer);
-        }, [currentQuestion, loading]);
-    
+    useEffect(() => {
+        if (loading || showRoomModal) return;;
+
+        const timer = setInterval(() => {
+            setTimeLeft((prev) => {
+                if (prev <= 1) {
+                    handleNext();
+                    return 180;
+                }
+                return prev - 1;
+            });
+        }, 1000);
+
+        return () => clearInterval(timer);
+    }, [currentQuestion, loading, showRoomModal]);
+
 
     // Generate AI Quiz
     const handleGenerate = async (e) => {
@@ -98,12 +103,21 @@ const AiQuizGenerator = () => {
                 err.response?.data?.message
                 || (err.code === 'ERR_NETWORK' ? 'Network error or AI generation timeout.' : err.message)
                 || 'Failed to generate quiz.';
+
             setError(message);
         } finally {
             setLoading(false);
         }
     };
 
+    const openRoomModal = () => {
+        setShowRoomModal(true);
+    };
+    const closeRoomModal = () => {
+        setShowRoomModal(false);
+        setRoomTitle("");
+        setCreatedRoom(null);
+    };
     // Select Answer
     const handleAnswerSelect = (index) => {
         const updated = [...userAnswers];
@@ -198,6 +212,60 @@ const AiQuizGenerator = () => {
         setText('');
         setFile(null);
         setCurrentQuestion(0);
+    };
+
+
+    const handleCreateRoom = async () => {
+
+        if (!roomTitle.trim()) {
+            toast("Please Enter Room Title !", {
+                autoClose: 1200,
+                closeButton: true,
+                type: error
+            });
+            return;
+        };
+
+        setCreatingRoom(true);
+
+        try {
+
+            const formattedQuestions = quiz.questions.map(
+                ({ question, options, answerIndex }) => ({
+                    question,
+                    options,
+                    correctAnswer: answerIndex
+                })
+            );
+
+            const payload = {
+                roomName: roomTitle,
+                questions: formattedQuestions
+            };
+
+            const res = await axios.post(
+                `${API_URL}/api/room`,
+                payload,
+                {
+                    params: { email: storedUser.email },
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            );
+
+            setCreatedRoom(res.data);
+
+        } catch (err) {
+
+            console.log(err);
+
+        } finally {
+
+            setCreatingRoom(false);
+
+        }
+
     };
 
     const handleDashboard = () => navigate('/dashboard');
@@ -297,22 +365,123 @@ const AiQuizGenerator = () => {
     if (quiz && !showSummary && current) {
 
         return (
-            <QuizScreen 
-                currentQuestion={currentQuestion}
-                totalQuestions={quiz.questions.length}
-                questionData={current}
-                selectedAnswer={userAnswers[currentQuestion]}
-                onSelectAnswer={handleAnswerSelect}
-                onNext={handleNextClick}
-                onBack={handleBack}
-                isNextDisabled={userAnswers[currentQuestion] === null || isSubmitting}
-                isBackDisabled={currentQuestion === 0}
-                nextText={currentQuestion === quiz.questions.length - 1 ? (isSubmitting ? 'Submitting...' : 'Finish') : 'Next'}
-                timeLeft={timeLeft}
-                title={'hello'}
-            />
+            <>
+                <QuizScreen
+                    currentQuestion={currentQuestion}
+                    totalQuestions={quiz.questions.length}
+                    questionData={current}
+                    selectedAnswer={userAnswers[currentQuestion]}
+                    onSelectAnswer={handleAnswerSelect}
+                    onNext={handleNextClick}
+                    onBack={handleBack}
+                    isNextDisabled={userAnswers[currentQuestion] === null || isSubmitting}
+                    isBackDisabled={currentQuestion === 0}
+                    nextText={currentQuestion === quiz.questions.length - 1 ? (isSubmitting ? 'Submitting...' : 'Finish') : 'Next'}
+                    timeLeft={timeLeft}
+                    title={'Ai Quiz'}
+                    role={storedUser.role}
+                    onGenerateRoom={openRoomModal}
+                />
+                {
+                    showRoomModal && (
+                        <div
+                            className="fixed inset-0 bg-black/70 flex items-center justify-center z-50"
+                            onClick={closeRoomModal}
+                        >
+
+                            <div
+                                className="  p-8 w-90 md:w-120   rounded-3xl border border-white/10 bg-white/10 backdrop-blur-xl shadow-2xl"
+                                onClick={(e) => e.stopPropagation()}
+                            >
+
+
+
+                                {!createdRoom && (
+                                    <>
+                                        <h2 className="text-2xl font-bold text-white mb-6">
+                                            Create Quiz Room
+                                        </h2>
+
+                                        <input
+                                            value={roomTitle}
+                                            onChange={(e) => setRoomTitle(e.target.value)}
+                                            placeholder="Enter Room Title"
+                                            className="w-full p-4 rounded-xl bg-black/40 border border-white/10 text-white"
+                                        />
+                                        <button
+                                            onClick={handleCreateRoom}
+                                            disabled={creatingRoom}
+                                            className="flex-1  text-lg  hover:border-blue-400/40  duration-300 hover:shadow-[0_0_25px_rgba(59,130,246,0.2)] active:scale-[0.98] disabled:opacity-40 disabled:scale-100 disabled:hover:shadow-none disabled:cursor-not-allowed
+                            
+                                        px-10 md:px-17 mt-3 w-full py-3.5 rounded-2xl font-bold bg-white/10 hover:bg-white/20 border border-white/10 transition-all text-center text-white"
+                                        >
+
+                                            {creatingRoom
+                                                ? "Creating..."
+                                                : "Create Room"}
+
+                                        </button>
+                                    </>
+
+
+                                )}
+
+                                {createdRoom && (
+                                    <div className="mt-6">
+
+                                        <h3 className="text-green-400 text-xl font-bold">
+
+                                            ✅ Room Created Successfully
+
+                                        </h3>
+
+
+                                        <div className="mt-4 font-bold text-white">
+
+                                            Room Name
+
+                                        </div>
+
+                                        <div className="bg-white/20 rounded-2xl hover:bg-white/5 p-3  mt-2 text-white text-xl font-semibold">
+
+                                            {createdRoom.roomName || createdRoom._id}
+
+                                        </div>
+                                        <div className="mt-4 font-bold text-white">
+
+                                            Room ID
+
+                                        </div>
+
+                                        <div className="bg-white/30 rounded-2xl hover:bg-white/5 p-3  mt-2 text-cyan-400 font-mono">
+
+                                            {createdRoom.id || createdRoom._id}
+
+                                        </div>
+
+                                    </div>
+
+                                )}
+
+                                <button
+                                    onClick={closeRoomModal}
+                                    className="flex-1  text-lg  hover:border-blue-400/40  duration-300 hover:shadow-[0_0_25px_rgba(59,130,246,0.2)] active:scale-[0.98] disabled:opacity-40 disabled:scale-100 disabled:hover:shadow-none disabled:cursor-not-allowed
+                            
+                            px-10 md:px-17 mt-3 w-full py-3.5 rounded-2xl font-bold bg-white/10 hover:bg-white/20 border border-white/10 transition-all text-center text-white"
+                                >
+                                    Close
+                                </button>
+
+                            </div>
+
+                        </div>
+                    )
+                }
+            </>
         );
     }
+
+
 
     // SUMMARY SCREEN
     if (quiz && showSummary && summary) {

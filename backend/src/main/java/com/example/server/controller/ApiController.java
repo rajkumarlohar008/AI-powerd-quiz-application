@@ -451,7 +451,7 @@ public class ApiController {
     @DeleteMapping("/history/delete")
     public ResponseEntity<?> deleteQuizHistory(@RequestParam("Id") String id) {
         if (id == null || id.isBlank()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "Room ID is required."));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", " ID is required."));
         }
         quizAttemptRepository.deleteById(id);
         return ResponseEntity.ok(Map.of("massage", "History deleted !"));

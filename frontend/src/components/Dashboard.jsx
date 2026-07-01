@@ -15,6 +15,7 @@ import {
     LogOut,
     ArrowRight 
 } from 'lucide-react';
+import { toast } from 'react-toastify';
 
 const Dashboard = () => {
     const [user, setUser] = useState(null);
@@ -35,6 +36,7 @@ const Dashboard = () => {
     const handleLogout = () => {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
+        toast.error("Loged Out! Please visit again ‼️")
         navigate('/login');
     };
 

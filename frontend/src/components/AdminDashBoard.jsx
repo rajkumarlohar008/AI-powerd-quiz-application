@@ -4,6 +4,7 @@ import API_URL from '../config';
 import { Link } from 'react-router-dom';
 import { ChevronDown, Home, ShieldCheck } from 'lucide-react';
 import Nav from './Nav';
+import { toast } from 'react-toastify';
 
 const AdminDashBoard = () => {
     const [roomTitle, setRoomTitle] = useState('');
@@ -36,7 +37,7 @@ const AdminDashBoard = () => {
         e.stopPropagation();
 
         setDeletingId(idx);
-
+        toast.info("Deleting Response !");
         try {
             await handleDeleteResponse(idx);
         } finally {
@@ -60,6 +61,7 @@ const AdminDashBoard = () => {
                 }
             });
             setRoomResponses(res.data || []);
+            toast.success("Response Deleted Successfully !!");
         } catch (err) {
             console.error('Failed to load quiz history.');
         } finally {
@@ -91,7 +93,7 @@ const AdminDashBoard = () => {
         e.stopPropagation();
 
         setDeletingRoomId(roomId);
-
+        
         try {
             await handleDelete(roomId);
         } finally {
@@ -105,7 +107,7 @@ const AdminDashBoard = () => {
         if (!roomId) return;
 
         try {
-            console.log("Deleting room:", roomId);
+            toast.info("Deleting room !!",roomId);
             await axios.delete(`${API_URL}/api/room/delete`, {
                 params: {
                     email: userEmail,
@@ -130,8 +132,9 @@ const AdminDashBoard = () => {
                 }
             });
             setRooms(res.data || []);
+            toast.success("Room Deleted successfully!")
         } catch (err) {
-            console.error("Failed to delete room:", err);
+            toast.error("Failed to delete room:", err);
         }
     };
 
@@ -153,7 +156,7 @@ const AdminDashBoard = () => {
             });
             setRoomResponses(res.data || []);
         } catch (err) {
-            console.error("Error fetching room responses:", err);
+            toast.error("Error fetching room responses:", err);
             setRoomResponses([]);
         } finally {
             setLoadingResponses(false);
@@ -170,6 +173,7 @@ const AdminDashBoard = () => {
                 correctAnswer: 0,
             }
         ]);
+        toast.info("Question Added !");
     };
 
     // Remove Question
@@ -177,6 +181,7 @@ const AdminDashBoard = () => {
         if (questions.length === 1) return;
         const updated = questions.filter((_, idx) => idx !== index);
         setQuestions(updated);
+        toast.info("Question removed !");
     };
 
     // Update Question Title
@@ -205,7 +210,7 @@ const AdminDashBoard = () => {
     const handleCreateRoom = async () => {
 
         if (!roomTitle.trim()) {
-            setMessage('Please enter a room title.');
+            toast.error('Please enter a room title.');
             return;
         }
 
@@ -217,6 +222,7 @@ const AdminDashBoard = () => {
             // Question text required
             if (!question.question.trim()) {
                 setMessage(`Please fill Question ${i + 1}.`);
+                toast.info(`Please fill Question ${i + 1}.`);
                 return;
             }
 
@@ -227,6 +233,7 @@ const AdminDashBoard = () => {
                     setMessage(
                         `Please fill Option ${j + 1} of Question ${i + 1}.`
                     );
+                    toast.info(`Please fill Option ${j + 1} of Question ${i + 1}.`);
                     return;
                 }
             }
@@ -254,7 +261,7 @@ const AdminDashBoard = () => {
             );
 
             setCreatedRoom(res.data);
-            setMessage('Quiz room created successfully!');
+            toast.success('Quiz room created successfully!')
 
             setRoomTitle('');
             setQuestions([
@@ -285,7 +292,8 @@ const AdminDashBoard = () => {
                 err.response?.data?.message ||
                 'Failed to create room'
             );
-
+            toast.error(err.response?.data?.message ||
+                'Failed to create room');
         } finally {
 
             setLoading(false);
