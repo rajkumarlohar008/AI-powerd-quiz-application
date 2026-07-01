@@ -116,7 +116,7 @@ const Register = () => {
             <Nav />
 
             <div className='
-                mt-10
+                md:mt-10
                 relative
                 z-10
                 w-full
