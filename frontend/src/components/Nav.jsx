@@ -1,32 +1,196 @@
 import React, { useEffect, useState } from 'react';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
-import { Home, ShieldCheck, ChevronDown, X, LogOut } from 'lucide-react';
+import { Home, ShieldCheck, ChevronDown, X, LogOut, Check, SquarePen } from 'lucide-react';
 import { toast } from 'react-toastify';
+import axios from 'axios'; // ✅ CORRECTED IMPORT HERE
+import API_URL from '../config';
 
 const Nav = () => {
 
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-    const [user, setUser] = useState(null);
-    const navigate = useNavigate();
+    const [isModelOpen, setIsModelOpen] = useState(false);
+    const [isDisabled, setIsDisabled] = useState(false);
+    const [isUpdate, setIsUpdate] = useState(false);
 
+    const [message, setMessage] = useState('');
+    const [error, setError] = useState('');
+
+    let [user, setUser] = useState({});
+    const navigate = useNavigate();
     const location = useLocation();
 
-    const handleLogout = () => {
+    const handleLogout = (msg) => {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
-        toast.error("Loged Out! Please visit again ‼️")
+        toast.error(msg || "Logged Out! Please visit again ‼️");
         navigate('/login');
     };
 
+    const getLocalUser = () => {
+        try {
+            const data = localStorage.getItem('user');
+            return data ? JSON.parse(data) : null;
+        } catch (e) {
+            return null;
+        }
+    };
+
+    const [formData, setFormData] = useState({
+        name: getLocalUser()?.name || '',
+        email: getLocalUser()?.email || '',
+        password: '',
+    });
+
     useEffect(() => {
-
-        const userData = localStorage.getItem('user');
-
+        const userData = getLocalUser();
         if (userData) {
-            setUser(JSON.parse(userData));
+            setUser(userData);
+            setFormData({
+                name: userData.name || '',
+                email: userData.email || '',
+                password: '',
+            });
+        }
+    }, [isModelOpen]);
+
+
+    const [rules, setRules] = useState({
+        minLength: false,
+        hasUpper: false,
+        hasLower: false,
+        hasNumber: false,
+        hasSpecial: false,
+    });
+
+    const checkPasswordStrength = (password) => {
+        setRules({
+            minLength: password.length >= 8,
+            hasUpper: /[A-Z]/.test(password),
+            hasLower: /[a-z]/.test(password),
+            hasNumber: /\d/.test(password),
+            hasSpecial: /[@$!%*?&]/.test(password),
+        });
+    };
+
+    const closeModal = () => {
+        setIsModelOpen(false);
+        setIsSidebarOpen(false);
+        setIsUpdate(false);
+        setError('');
+        setMessage('');
+    };
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+
+        setFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+
+        if (name === 'password') {
+            checkPasswordStrength(value);
+        }
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        const name = formData.name || user.name;
+        const email = formData.email || user.email;
+        const password = formData.password;
+
+        const trimmedName = name.replace(/\s+/g, ' ').trim();
+        const trimmedEmail = email.trim().toLowerCase();
+        const trimmedPassword = password;
+
+        if (trimmedName.length < 3) {
+            toast.error("Name must contain at least 3 characters.");
+            return;
         }
 
-    }, []);
+        if (!/^[A-Za-z ]+$/.test(trimmedName)) {
+            toast.error("Name can contain only letters.");
+            return;
+        }
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+        if (!emailRegex.test(trimmedEmail)) {
+            toast.error("Please enter a valid email address.");
+            return;
+        }
+
+        const allRulesPassed = Object.values(rules).every(Boolean);
+        if (!allRulesPassed) {
+            const passwordErrorMessage = 'Your password does not meet all the security profile criteria shown below.';
+            setError(passwordErrorMessage);
+            toast.error(passwordErrorMessage);
+            return;
+        }
+
+        const payload = {
+            id: user.id,
+            name: trimmedName,
+            email: trimmedEmail,
+            password: trimmedPassword,
+            role: user.role,
+        };
+
+        setIsDisabled(true);
+
+        try {
+            const token = localStorage.getItem('token');
+
+            // ✅ Executing proper PUT route with headers configured using regular axios
+            const response = await axios.put(
+                `${API_URL}/api/acc/update`,
+                payload,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+
+            setMessage(response.data.message);
+            toast.success(response.data.message);
+
+            if (response.data.emailUpdate) {
+                handleLogout("Email updated! Please verify your email and login again.");
+                handleLogout();
+            } else if (response.data.user) {
+                localStorage.setItem(
+                    'user',
+                    JSON.stringify(response.data.user)
+                );
+                setUser(response.data.user);
+            }
+
+            setFormData({
+                name: '',
+                email: '',
+                password: '',
+            });
+            setRules({
+                minLength: false,
+                hasUpper: false,
+                hasLower: false,
+                hasNumber: false,
+                hasSpecial: false,
+            });
+
+            setTimeout(() => {
+                closeModal();
+            }, 1000);
+        } catch (error) {
+            console.error('updation failed:', error);
+            const apiError = error.response?.data?.message || 'Updation failed. Please try again.';
+            setError(apiError);
+            toast.error(apiError);
+        } finally {
+            setIsDisabled(false);
+        }
+    };
 
     return (
         <>
@@ -38,212 +202,161 @@ const Nav = () => {
 
                     {/* Logo */}
                     <div className='flex items-center gap-2 font-black text-xl tracking-wide text-white'>
-
                         <span className='bg-linear-to-r from-amber-400 via-pink-500 to-purple-600 p-1.5 rounded-lg text-white inline-flex items-center justify-center'>
-
-                            <svg
-                                className='w-5 h-5 fill-current'
-                                viewBox='0 0 24 24'
-                            >
+                            <svg className='w-5 h-5 fill-current' viewBox='0 0 24 24'>
                                 <path d='M19 11h-6V3a1 1 0 0 0-1.707-.707l-9 9a1 1 0 0 0 .707 1.707h6v8a1 1 0 0 0 1.707.707l9-9A1 1 0 0 0 19 11z' />
                             </svg>
-
                         </span>
-
                         Quiz App
-
                     </div>
 
                     {/* Desktop Nav */}
                     <nav className='hidden sm:flex items-center gap-2 text-sm font-medium text-gray-400'>
-
-                        {location.pathname === "/dashboard" || location.pathname === "/login"? (
-
-                            <Link
-                                to='/'
-                                className='flex items-center gap-1.5 px-4 py-2 rounded-full bg-blue-600/20 text-blue-400 hover:bg-blue-600/30 transition'
-                            >
+                        {location.pathname === "/dashboard" || location.pathname === "/login" ? (
+                            <Link to='/' className='flex items-center gap-1.5 px-4 py-2 rounded-full bg-blue-600/20 text-blue-400 hover:bg-blue-600/30 transition'>
                                 <Home className='w-4 h-4' />
                                 Home
                             </Link>
-
                         ) : (
-
-                            <Link
-                                to='/dashboard'
-                                className='flex items-center gap-1.5 px-4 py-2 rounded-full bg-blue-600/20 text-blue-400 hover:bg-blue-600/30 transition'
-                            >
+                            <Link to='/dashboard' className='flex items-center gap-1.5 px-4 py-2 rounded-full bg-blue-600/20 text-blue-400 hover:bg-blue-600/30 transition'>
                                 <Home className='w-4 h-4' />
                                 Dashboard
                             </Link>
-
                         )}
 
-                        {/* Admin Link */}
                         {user?.role === 'admin' && (
-
-                            <Link
-                                to='/admin'
-                                className='flex items-center gap-1.5 px-4 py-2 rounded-full hover:bg-white/10 hover:text-white transition'
-                            >
+                            <Link to='/admin' className='flex items-center gap-1.5 px-4 py-2 rounded-full hover:bg-white/10 hover:text-white transition'>
                                 <ShieldCheck className='w-4 h-4' />
                                 Admin
                             </Link>
-
                         )}
-
                     </nav>
-
                 </div>
 
                 {/* Profile */}
-                {user && (
-
-                    <div
-                        onClick={() => setIsSidebarOpen(true)}
-                        className='flex items-center gap-3 bg-white/5 border border-white/10 rounded-full pl-2 pr-4 py-1.5 hover:bg-white/10 transition cursor-pointer'
-                    >
-
-                        <img
-                            src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`}
-                            alt='Avatar'
-                            className='w-8 h-8 rounded-full bg-slate-800 border border-white/20'
-                        />
-
+                {user?.name && (
+                    <div onClick={() => setIsSidebarOpen(true)} className='flex items-center gap-3 bg-white/5 border border-white/10 rounded-full pl-2 pr-4 py-1.5 hover:bg-white/10 transition cursor-pointer'>
+                        <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`} alt='Avatar' className='w-8 h-8 rounded-full bg-slate-800 border border-white/20' />
                         <div className='hidden sm:block text-left'>
-
-                            <p className='text-[10px] text-gray-400 leading-none'>
-                                Welcome,
-                            </p>
-
-                            <p className='text-xs font-semibold text-gray-200'>
-                                {user.name}
-                            </p>
-
+                            <p className='text-[10px] text-gray-400 leading-none'>Welcome,</p>
+                            <p className='text-xs font-semibold text-gray-200'>{user.name}</p>
                         </div>
-
                         <ChevronDown className='w-3.5 h-3.5 text-gray-400' />
-
                     </div>
-
                 )}
-
             </header>
 
             {/* Sidebar Drawer */}
-            <div
-                className={`fixed inset-0 z-50 transition-opacity duration-300 ${isSidebarOpen
-                        ? 'opacity-100 pointer-events-auto'
-                        : 'opacity-0 pointer-events-none'
-                    }`}
-            >
-
-                {/* Overlay */}
-                <div
-                    onClick={() => setIsSidebarOpen(false)}
-                    className='absolute inset-0 bg-black/60 backdrop-blur-xs'
-                />
-
-                {/* Drawer */}
-                <div
-                    className={`absolute top-0 right-0 h-full w-72 max-w-[80vw] border-l border-white/10 bg-slate-950/90 backdrop-blur-xl p-6 shadow-2xl transition-transform duration-300 transform ${isSidebarOpen
-                            ? 'translate-x-0'
-                            : 'translate-x-full'
-                        }`}
-                >
-
-                    {/* Drawer Header */}
+            <div className={`fixed inset-0 z-50 transition-opacity duration-300 ${isSidebarOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
+                <div onClick={() => setIsSidebarOpen(false)} className='absolute inset-0 bg-black/60 backdrop-blur-xs' />
+                <div className={`absolute top-0 right-0 h-full w-72 max-w-[80vw] border-l border-white/10 bg-slate-950/90 backdrop-blur-xl p-6 shadow-2xl transition-transform duration-300 transform ${isSidebarOpen ? 'translate-x-0' : 'translate-x-full'}`}>
                     <div className='flex items-center justify-between pb-6 border-b border-white/5 mb-6'>
-
-                        <div 
-                        onClick={(e)=>{
-                            console.log(e.target);
-                        }}
-                        className='flex items-center gap-3'>
-
-                            <img
-                                src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name}`}
-                                alt='Avatar'
-                                className='w-10 h-10 rounded-full bg-slate-800 border border-white/20'
-                            />
-
+                        <div onClick={() => setIsModelOpen(true)} className='flex items-center gap-3 cursor-pointer'>
+                            <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name}`} alt='Avatar' className='w-10 h-10 rounded-full bg-slate-800 border border-white/20' />
                             <div className='text-left'>
-
-                                <p className='text-[10px] text-gray-400 leading-none'>
-                                    User Profile
-                                </p>
-
-                                <p className='text-sm font-bold text-white mt-1'>
-                                    {user?.name}
-                                </p>
-
+                                <p className='text-[10px] text-gray-400 leading-none'>User Profile</p>
+                                <p className='text-sm font-bold text-white mt-1'>{user?.name}</p>
                             </div>
-
                         </div>
-
-                        {/* Close Button */}
-                        <button
-                            onClick={() => setIsSidebarOpen(false)}
-                            className='p-1 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition'
-                        >
+                        <button onClick={() => setIsSidebarOpen(false)} className='p-1 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition'>
                             <X className='w-5 h-5' />
                         </button>
-
                     </div>
 
-                    {/* Mobile Nav */}
                     <nav className='flex flex-col gap-3 text-base font-semibold'>
-
                         {location.pathname === "/dashboard" ? (
-
-                            <Link
-                                to='/'
-                                onClick={() => setIsSidebarOpen(false)}
-                                className='flex items-center gap-3 w-full px-4 py-3.5 rounded-2xl bg-white/5 text-gray-200 border border-white/5 hover:bg-white/10 transition'
-                            >
+                            <Link to='/' onClick={() => setIsSidebarOpen(false)} className='flex items-center gap-3 w-full px-4 py-3.5 rounded-2xl bg-white/5 text-gray-200 border border-white/5 hover:bg-white/10 transition'>
                                 <Home className='w-5 h-5' />
                                 Home
                             </Link>
-
                         ) : (
-
-                            <Link
-                                to='/dashboard'
-                                onClick={() => setIsSidebarOpen(false)}
-                                className='flex items-center gap-3 w-full px-4 py-3.5 rounded-2xl bg-white/5 text-gray-200 border border-white/5 hover:bg-white/10 transition'
-                            >
+                            <Link to='/dashboard' onClick={() => setIsSidebarOpen(false)} className='flex items-center gap-3 w-full px-4 py-3.5 rounded-2xl bg-white/5 text-gray-200 border border-white/5 hover:bg-white/10 transition'>
                                 <Home className='w-5 h-5' />
                                 Dashboard
                             </Link>
-
                         )}
 
-                        {/* Admin Link */}
                         {user?.role === 'admin' && (
-
-                            <Link
-                                to='/admin'
-                                onClick={() => setIsSidebarOpen(false)}
-                                className='flex items-center gap-3 w-full px-4 py-3.5 rounded-2xl bg-white/5 text-gray-200 border border-white/5 hover:bg-white/10 transition'
-                            >
+                            <Link to='/admin' onClick={() => setIsSidebarOpen(false)} className='flex items-center gap-3 w-full px-4 py-3.5 rounded-2xl bg-white/5 text-gray-200 border border-white/5 hover:bg-white/10 transition'>
                                 <ShieldCheck className='w-5 h-5 text-purple-400' />
                                 Admin Panel
                             </Link>
-
                         )}
 
-                        <button
-                            onClick={handleLogout}
-                            className=" w-full py-3.5 px-5 rounded-xl font-bold text-sm text-white bg-gradient-to-r from-red-500/80 to-rose-600/90 hover:from-red-500 hover:to-rose-600 shadow-lg shadow-red-500/10 hover:shadow-[0_0_30px_rgba(239,68,68,0.3)] transition-all duration-300 flex items-center justify-center gap-2 active:scale-[0.99]"
-                        >
+                        <button onClick={() => handleLogout()} className="w-full py-3.5 px-5 rounded-xl font-bold text-sm text-white bg-gradient-to-r from-red-500/80 to-rose-600/90 hover:from-red-500 hover:to-rose-600 shadow-lg shadow-red-500/10 hover:shadow-[0_0_30px_rgba(239,68,68,0.3)] transition-all duration-300 flex items-center justify-center gap-2 active:scale-[0.99]">
                             <LogOut className="w-4 h-4" />
                             Logout
                         </button>
-
                     </nav>
                 </div>
-
             </div>
+
+            {/* Modal */}
+            {isModelOpen && (
+                <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50" onClick={closeModal}>
+                    <div className="flex flex-col p-8 w-90 md:w-120 rounded-3xl border border-white/10 bg-white/10 backdrop-blur-xl shadow-2xl" onClick={(e) => e.stopPropagation()}>
+                        <div className='self-end flex gap-4 items-center'>
+                            <SquarePen onClick={() => setIsUpdate(!isUpdate)} className="w-5 h-5 text-gray-400 hover:text-amber-400 cursor-pointer transition-transform hover:scale-110 active:scale-95" />
+                            <X onClick={closeModal} className='w-7 h-7 text-red-400 hover:text-red-600 cursor-pointer transition-transform hover:scale-110 active:scale-95' />
+                        </div>
+
+                        <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name || 'default'}`} alt='Avatar' className='w-20 self-center h-20 rounded-full bg-slate-800 border border-white/20' />
+                        <form onSubmit={handleSubmit} className='space-y-5'>
+                            <div className='flex flex-col gap-2'>
+                                <label className='mt-3 block text-sm font-semibold text-gray-300 mb-2'>Full Name</label>
+                                {isUpdate ? (
+                                    <input type='text' name='name' required placeholder='Enter Name' onChange={handleChange} value={formData.name} className='w-full px-4 py-3.5 rounded-xl bg-black/40 border border-white/10 focus:border-cyan-500 focus:shadow-[0_0_15px_rgba(6,182,212,0.15)] text-white outline-none text-sm transition-all duration-300' />
+                                ) : (
+                                    <div className='w-full px-4 py-3.5 rounded-xl bg-black/40 border border-white/10 text-white text-sm'>{user?.name}</div>
+                                )}
+                            </div>
+
+                            <div className='flex flex-col gap-2'>
+                                <label className='block text-sm font-semibold text-gray-300 mb-2'>Email Address</label>
+                                {isUpdate ? (
+                                    <input type='email' name='email' required placeholder='Enter Email' onChange={handleChange} value={formData.email} className='w-full px-4 py-3.5 rounded-xl bg-black/40 border border-white/10 focus:border-cyan-500 focus:shadow-[0_0_15px_rgba(6,182,212,0.15)] text-white outline-none text-sm transition-all duration-300' />
+                                ) : (
+                                    <div className='w-full px-4 py-3.5 rounded-xl bg-black/40 border border-white/10 text-white text-sm'>{user?.email}</div>
+                                )}
+                            </div>
+
+                            <div className={`flex flex-col gap-2 ${isUpdate ? 'block' : 'hidden'}`}>
+                                <label className='block text-sm font-semibold text-gray-300 mb-2'>Secure Password</label>
+                                <input type='password' name='password' required={isUpdate} placeholder='Change password or enter current password' onChange={handleChange} value={formData.password} className='w-full px-4 py-3.5 rounded-xl bg-black/40 border border-white/10 focus:border-cyan-500 focus:shadow-[0_0_15px_rgba(6,182,212,0.15)] text-white outline-none text-sm transition-all duration-300' />
+
+                                {formData.password && (
+                                    <div className="mt-2 p-3 bg-black/30 border border-white/5 rounded-xl space-y-1.5 transition-all duration-300">
+                                        <div className="flex items-center gap-2 text-xs">
+                                            {rules.minLength ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <X className="w-3.5 h-3.5 text-gray-500" />}
+                                            <span className={rules.minLength ? 'text-emerald-300 font-medium' : 'text-gray-400'}>At least 8 characters long</span>
+                                        </div>
+                                        <div className="flex items-center gap-2 text-xs">
+                                            {rules.hasUpper ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <X className="w-3.5 h-3.5 text-gray-500" />}
+                                            <span className={rules.hasUpper ? 'text-emerald-300 font-medium' : 'text-gray-400'}>At least one uppercase letter (A-Z)</span>
+                                        </div>
+                                        <div className="flex items-center gap-2 text-xs">
+                                            {rules.hasLower ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <X className="w-3.5 h-3.5 text-gray-500" />}
+                                            <span className={rules.hasLower ? 'text-emerald-300 font-medium' : 'text-gray-400'}>At least one lowercase letter (a-z)</span>
+                                        </div>
+                                        <div className="flex items-center gap-2 text-xs">
+                                            {rules.hasNumber ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <X className="w-3.5 h-3.5 text-gray-500" />}
+                                            <span className={rules.hasNumber ? 'text-emerald-300 font-medium' : 'text-gray-400'}>At least one number (0-9)</span>
+                                        </div>
+                                        <div className="flex items-center gap-2 text-xs">
+                                            {rules.hasSpecial ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <X className="w-3.5 h-3.5 text-gray-500" />}
+                                            <span className={rules.hasSpecial ? 'text-emerald-300 font-medium' : 'text-gray-400'}>At least one special symbol (@$!%*?&)</span>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            <button type='submit' disabled={isDisabled} className={`flex-1 text-lg hover:border-blue-400/40 duration-300 hover:shadow-[0_0_25px_rgba(59,130,246,0.2)] active:scale-[0.98] disabled:opacity-40 disabled:scale-100 disabled:hover:shadow-none disabled:cursor-not-allowed px-10 md:px-17 mt-3 w-full py-3.5 rounded-2xl font-bold bg-white/10 hover:bg-white/20 border border-white/10 transition-all text-center text-white ${isUpdate ? 'block' : 'hidden'}`}>
+                                {isDisabled ? 'Updating...' : 'Update'}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            )}
         </>
     );
 };

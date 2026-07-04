@@ -307,7 +307,7 @@ const AdminDashBoard = () => {
     }, [roomResponses]);
 
 
-    
+
 
     return (
         <div className='relative min-h-screen w-full overflow-x-hidden bg-gradient-to-br from-black via-slate-900 to-purple-950 px-4 py-10 text-white'>
@@ -364,8 +364,8 @@ const AdminDashBoard = () => {
                                                     </div>
                                                     <div className='flex flex-col md:flex-row md:justify-between md:items-center'>
                                                         <div className='flex flex-col  items-start justify-between text-[11px] text-gray-400 font-mono mt-2.5'>
-                                                                <span className='truncate text-gray-500 font-semibold md:text-[15px]'>Room ID:{roomId}</span>
-                                                                <span className='text-[8px] md:text-xs'>You can copy this id and share with the participants.</span>
+                                                            <span className='truncate text-gray-500 font-semibold md:text-[15px]'>Room ID:{roomId}</span>
+                                                            <span className='text-[8px] md:text-xs'>You can copy this id and share with the participants.</span>
                                                         </div>
                                                         <div className='flex items-center  justify-between w-1/3 gap-3 w-28'>
                                                             <Eye size={28}
@@ -790,37 +790,44 @@ const AdminDashBoard = () => {
                                             className='flex-col p-4 rounded-xl border border-white/5 bg-black/40 flex items-center justify-between gap-4 shadow-sm hover:bg-black/60 transition-colors'
                                         >
                                             <div className='flex items-center justify-between w-full'>
-                                                <div className='flex items-center gap-3 truncate'>
-                                                    <span className={`h-7 w-7 rounded-lg text-xs font-extrabold flex items-center justify-center shrink-0 ${idx === 0 ? 'bg-amber-400/20 text-amber-300 border border-amber-400/40' :
-                                                        idx === 1 ? 'bg-slate-300/20 text-slate-200 border border-slate-300/40' :
-                                                            idx === 2 ? 'bg-amber-700/20 text-amber-600 border border-amber-700/40' :
-                                                                'bg-white/5 text-gray-400 border border-white/5'
-                                                        }`}>
-                                                        #{idx + 1}
-                                                    </span>
-                                                    <div className='truncate'>
-                                                        <p className='text-sm font-bold text-gray-100 truncate'>{item.userName || 'Anonymous User'}</p>
-                                                        <p className='text-[10px] text-gray-500 font-mono truncate'>ID: {item.userId}</p>
+                                                <div className='flex flex-col'>
+                                                    <div className='flex items-center gap-3 truncate'>
+                                                        <span className={`h-7 w-7 rounded-lg text-xs font-extrabold flex items-center justify-center shrink-0 ${idx === 0 ? 'bg-amber-400/20 text-amber-300 border border-amber-400/40' :
+                                                            idx === 1 ? 'bg-slate-300/20 text-slate-200 border border-slate-300/40' :
+                                                                idx === 2 ? 'bg-amber-700/20 text-amber-600 border border-amber-700/40' :
+                                                                    'bg-white/5 text-gray-400 border border-white/5'
+                                                            }`}>
+                                                            #{idx + 1}
+                                                        </span>
+                                                        <div className='truncate'>
+                                                            <p className='text-sm font-bold text-gray-100 truncate'>{item.userName || 'Anonymous User'}</p>
+                                                            <p className='text-[10px] text-gray-500 font-mono truncate'>ID: {item.userId}</p>
+                                                        </div>
+
+                                                    </div>
+                                                    <div className='text-xs font-medium text-gray-400 block self-end sm:hidden'>
+                                                        Score: <span className='text-white font-bold'>{item.correct}</span> / {item.total}
                                                     </div>
                                                 </div>
 
-                                                <div className='text-right flex items-center gap-4 shrink-0 flex-col'>
-                                                    <div className='text-xs font-medium text-gray-400 hidden sm:block'>
-                                                        Score: <span className='text-white font-bold'>{item.correct}</span> / {item.total}
+                                                <div className='flex flex-col gap-3'>
+                                                    <div className='text-right flex items-center gap-4 shrink-0 flex-col sm:flex-row'>
+                                                        <div className='text-xs font-medium text-gray-400 hidden sm:block'>
+                                                            Score: <span className='text-white font-bold'>{item.correct}</span> / {item.total}
+                                                        </div>
+                                                        <div className='bg-emerald-500/10 border border-emerald-500/20 px- py-1.5 rounded-xl text-center min-w-12'>
+                                                            <p className='text-xs font-mono font-black text-emerald-400'>{item.percentage}%</p>
+                                                        </div>
                                                     </div>
-                                                    <div className='bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-xl text-center min-w-[75px]'>
-                                                        <p className='text-xs font-mono font-black text-emerald-400'>{item.percentage}%</p>
-                                                    </div>
+                                                    <Trash
+                                                        type="button"
+                                                        className='w-5 h-5 text-gray-400 hover:text-red-400 cursor-pointer transition-transform hover:scale-110 self-end mr-3'
+                                                        onClick={(e) => handleDeleteClick(e, item.originalIdx)}
+                                                        disabled={deletingId === item.originalIdx}
+                                                    />
                                                 </div>
                                             </div>
-                                            <button
-                                                type="button"
-                                                className='w-full bg-red-500/40 text-xs px-5 py-2 rounded-xl border-red-500/20 font-semibold hover:bg-red-500 active:scale-95 transition-all text-white relative z-20'
-                                                onClick={(e) => handleDeleteClick(e, item.originalIdx)}
-                                                disabled={deletingId === item.originalIdx}
-                                            >
-                                                {deletingId === item.originalIdx ? 'Deleting...' : 'Delete'}
-                                            </button>
+
                                         </div>
                                     ))}
                                 </div>

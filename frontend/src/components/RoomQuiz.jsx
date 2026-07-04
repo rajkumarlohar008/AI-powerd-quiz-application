@@ -176,15 +176,16 @@ const RoomQuiz = () => {
     };
 
     const universalBack = ()=>{
+
         setRoom(null);
         setTimeLeft(30);
-        showResult(false);
+        setShowResult(false);
         
     };
 
     // RESULT SCREEN
     if (showResult && scoreData) {
-        return <Result questions={room.questions} userAnswers={userAnswers} title={room.roomName} quizType="General Room Quiz"/>;
+        return <Result questions={room.questions} userAnswers={userAnswers} title={room.roomName} quizType="General Room Quiz" onUniversalBack={universalBack}/>;
     }
 
     // QUIZ SCREEN
