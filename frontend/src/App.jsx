@@ -10,6 +10,7 @@ import QuizHistory from './components/QuizHistory';
 import AdminDashBoard from './components/AdminDashBoard';
 import RoomQuiz from './components/RoomQuiz';
 import { ToastContainer } from 'react-toastify';
+import PredefinedQuiz from './components/PredefinedQuiz';
 
 // 1. Create a helper component to manage the conditional Navbar
 const AppContent = () => {
@@ -25,7 +26,7 @@ const AppContent = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/quiz" element={<Quiz />} />
+        <Route path="/quiz" element={<PredefinedQuiz />} />
         <Route path="/ai-quiz" element={<AiQuizGenerator />} />
         <Route path="/history" element={<QuizHistory />} />
         <Route path="/admin" element={<AdminDashBoard />} />
@@ -37,6 +38,7 @@ const AppContent = () => {
         autoClose={3000}
         theme="light"
       />
+      {/* <PredefinedQuiz /> */}
     </>
   );
 };

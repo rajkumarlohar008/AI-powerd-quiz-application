@@ -1,13 +1,22 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { Home, ShieldCheck, ChevronDown, X } from 'lucide-react';
+import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { Home, ShieldCheck, ChevronDown, X, LogOut } from 'lucide-react';
+import { toast } from 'react-toastify';
 
 const Nav = () => {
 
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [user, setUser] = useState(null);
+    const navigate = useNavigate();
 
     const location = useLocation();
+
+    const handleLogout = () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        toast.error("Loged Out! Please visit again ‼️")
+        navigate('/login');
+    };
 
     useEffect(() => {
 
@@ -48,7 +57,7 @@ const Nav = () => {
                     {/* Desktop Nav */}
                     <nav className='hidden sm:flex items-center gap-2 text-sm font-medium text-gray-400'>
 
-                        {location.pathname === "/dashboard" ? (
+                        {location.pathname === "/dashboard" || location.pathname === "/login"? (
 
                             <Link
                                 to='/'
@@ -123,11 +132,10 @@ const Nav = () => {
 
             {/* Sidebar Drawer */}
             <div
-                className={`fixed inset-0 z-50 transition-opacity duration-300 ${
-                    isSidebarOpen
+                className={`fixed inset-0 z-50 transition-opacity duration-300 ${isSidebarOpen
                         ? 'opacity-100 pointer-events-auto'
                         : 'opacity-0 pointer-events-none'
-                }`}
+                    }`}
             >
 
                 {/* Overlay */}
@@ -138,17 +146,20 @@ const Nav = () => {
 
                 {/* Drawer */}
                 <div
-                    className={`absolute top-0 right-0 h-full w-72 max-w-[80vw] border-l border-white/10 bg-slate-950/90 backdrop-blur-xl p-6 shadow-2xl transition-transform duration-300 transform ${
-                        isSidebarOpen
+                    className={`absolute top-0 right-0 h-full w-72 max-w-[80vw] border-l border-white/10 bg-slate-950/90 backdrop-blur-xl p-6 shadow-2xl transition-transform duration-300 transform ${isSidebarOpen
                             ? 'translate-x-0'
                             : 'translate-x-full'
-                    }`}
+                        }`}
                 >
 
                     {/* Drawer Header */}
                     <div className='flex items-center justify-between pb-6 border-b border-white/5 mb-6'>
 
-                        <div className='flex items-center gap-3'>
+                        <div 
+                        onClick={(e)=>{
+                            console.log(e.target);
+                        }}
+                        className='flex items-center gap-3'>
 
                             <img
                                 src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name}`}
@@ -221,8 +232,15 @@ const Nav = () => {
 
                         )}
 
-                    </nav>
+                        <button
+                            onClick={handleLogout}
+                            className=" w-full py-3.5 px-5 rounded-xl font-bold text-sm text-white bg-gradient-to-r from-red-500/80 to-rose-600/90 hover:from-red-500 hover:to-rose-600 shadow-lg shadow-red-500/10 hover:shadow-[0_0_30px_rgba(239,68,68,0.3)] transition-all duration-300 flex items-center justify-center gap-2 active:scale-[0.99]"
+                        >
+                            <LogOut className="w-4 h-4" />
+                            Logout
+                        </button>
 
+                    </nav>
                 </div>
 
             </div>

@@ -159,24 +159,10 @@ const RoomQuiz = () => {
             timeTaken: finalTimeTaken
         };
 
-        const historyPayload = {
-            userId: user.id,
-            quizType: "General Room Quiz",
-            correct,
-            total,
-            percentage: parseFloat(percentage),
-            questions: formattedQuestions
-        };
-
         try {
             // 1. Submit custom room performance tracking payload
             await axios.post(`${API_URL}/api/quizRoom/quiz-attempt`, roomPayload, {
                 params: { roomId },
-                headers: { Authorization: `Bearer ${token}` }
-            });
-
-            // 2. Submit global attempt tracking explicitly with historyPayload
-            await axios.post(`${API_URL}/api/quiz-attempts`, historyPayload, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
@@ -189,9 +175,16 @@ const RoomQuiz = () => {
         }
     };
 
+    const universalBack = ()=>{
+        setRoom(null);
+        setTimeLeft(30);
+        showResult(false);
+        
+    };
+
     // RESULT SCREEN
     if (showResult && scoreData) {
-        return <Result questions={room.questions} userAnswers={userAnswers} quizType="General Room Quiz"/>;
+        return <Result questions={room.questions} userAnswers={userAnswers} title={room.roomName} quizType="General Room Quiz"/>;
     }
 
     // QUIZ SCREEN
@@ -211,6 +204,7 @@ const RoomQuiz = () => {
                 nextText={currentQuestion === room.questions.length - 1 ? (isSubmitting ? 'Submitting...' : 'Finish') : 'Next'}
                 title={room.roomName}
                 timeLeft={timeLeft}
+                onUniversalBack={universalBack}
             />
         );
     }

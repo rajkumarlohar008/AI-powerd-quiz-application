@@ -56,17 +56,16 @@ public class SecurityConfig {
                                 "/api/register",
                                 "/api/helth",
                                 "/api/verify",
+                                "/api/preset",
+                                "/api/preset/all",
                                 "/"
                         ).permitAll()
 
 
                         .requestMatchers("/api/room/**")
-                        .hasRole("ADMIN")
-
-//                        .requestMatchers(
-//                                HttpMethod.OPTIONS,
-//                                "/**"
-//                        ).permitAll()
+                                .hasRole("ADMIN")
+                        .requestMatchers("/api/preset/**")
+                                .hasRole("ADMIN")
 
                         .anyRequest().authenticated()
                 )
@@ -88,6 +87,7 @@ public class SecurityConfig {
         configuration.setAllowedOrigins(
                 List.of(
                         "http://localhost:5173",
+                        "http://localhost:8089",
                         "https://ai-powerd-quiz-application-7drs.vercel.app"
                 )
         );

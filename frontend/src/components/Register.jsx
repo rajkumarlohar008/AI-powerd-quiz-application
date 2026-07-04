@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import API_URL from '../config';
 import Nav from './Nav';
 import { toast } from 'react-toastify';
+import { Check, X } from 'lucide-react';
+import axios from 'axios';
 
 const Register = () => {
     const [role, setRole] = useState("user");
@@ -11,413 +12,277 @@ const Register = () => {
         name: '',
         email: '',
         password: '',
+        role: 'user',
     });
 
     const [message, setMessage] = useState('');
     const [error, setError] = useState('');
     const [isDisabled, setIsDisabled] = useState(false);
 
+    const [rules, setRules] = useState({
+        minLength: false,
+        hasUpper: false,
+        hasLower: false,
+        hasNumber: false,
+        hasSpecial: false,
+    });
+
     const navigate = useNavigate();
 
-    useEffect(() => {
+    const checkPasswordStrength = (password) => {
+        setRules({
+            minLength: password.length >= 8,
+            hasUpper: /[A-Z]/.test(password),
+            hasLower: /[a-z]/.test(password),
+            hasNumber: /\d/.test(password),
+            hasSpecial: /[!@#$%^&*(),.?":{}|<>]/.test(password),
+        });
+    };
+
+    const handleRoleChange = (selectedRole) => {
+        setRole(selectedRole);
         setFormData(prev => ({
             ...prev,
-            role
+            role: selectedRole
         }));
-    }, [role]);
+    };
 
     const handleChange = (e) => {
+        const { name, value } = e.target;
 
-        setFormData({
-            ...formData,
-            [e.target.name]: e.target.value
-        });
+        setFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
 
+        if (name === 'password') {
+            checkPasswordStrength(value);
+        }
     };
 
     const handleSubmit = async (e) => {
-
         e.preventDefault();
-
-        setIsDisabled(true);
 
         setMessage('');
         setError('');
 
-        try {
+        const trimmedName = formData.name.replace(/\s+/g, ' ').trim();
+        const trimmedEmail = formData.email.trim().toLowerCase();
+        const trimmedPassword = formData.password;
 
+        if (trimmedName.length < 3) {
+            toast.error("Name must contain at least 3 characters.");
+            return;
+        }
+
+        if (!/^[A-Za-z ]+$/.test(trimmedName)) {
+            toast.error("Name can contain only letters.");
+            return;
+        }
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+        if (!emailRegex.test(trimmedEmail)) {
+            toast.error("Please enter a valid email address.");
+            return;
+        }
+
+        const allRulesPassed = Object.values(rules).every(Boolean);
+        if (!allRulesPassed) {
+            const passwordErrorMessage = 'Your password does not meet all the security profile criteria shown below.';
+            setError(passwordErrorMessage);
+            toast.error(passwordErrorMessage);
+            return;
+        }
+
+        const payload = {
+            name: trimmedName,
+            email: trimmedEmail,
+            password: trimmedPassword,
+            role: formData.role,
+        };
+
+        setIsDisabled(true);
+
+        try {
             const response = await axios.post(
                 `${API_URL}/api/register`,
-                formData
+                payload
             );
 
             setMessage(response.data.message);
             toast.success(response.data.message);
 
+            setFormData({
+                name: '',
+                email: '',
+                password: '',
+                role: 'user',
+            });
+            setRole('user');
+            setRules({
+                minLength: false,
+                hasUpper: false,
+                hasLower: false,
+                hasNumber: false,
+                hasSpecial: false,
+            });
+
             setTimeout(() => {
                 navigate('/login');
-            }, 1500);
-
-        } catch (err) {
-
-            setError(
-                err.response?.data?.message ||
-                'Registration failed'
-            );
-            toast.error(err.response?.data?.message ||
-                'Registration failed')
+            }, 2000);
+        } catch (error) {
+            console.error('Registration failed:', error);
+            const apiError = error.response?.data?.message || 'Registration failed. Please try again.';
+            setError(apiError);
+            toast.error(apiError);
+        } finally {
             setIsDisabled(false);
         }
     };
 
     return (
-
-        <div className='
-            relative
-            min-h-screen
-            overflow-hidden
-            flex
-            items-center
-            justify-center
-            bg-linear-to-br
-            from-black
-            via-slate-900
-            to-purple-950
-            px-4
-        '>
-
-
-            {/* Glow Effects */}
-
-            <div className='
-                absolute
-                -top-25
-                -left-25
-                w-75
-                h-75
-                bg-cyan-500/20
-                rounded-full
-                blur-3xl
-            ' />
-
-            <div className='
-                absolute
-                -bottom-25
-                -right-25
-                w-75
-                h-75
-                bg-purple-500/20
-                rounded-full
-                blur-3xl
-            ' />
-
-            {/* Register Card */}
-
+        <div className='relative min-h-screen bg-linear-to-br from-black via-slate-900 to-purple-950 px-4 pt-28 pb-10 flex justify-center items-center overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]'>
             <Nav />
+            <div className='absolute top-[-120px] left-[-120px] w-[350px] h-[350px] bg-cyan-500/20 rounded-full blur-3xl' />
+            <div className='absolute bottom-[-120px] right-[-120px] w-[350px] h-[350px] bg-purple-500/20 rounded-full blur-3xl' />
 
-            <div className='
-                mt-10
-                relative
-                z-10
-                w-full
-                max-w-md
-                p-8
-                rounded-3xl
-                border
-                border-white/10
-                bg-white/10
-                backdrop-blur-xl
-                shadow-2xl
-            '>
-
-                {/* Heading */}
-
-                <h2 className='
-                    text-4xl
-                    font-extrabold
-                    text-center
-                    mb-8
-                    bg-linear-to-r
-                    from-cyan-400
-                    via-blue-500
-                    to-purple-500
-                    bg-clip-text
-                    text-transparent
-                '>
-
-                    Register
-
+            <div className='relative z-10 w-full max-w-md rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-2xl p-6 md:p-10 text-white flex flex-col justify-center'>
+                <h2 className='text-3xl font-extrabold text-center mb-8 bg-linear-to-r from-cyan-400 via-blue-500 to-purple-500 bg-clip-text text-transparent tracking-wide drop-shadow-[0_0_15px_rgba(6,182,212,0.3)]'>
+                    Create Account
                 </h2>
 
-                {/* Form */}
-
-                <form
-                    onSubmit={handleSubmit}
-                    className='space-y-6'
-                >
-
-                    {/* Name */}
-
-                    <div>
-
-                        <label className='
-                            block
-                            text-sm
-                            font-semibold
-                            text-gray-300
-                            mb-2
-                        '>
-
-                            Name
-
+                <div>
+                    <label className='block text-sm font-semibold text-gray-300 mb-2'>
+                        Role
+                    </label>
+                    <div className='flex gap-1 justify-around'>
+                        <label className={`font-bold text-md w-1/2 text-center py-2 rounded-l-xl bg-white/10 hover:bg-white/20 border border-white/10 transition-all ${role === "user" ? "text-amber-500" : 'text-gray-300'}`}>
+                            <input
+                                className='hidden cursor-pointer'
+                                type="radio"
+                                name="role"
+                                value="user"
+                                checked={role === "user"}
+                                onChange={(e) => handleRoleChange(e.target.value)}
+                            />
+                            User
                         </label>
 
+                        <label className={`font-bold text-md w-1/2 text-center py-2 rounded-r-xl bg-white/10 hover:bg-white/20 border border-white/10 transition-all ${role === "admin" ? "text-amber-500" : 'text-gray-300'}`}>
+                            <input
+                                className='hidden cursor-pointer'
+                                type="radio"
+                                name="role"
+                                value="admin"
+                                checked={role === "admin"}
+                                onChange={(e) => handleRoleChange(e.target.value)}
+                            />
+                            Admin
+                        </label>
+                    </div>
+                </div>
+
+                <form onSubmit={handleSubmit} className='space-y-5'>
+                    <div className='flex flex-col gap-2'>
+                        <label className='mt-3 block text-sm font-semibold text-gray-300 mb-2'>Full Name</label>
                         <input
                             type='text'
                             name='name'
-                            value={formData.name}
-                            onChange={handleChange}
                             required
-                            placeholder='Enter your name'
-                            className='
-                                w-full
-                                px-4
-                                py-3
-                                rounded-xl
-                                bg-white/10
-                                border
-                                border-white/10
-                                text-white
-                                placeholder-gray-400
-                                outline-none
-                                focus:ring-2
-                                focus:ring-cyan-500
-                                transition-all
-                            '
+                            placeholder='Enter Name'
+                            onChange={handleChange}
+                            value={formData.name}
+                            className='w-full px-4 py-3.5 rounded-xl bg-black/40 border border-white/10 focus:border-cyan-500 focus:shadow-[0_0_15px_rgba(6,182,212,0.15)] text-white outline-none text-sm transition-all duration-300'
                         />
-
                     </div>
 
-                    {/* Email */}
-
-                    <div>
-
-                        <label className='
-                            block
-                            text-sm
-                            font-semibold
-                            text-gray-300
-                            mb-2
-                        '>
-
-                            Email
-
-                        </label>
-
+                    <div className='flex flex-col gap-2'>
+                        <label className='block text-sm font-semibold text-gray-300 mb-2'>Email Address</label>
                         <input
                             type='email'
                             name='email'
-                            value={formData.email}
-                            onChange={handleChange}
                             required
-                            placeholder='Enter your email'
-                            className='
-                                w-full
-                                px-4
-                                py-3
-                                rounded-xl
-                                bg-white/10
-                                border
-                                border-white/10
-                                text-white
-                                placeholder-gray-400
-                                outline-none
-                                focus:ring-2
-                                focus:ring-cyan-500
-                                transition-all
-                            '
+                            placeholder='Enter Email'
+                            onChange={handleChange}
+                            value={formData.email}
+                            className='w-full px-4 py-3.5 rounded-xl bg-black/40 border border-white/10 focus:border-cyan-500 focus:shadow-[0_0_15px_rgba(6,182,212,0.15)] text-white outline-none text-sm transition-all duration-300'
                         />
-
                     </div>
 
-                    {/* Password */}
-
-                    <div>
-
-                        <label className='
-                            block
-                            text-sm
-                            font-semibold
-                            text-gray-300
-                            mb-2
-                        '>
-
-                            Password
-
-                        </label>
-
+                    <div className='flex flex-col gap-2'>
+                        <label className='block text-sm font-semibold text-gray-300 mb-2'>Secure Password</label>
                         <input
                             type='password'
                             name='password'
-                            value={formData.password}
-                            onChange={handleChange}
                             required
-                            placeholder='Enter your password'
-                            className='
-                                w-full
-                                px-4
-                                py-3
-                                rounded-xl
-                                bg-white/10
-                                border
-                                border-white/10
-                                text-white
-                                placeholder-gray-400
-                                outline-none
-                                focus:ring-2
-                                focus:ring-purple-500
-                                transition-all
-                            '
+                            placeholder='Enter Password'
+                            onChange={handleChange}
+                            value={formData.password}
+                            className='w-full px-4 py-3.5 rounded-xl bg-black/40 border border-white/10 focus:border-cyan-500 focus:shadow-[0_0_15px_rgba(6,182,212,0.15)] text-white outline-none text-sm transition-all duration-300'
                         />
 
+                        {formData.password && (
+                            <div className="mt-2 p-3 bg-black/30 border border-white/5 rounded-xl space-y-1.5 transition-all duration-300">
+                                <div className="flex items-center gap-2 text-xs">
+                                    {rules.minLength ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <X className="w-3.5 h-3.5 text-gray-500" />}
+                                    <span className={rules.minLength ? 'text-emerald-300 font-medium' : 'text-gray-400'}>At least 8 characters long</span>
+                                </div>
+                                <div className="flex items-center gap-2 text-xs">
+                                    {rules.hasUpper ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <X className="w-3.5 h-3.5 text-gray-500" />}
+                                    <span className={rules.hasUpper ? 'text-emerald-300 font-medium' : 'text-gray-400'}>At least one uppercase letter (A-Z)</span>
+                                </div>
+                                <div className="flex items-center gap-2 text-xs">
+                                    {rules.hasLower ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <X className="w-3.5 h-3.5 text-gray-500" />}
+                                    <span className={rules.hasLower ? 'text-emerald-300 font-medium' : 'text-gray-400'}>At least one lowercase letter (a-z)</span>
+                                </div>
+                                <div className="flex items-center gap-2 text-xs">
+                                    {rules.hasNumber ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <X className="w-3.5 h-3.5 text-gray-500" />}
+                                    <span className={rules.hasNumber ? 'text-emerald-300 font-medium' : 'text-gray-400'}>At least one number (0-9)</span>
+                                </div>
+                                <div className="flex items-center gap-2 text-xs">
+                                    {rules.hasSpecial ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <X className="w-3.5 h-3.5 text-gray-500" />}
+                                    <span className={rules.hasSpecial ? 'text-emerald-300 font-medium' : 'text-gray-400'}>At least one special symbol (@$!%*?&)</span>
+                                </div>
+                            </div>
+                        )}
                     </div>
-
-                    <div>
-                        <label className='
-                            block
-                            text-sm
-                            font-semibold
-                            text-gray-300
-                            mb-2
-                        '>
-
-                            Role
-
-                        </label>
-                        <div className='flex gap-1 justify-around'>
-                            <label className={` font-bold text-md  w-1/2 text-center py-2 rounded-l-xl bg-white/10 hover:bg-white/20 border border-white/10 transition-all  ${role === "user" ? "text-amber-500" : 'text-gray-300'}`}>
-                                <input
-                                    className='hidden cursor-pointer'
-                                    type="radio"
-                                    name="role"
-                                    value="user"
-                                    checked={role === "user"}
-                                    onChange={(e) => setRole(e.target.value)}
-                                />
-                                User
-                            </label>
-
-                            <label className={` font-bold text-md w-1/2 text-center py-2 rounded-r-xl bg-white/10 hover:bg-white/20 border border-white/10 transition-all  ${role === "admin" ? "text-amber-500" : 'text-gray-300'}`}>
-                                <input
-                                    className='hidden cursor-pointer'
-                                    type="radio"
-                                    name="role"
-                                    value="admin"
-                                    checked={role === "admin"}
-                                    onChange={(e) => setRole(e.target.value)}
-                                />
-                                Admin
-                            </label>
-                        </div>
-                    </div>
-
-                    {/* Register Button */}
 
                     <button
                         type='submit'
                         disabled={isDisabled}
-                        className='
-                            w-full
-                            py-3
-                            rounded-xl
-                            text-lg
-                            font-bold
-                            text-white
-                            bg-linear-to-r
-                            from-cyan-500
-                            to-purple-600
-                            hover:scale-[1.02]
-                            active:scale-95
-                            transition-all
-                            duration-300
-                            shadow-lg
-                            hover:shadow-[0_0_30px_rgba(168,85,247,0.8)]
-                            disabled:opacity-50
-                            disabled:cursor-not-allowed
-                        '
+                        className='w-full py-3 rounded-xl text-lg font-bold text-white bg-linear-to-r from-cyan-500 to-purple-600 hover:scale-[1.02] active:scale-95 transition-all duration-300 shadow-lg hover:shadow-[0_0_30px_rgba(168,85,247,0.8)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3'
                     >
-
-                        {isDisabled
-                            ? 'Registering...'
-                            : 'Register'}
-
+                        {isDisabled && (
+                            <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                        )}
+                        {isDisabled ? 'Registering...' : 'Register'}
                     </button>
-
                 </form>
 
-                {/* Success Message */}
-
                 {message && (
-
-                    <p className='
-                        text-green-400
-                        text-center
-                        mt-4
-                        font-medium
-                    '>
-
+                    <p className='text-green-400 text-center mt-4 font-medium text-sm'>
                         {message}
-
                     </p>
-
                 )}
-
-                {/* Error Message */}
 
                 {error && (
-
-                    <p className='
-                        text-red-400
-                        text-center
-                        mt-4
-                        font-medium
-                    '>
-
+                    <p className='text-red-400 text-center mt-4 font-medium text-sm'>
                         {error}
-
                     </p>
-
                 )}
 
-                {/* Login Link */}
-
-                <p className='
-                    text-center
-                    text-gray-300
-                    mt-6
-                '>
-
+                <p className='text-center text-gray-300 mt-6 text-sm'>
                     Already have an account?{' '}
-
                     <Link
                         to='/login'
-                        className='
-                            text-cyan-400
-                            hover:text-cyan-300
-                            font-semibold
-                        '
+                        className='text-cyan-400 hover:text-cyan-300 font-semibold transition-colors duration-200'
                     >
-
                         Login here
-
                     </Link>
-
                 </p>
-
             </div>
-
         </div>
     );
-}
+};
 
-export default Register
+export default Register;

@@ -1,5 +1,6 @@
 package com.example.server.model;
 
+import lombok.Data;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -10,6 +11,7 @@ import java.time.Instant;
 import java.util.List;
 
 @Document(collection = "users")
+@Data
 public class User {
 
     @Id
@@ -32,6 +34,8 @@ public class User {
 
     @CreatedDate
     private Instant createdAt;
+
+    private List<Presets> presets;
 
     public boolean isVerified() {
         return verified;

@@ -178,19 +178,7 @@ const Login = () => {
                             required
                             placeholder='Enter your email'
                             className='
-                                w-full
-                                px-4
-                                py-3
-                                rounded-xl
-                                bg-white/10
-                                border
-                                border-white/10
-                                text-white
-                                placeholder-gray-400
-                                outline-none
-                                focus:ring-2
-                                focus:ring-cyan-500
-                                transition-all
+                               w-full px-4 py-3.5 rounded-xl bg-black/40 border border-white/10 focus:border-cyan-500 focus:shadow-[0_0_15px_rgba(6,182,212,0.15)] text-white outline-none text-sm transition-all duration-300
                             '
                         />
 
@@ -220,19 +208,7 @@ const Login = () => {
                             required
                             placeholder='Enter your password'
                             className='
-                                w-full
-                                px-4
-                                py-3
-                                rounded-xl
-                                bg-white/10
-                                border
-                                border-white/10
-                                text-white
-                                placeholder-gray-400
-                                outline-none
-                                focus:ring-2
-                                focus:ring-purple-500
-                                transition-all
+                                w-full px-4 py-3.5 rounded-xl bg-black/40 border border-white/10 focus:border-cyan-500 focus:shadow-[0_0_15px_rgba(6,182,212,0.15)] text-white outline-none text-sm transition-all duration-300
                             '
                         />
 
@@ -261,9 +237,16 @@ const Login = () => {
                             hover:shadow-[0_0_30px_rgba(168,85,247,0.8)]
                             disabled:opacity-50
                             disabled:cursor-not-allowed
+                            flex
+                            items-center
+                            justify-center
+                            gap-3
                         '
                     >
 
+                        {isDisabled && (
+                                <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                            )}
                         {isDisabled
                             ? 'Logging in...'
                             : 'Login'}
