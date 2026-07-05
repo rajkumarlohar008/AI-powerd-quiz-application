@@ -1,13 +1,11 @@
 package com.example.server.model;
 
 import lombok.Data;
-import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 
 @Document(collection = "users")
@@ -31,11 +29,16 @@ public class User {
     private String email;
 
     private String password;
+    private String imageURL;
+    private String coudinaryId;
 
-    @CreatedDate
-    private Instant createdAt;
+
+
+
+    private LocalDate createdAt;
 
     private List<Presets> presets;
+
 
     public boolean isVerified() {
         return verified;
@@ -67,8 +70,8 @@ public class User {
         this.rooms = rooms;
     }
 
-    @LastModifiedDate
-    private Instant updatedAt;
+
+    private LocalDate updatedAt;
 
     private List<Room> rooms;
 
@@ -116,19 +119,19 @@ public class User {
         this.password = password;
     }
 
-    public Instant getCreatedAt() {
+    public LocalDate getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(Instant createdAt) {
+    public void setCreatedAt(LocalDate createdAt) {
         this.createdAt = createdAt;
     }
 
-    public Instant getUpdatedAt() {
+    public LocalDate getUpdatedAt() {
         return updatedAt;
     }
 
-    public void setUpdatedAt(Instant updatedAt) {
+    public void setUpdatedAt(LocalDate updatedAt) {
         this.updatedAt = updatedAt;
     }
 }

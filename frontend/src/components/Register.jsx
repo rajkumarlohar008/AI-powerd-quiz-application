@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import API_URL from '../config';
 import Nav from './Nav';
 import { toast } from 'react-toastify';
-import { Check, X } from 'lucide-react';
+import { Check, X, Upload } from 'lucide-react';
 import axios from 'axios';
 
 const Register = () => {
@@ -14,6 +14,8 @@ const Register = () => {
         password: '',
         role: 'user',
     });
+    const [file, setFile] = useState(null);
+    const [previewUrl, setPreviewUrl] = useState(null);
 
     const [message, setMessage] = useState('');
     const [error, setError] = useState('');
@@ -60,6 +62,14 @@ const Register = () => {
         }
     };
 
+    const handleFileChange = (e) => {
+        const selectedFile = e.target.files[0];
+        if (selectedFile) {
+            setFile(selectedFile);
+            setPreviewUrl(URL.createObjectURL(selectedFile));
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -94,19 +104,34 @@ const Register = () => {
             return;
         }
 
-        const payload = {
+        setIsDisabled(true);
+
+        // Preparing Multipart Form Data
+        const formPayload = new FormData();
+        
+        const requestData = {
             name: trimmedName,
             email: trimmedEmail,
             password: trimmedPassword,
             role: formData.role,
         };
 
-        setIsDisabled(true);
+        // Spring Boot expects the 'request' part as a Blob with application/json content type
+        formPayload.append("request", new Blob([JSON.stringify(requestData)], { type: "application/json" }));
+        
+        if (file) {
+            formPayload.append("file", file);
+        }
 
         try {
             const response = await axios.post(
                 `${API_URL}/api/register`,
-                payload
+                formPayload,
+                {
+                    headers: {
+                        'Content-Type': 'multipart/form-data'
+                    }
+                }
             );
 
             setMessage(response.data.message);
@@ -118,6 +143,8 @@ const Register = () => {
                 password: '',
                 role: 'user',
             });
+            setFile(null);
+            setPreviewUrl(null);
             setRole('user');
             setRules({
                 minLength: false,
@@ -156,9 +183,9 @@ const Register = () => {
                         Role
                     </label>
                     <div className='flex gap-1 justify-around'>
-                        <label className={`font-bold text-md w-1/2 text-center py-2 rounded-l-xl bg-white/10 hover:bg-white/20 border border-white/10 transition-all ${role === "user" ? "text-amber-500" : 'text-gray-300'}`}>
+                        <label className={`font-bold text-md w-1/2 text-center py-2 rounded-l-xl bg-white/10 hover:bg-white/20 border border-white/10 transition-all cursor-pointer ${role === "user" ? "text-amber-500" : 'text-gray-300'}`}>
                             <input
-                                className='hidden cursor-pointer'
+                                className='hidden'
                                 type="radio"
                                 name="role"
                                 value="user"
@@ -168,9 +195,9 @@ const Register = () => {
                             User
                         </label>
 
-                        <label className={`font-bold text-md w-1/2 text-center py-2 rounded-r-xl bg-white/10 hover:bg-white/20 border border-white/10 transition-all ${role === "admin" ? "text-amber-500" : 'text-gray-300'}`}>
+                        <label className={`font-bold text-md w-1/2 text-center py-2 rounded-r-xl bg-white/10 hover:bg-white/20 border border-white/10 transition-all cursor-pointer ${role === "admin" ? "text-amber-500" : 'text-gray-300'}`}>
                             <input
-                                className='hidden cursor-pointer'
+                                className='hidden'
                                 type="radio"
                                 name="role"
                                 value="admin"
@@ -207,6 +234,32 @@ const Register = () => {
                             value={formData.email}
                             className='w-full px-4 py-3.5 rounded-xl bg-black/40 border border-white/10 focus:border-cyan-500 focus:shadow-[0_0_15px_rgba(6,182,212,0.15)] text-white outline-none text-sm transition-all duration-300'
                         />
+                    </div>
+
+                    {/* Aesthetic Profile Image Input */}
+                    <div className='flex flex-col gap-2'>
+                        <label className='block text-sm font-semibold text-gray-300 mb-2'>Profile Picture <span className='text-xs text-gray-500 font-normal'>(Optional)</span></label>
+                        <label className='w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 border-dashed hover:border-cyan-500/50 focus-within:border-cyan-500 text-white cursor-pointer transition-all duration-300 flex items-center gap-3 group'>
+                            <input
+                                type='file'
+                                accept='image/*'
+                                onChange={handleFileChange}
+                                className='hidden'
+                            />
+                            <div className='p-2 bg-white/5 rounded-lg group-hover:bg-cyan-500/10 transition-colors'>
+                                <Upload className='w-4 h-4 text-gray-400 group-hover:text-cyan-400' />
+                            </div>
+                            <span className='text-sm text-gray-400 group-hover:text-gray-300 overflow-hidden text-ellipsis whitespace-nowrap max-w-[200px]'>
+                                {file ? file.name : 'Choose an image...'}
+                            </span>
+                            {previewUrl && (
+                                <img 
+                                    src={previewUrl} 
+                                    alt="Preview" 
+                                    className='w-8 h-8 rounded-full object-cover ml-auto border border-white/20'
+                                />
+                            )}
+                        </label>
                     </div>
 
                     <div className='flex flex-col gap-2'>

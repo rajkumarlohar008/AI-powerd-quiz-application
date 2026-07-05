@@ -6,6 +6,7 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class UpdateResponse {
+
     private String message;
     private boolean emailUpdate;
     private UserInfo user;

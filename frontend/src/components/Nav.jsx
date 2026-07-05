@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
-import { Home, ShieldCheck, ChevronDown, X, LogOut, Check, SquarePen } from 'lucide-react';
+import { Home, ShieldCheck, ChevronDown, X, LogOut, Check, SquarePen, Plus } from 'lucide-react';
 import { toast } from 'react-toastify';
-import axios from 'axios'; // ✅ CORRECTED IMPORT HERE
+import axios from 'axios'; 
 import API_URL from '../config';
 
 const Nav = () => {
@@ -11,6 +11,12 @@ const Nav = () => {
     const [isModelOpen, setIsModelOpen] = useState(false);
     const [isDisabled, setIsDisabled] = useState(false);
     const [isUpdate, setIsUpdate] = useState(false);
+    const [profileImage , setProfileImage] = useState('');
+    
+    // New File upload states
+    const [file, setFile] = useState(null);
+    const [previewUrl, setPreviewUrl] = useState(null);
+    const [removeImage, setRemoveImage] = useState(false);
 
     const [message, setMessage] = useState('');
     const [error, setError] = useState('');
@@ -18,6 +24,12 @@ const Nav = () => {
     let [user, setUser] = useState({});
     const navigate = useNavigate();
     const location = useLocation();
+
+    useEffect(() => {
+        // Fallback to user's image or Dicebear generator
+        const fallbackImg = user.imageUrl || user.imageURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`;
+        setProfileImage(fallbackImg);
+    }, [user]);
 
     const handleLogout = (msg) => {
         localStorage.removeItem('token');
@@ -51,8 +63,11 @@ const Nav = () => {
                 password: '',
             });
         }
+        // Reset file selection states when opening/closing modal
+        setFile(null);
+        setPreviewUrl(null);
+        setRemoveImage(false);
     }, [isModelOpen]);
-
 
     const [rules, setRules] = useState({
         minLength: false,
@@ -78,6 +93,9 @@ const Nav = () => {
         setIsUpdate(false);
         setError('');
         setMessage('');
+        setFile(null);
+        setPreviewUrl(null);
+        setRemoveImage(false);
     };
 
     const handleChange = (e) => {
@@ -93,8 +111,18 @@ const Nav = () => {
         }
     };
 
+    const handleFileChange = (e) => {
+        const selectedFile = e.target.files[0];
+        if (selectedFile) {
+            setFile(selectedFile);
+            setPreviewUrl(URL.createObjectURL(selectedFile));
+            setRemoveImage(false);
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+        toast.info("Updating your account, Please wait for a moment !!");
         const name = formData.name || user.name;
         const email = formData.email || user.email;
         const password = formData.password;
@@ -119,35 +147,43 @@ const Nav = () => {
             return;
         }
 
-        const allRulesPassed = Object.values(rules).every(Boolean);
-        if (!allRulesPassed) {
+        if (trimmedPassword && !Object.values(rules).every(Boolean)) {
             const passwordErrorMessage = 'Your password does not meet all the security profile criteria shown below.';
             setError(passwordErrorMessage);
             toast.error(passwordErrorMessage);
             return;
         }
 
-        const payload = {
+        // Prepare object mapping exactly to UpdateRequest structure
+        const updateRequestPayload = {
             id: user.id,
             name: trimmedName,
             email: trimmedEmail,
-            password: trimmedPassword,
             role: user.role,
+            ...(trimmedPassword ? { password: trimmedPassword } : {})
         };
 
         setIsDisabled(true);
 
+        // Building Multipart Form Data payload
+        const formPayload = new FormData();
+        formPayload.append("user", new Blob([JSON.stringify(updateRequestPayload)], { type: "application/json" }));
+        
+        if (file) {
+            formPayload.append("file", file);
+        }
+        
         try {
             const token = localStorage.getItem('token');
 
-            // ✅ Executing proper PUT route with headers configured using regular axios
+            // POST with file data & append query routing fields expected by backend
             const response = await axios.put(
-                `${API_URL}/api/acc/update`,
-                payload,
+                `${API_URL}/api/acc/update?removeImage=${removeImage}`,
+                formPayload,
                 {
                     headers: {
                         'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'multipart/form-data'
                     }
                 }
             );
@@ -157,7 +193,6 @@ const Nav = () => {
 
             if (response.data.emailUpdate) {
                 handleLogout("Email updated! Please verify your email and login again.");
-                handleLogout();
             } else if (response.data.user) {
                 localStorage.setItem(
                     'user',
@@ -236,7 +271,7 @@ const Nav = () => {
                 {/* Profile */}
                 {user?.name && (
                     <div onClick={() => setIsSidebarOpen(true)} className='flex items-center gap-3 bg-white/5 border border-white/10 rounded-full pl-2 pr-4 py-1.5 hover:bg-white/10 transition cursor-pointer'>
-                        <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`} alt='Avatar' className='w-8 h-8 rounded-full bg-slate-800 border border-white/20' />
+                        <img src={profileImage} alt='Avatar' className='w-8 h-8 rounded-full bg-slate-800 border object-cover border-white/20' />
                         <div className='hidden sm:block text-left'>
                             <p className='text-[10px] text-gray-400 leading-none'>Welcome,</p>
                             <p className='text-xs font-semibold text-gray-200'>{user.name}</p>
@@ -252,7 +287,7 @@ const Nav = () => {
                 <div className={`absolute top-0 right-0 h-full w-72 max-w-[80vw] border-l border-white/10 bg-slate-950/90 backdrop-blur-xl p-6 shadow-2xl transition-transform duration-300 transform ${isSidebarOpen ? 'translate-x-0' : 'translate-x-full'}`}>
                     <div className='flex items-center justify-between pb-6 border-b border-white/5 mb-6'>
                         <div onClick={() => setIsModelOpen(true)} className='flex items-center gap-3 cursor-pointer'>
-                            <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name}`} alt='Avatar' className='w-10 h-10 rounded-full bg-slate-800 border border-white/20' />
+                            <img src={profileImage} alt='Avatar' className='w-10 h-10 rounded-full bg-slate-800 border border-white/20 object-cover' />
                             <div className='text-left'>
                                 <p className='text-[10px] text-gray-400 leading-none'>User Profile</p>
                                 <p className='text-sm font-bold text-white mt-1'>{user?.name}</p>
@@ -296,11 +331,30 @@ const Nav = () => {
                 <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50" onClick={closeModal}>
                     <div className="flex flex-col p-8 w-90 md:w-120 rounded-3xl border border-white/10 bg-white/10 backdrop-blur-xl shadow-2xl" onClick={(e) => e.stopPropagation()}>
                         <div className='self-end flex gap-4 items-center'>
-                            <SquarePen onClick={() => setIsUpdate(!isUpdate)} className="w-5 h-5 text-gray-400 hover:text-amber-400 cursor-pointer transition-transform hover:scale-110 active:scale-95" />
+                            <SquarePen onClick={() => setIsUpdate(!isUpdate)} className={`w-5 h-5 cursor-pointer transition-transform hover:scale-110 active:scale-95 ${isUpdate ? 'text-amber-400' : 'text-gray-400'}`} />
                             <X onClick={closeModal} className='w-7 h-7 text-red-400 hover:text-red-600 cursor-pointer transition-transform hover:scale-110 active:scale-95' />
                         </div>
 
-                        <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name || 'default'}`} alt='Avatar' className='w-20 self-center h-20 rounded-full bg-slate-800 border border-white/20' />
+                        {/* Profile Image Wrapper with Glow Plus Icon Layer */}
+                        <div className='relative self-center group mt-2'>
+                            <img 
+                                src={previewUrl || profileImage} 
+                                alt='Avatar' 
+                                className='w-20 h-20 rounded-full bg-slate-800 object-cover border border-white/20' 
+                            />
+                            {isUpdate && (
+                                <label className='absolute bottom-0 right-0 p-1 rounded-full bg-amber-500 border border-white/20  text-white cursor-pointer hover:bg-amber-400 active:scale-90 transition-all duration-200 flex items-center justify-center hover:scale-110 active:scale-95'>
+                                    <input 
+                                        type="file" 
+                                        accept="image/*" 
+                                        onChange={handleFileChange} 
+                                        className="hidden" 
+                                    />
+                                    <Plus className="w-3.5 h-3.5 stroke-[3]" />
+                                </label>
+                            )}
+                        </div>
+
                         <form onSubmit={handleSubmit} className='space-y-5'>
                             <div className='flex flex-col gap-2'>
                                 <label className='mt-3 block text-sm font-semibold text-gray-300 mb-2'>Full Name</label>
@@ -322,7 +376,7 @@ const Nav = () => {
 
                             <div className={`flex flex-col gap-2 ${isUpdate ? 'block' : 'hidden'}`}>
                                 <label className='block text-sm font-semibold text-gray-300 mb-2'>Secure Password</label>
-                                <input type='password' name='password' required={isUpdate} placeholder='Change password or enter current password' onChange={handleChange} value={formData.password} className='w-full px-4 py-3.5 rounded-xl bg-black/40 border border-white/10 focus:border-cyan-500 focus:shadow-[0_0_15px_rgba(6,182,212,0.15)] text-white outline-none text-sm transition-all duration-300' />
+                                <input type='password' name='password' placeholder='Change password or enter current password' onChange={handleChange} value={formData.password} className='w-full px-4 py-3.5 rounded-xl bg-black/40 border border-white/10 focus:border-cyan-500 focus:shadow-[0_0_15px_rgba(6,182,212,0.15)] text-white outline-none text-sm transition-all duration-300' />
 
                                 {formData.password && (
                                     <div className="mt-2 p-3 bg-black/30 border border-white/5 rounded-xl space-y-1.5 transition-all duration-300">
