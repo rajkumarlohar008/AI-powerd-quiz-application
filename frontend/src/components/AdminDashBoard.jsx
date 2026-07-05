@@ -190,6 +190,7 @@ const AdminDashBoard = () => {
         try {
             toast.info("Deleting room !!");
             await axios.delete(`${API_URL}/api/room/delete`, {
+                params:{roomId},
                 headers: { Authorization: `Bearer ${token}` }
             });
 

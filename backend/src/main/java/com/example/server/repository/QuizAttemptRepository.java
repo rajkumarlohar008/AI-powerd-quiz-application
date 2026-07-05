@@ -10,4 +10,5 @@ public interface QuizAttemptRepository extends MongoRepository<QuizAttempt, Stri
     List<QuizAttempt> findByUserIdOrderByCreatedAtDesc(String userId);
     List<QuizAttempt> findByUserId(String userId);
 
+    void deleteByUserId(String id);
 }

@@ -2,6 +2,9 @@ package com.example.server.controller;
 
 import com.example.server.dto.*;
 import com.example.server.model.*;
+import com.example.server.repository.PresetRepository;
+import com.example.server.repository.QuizAttemptRepository;
+import com.example.server.repository.RoomRepository;
 import com.example.server.repository.UserRepository;
 import com.example.server.security.EmailService;
 import com.example.server.security.JwtService;
@@ -23,6 +26,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api")
@@ -35,13 +39,19 @@ public class AuthController {
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
     private final CloudinaryService cloudinaryService;
+    private final QuizAttemptRepository quizAttemptRepository;
+    private final PresetRepository presetRepository;
+    private  final RoomRepository roomRepository;
 
-    public AuthController(PasswordEncoder passwordEncoder, EmailService emailService, UserRepository userRepository, JwtService jwtService, CloudinaryService cloudinaryService) {
+    public AuthController(PasswordEncoder passwordEncoder, EmailService emailService, UserRepository userRepository, JwtService jwtService, CloudinaryService cloudinaryService, QuizAttemptRepository quizAttemptRepository, PresetRepository presetRepository, RoomRepository roomRepository) {
         this.userRepository = userRepository;
         this.jwtService = jwtService;
         this.passwordEncoder = passwordEncoder;
         this.emailService = emailService;
         this.cloudinaryService = cloudinaryService;
+        this.quizAttemptRepository = quizAttemptRepository;
+        this.presetRepository = presetRepository;
+        this.roomRepository = roomRepository;
     }
 
     @GetMapping("/helth")
@@ -65,6 +75,8 @@ public class AuthController {
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setRole(request.getRole());
         user.setCreatedAt(LocalDate.now());
+        user.setPresets(new ArrayList<>());
+        user.setRooms(new ArrayList<>());
 
 
         if ("admin".equals(request.getRole())) {
@@ -255,6 +267,43 @@ public class AuthController {
         UpdateResponse response = new UpdateResponse(message, emailUpdated, new UserInfo(saved.getId(), saved.getName(), saved.getEmail(), saved.getRole(), saved.getImageURL(), saved.getCoudinaryId()));
 
         return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @Transactional
+    @DeleteMapping("/acc/delete")
+    public ResponseEntity<?> deleteUser(@Valid @RequestBody DeleteRequest request, Authentication authentication) throws IOException {
+        if (request.getId() == null || request.getId().isBlank()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "You can't delete this account !!"));
+        }
+
+        String email = authentication.getName();
+        if (email.equals(request.getEmail())) {
+            Optional<User> userOpt = userRepository.findByEmail(email);
+            if (userOpt.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "Your account not found !!"));
+            }
+            User user = userOpt.get();
+
+            // 1. Delete associated quiz attempts via targeted query
+            quizAttemptRepository.deleteByUserId(user.getId());
+
+            // 2. Optimized Room deletion: Pass the user's specific rooms directly to the repository
+            if (user.getRooms() != null && !user.getRooms().isEmpty()) {
+                roomRepository.deleteAll(user.getRooms());
+            }
+
+            // 3. Optimized Presets deletion: Pass the user's specific presets directly to the repository
+            if (user.getPresets() != null && !user.getPresets().isEmpty()) {
+                presetRepository.deleteAll(user.getPresets());
+            }
+            cloudinaryService.deleteImage(user.getCoudinaryId());
+            // 4. Delete the main user entity
+            userRepository.delete(user);
+
+            return ResponseEntity.status(HttpStatus.OK).body(Map.of("message", "Account deleted successfully"));
+        } else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "Please provide correct Email !!"));
+        }
     }
 }
 

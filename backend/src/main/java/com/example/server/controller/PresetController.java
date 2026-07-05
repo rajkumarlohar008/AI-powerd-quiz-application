@@ -89,12 +89,19 @@ public class PresetController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "User not found."));
         }
         User user = userInfo.get();
-        if(user.getPresets().size() == 0){
+        if(user.getPresets() != null && user.getPresets().size() == 0){
             Map<String,Object> body = new HashMap<>();
             body.put("message","You haven't create any presets,Please create one !!");
             return ResponseEntity.status(HttpStatus.OK).body(body);
         }
-        return ResponseEntity.ok(Map.of("message","Here is your presets !!","presets",user.getPresets()));
+        if(user.getPresets() != null){
+            return ResponseEntity.ok(Map.of("message","Here is your presets !!","presets",user.getPresets()));
+        }else{
+            user.setPresets(new ArrayList<>());
+            userRepository.save(user);
+            return ResponseEntity.ok(Map.of("message","You haven't create any presets,Please create one !!"));
+        }
+
     }
 
     @Transactional

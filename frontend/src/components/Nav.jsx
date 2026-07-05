@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
-import { Home, ShieldCheck, ChevronDown, X, LogOut, Check, SquarePen, Plus } from 'lucide-react';
+import { Home, ShieldCheck, ChevronDown, X, LogOut, Check, SquarePen, Plus, Trash } from 'lucide-react';
 import { toast } from 'react-toastify';
-import axios from 'axios'; 
+import axios from 'axios';
 import API_URL from '../config';
 
 const Nav = () => {
@@ -11,8 +11,8 @@ const Nav = () => {
     const [isModelOpen, setIsModelOpen] = useState(false);
     const [isDisabled, setIsDisabled] = useState(false);
     const [isUpdate, setIsUpdate] = useState(false);
-    const [profileImage , setProfileImage] = useState('');
-    
+    const [profileImage, setProfileImage] = useState('');
+
     // New File upload states
     const [file, setFile] = useState(null);
     const [previewUrl, setPreviewUrl] = useState(null);
@@ -168,11 +168,11 @@ const Nav = () => {
         // Building Multipart Form Data payload
         const formPayload = new FormData();
         formPayload.append("user", new Blob([JSON.stringify(updateRequestPayload)], { type: "application/json" }));
-        
+
         if (file) {
             formPayload.append("file", file);
         }
-        
+
         try {
             const token = localStorage.getItem('token');
 
@@ -222,6 +222,63 @@ const Nav = () => {
             const apiError = error.response?.data?.message || 'Updation failed. Please try again.';
             setError(apiError);
             toast.error(apiError);
+        } finally {
+            setIsDisabled(false);
+        }
+    };
+
+    const handleDeleteAccount = async () => {
+        const isConfirmed = window.confirm("Are you absolute sure you want to delete your account? This action is permanent and cannot be undone !!");
+        
+        if (!isConfirmed) {
+            toast.info("Account deletion canceled.");
+            return;
+        }
+
+        // 1. Capture the unique toast session id
+        const toastId = toast.loading("Deleting your account, please wait...");
+        setIsDisabled(true);
+
+        try {
+            const token = localStorage.getItem('token');
+            const payload = { id: user.id, email: user.email };
+
+            const response = await axios.delete(`${API_URL}/api/acc/delete`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                data: payload
+            });
+
+            // 2. Turn the loader into a success message using the captured ID
+            toast.update(toastId, { 
+                render: response.data.message || "Account deleted successfully.", 
+                type: "success", 
+                isLoading: false,
+                autoClose: 2000 
+            });
+
+            // 3. Clear session
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+
+            closeModal();
+            setTimeout(() => {
+                navigate('/register');
+            }, 1500);
+
+        } catch (error) {
+            console.error('Account deletion failed:', error);
+            const apiError = error.response?.data?.message || 'Failed to delete your account.';
+            
+            // 4. Turn the loader into an error message on failure
+            toast.update(toastId, { 
+                render: apiError, 
+                type: "error", 
+                isLoading: false,
+                autoClose: 3000 
+            });
         } finally {
             setIsDisabled(false);
         }
@@ -287,7 +344,7 @@ const Nav = () => {
                 <div className={`absolute top-0 right-0 h-full w-72 max-w-[80vw] border-l border-white/10 bg-slate-950/90 backdrop-blur-xl p-6 shadow-2xl transition-transform duration-300 transform ${isSidebarOpen ? 'translate-x-0' : 'translate-x-full'}`}>
                     <div className='flex items-center justify-between pb-6 border-b border-white/5 mb-6'>
                         <div onClick={() => setIsModelOpen(true)} className='flex items-center gap-3 cursor-pointer'>
-                            <img src={profileImage} alt='Avatar' className='w-10 h-10 rounded-full bg-slate-800 border border-white/20 object-cover' />
+                            <img src={profileImage || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}` } alt='Avatar' className='w-10 h-10 rounded-full bg-slate-800 border border-white/20 object-cover' />
                             <div className='text-left'>
                                 <p className='text-[10px] text-gray-400 leading-none'>User Profile</p>
                                 <p className='text-sm font-bold text-white mt-1'>{user?.name}</p>
@@ -332,23 +389,24 @@ const Nav = () => {
                     <div className="flex flex-col p-8 w-90 md:w-120 rounded-3xl border border-white/10 bg-white/10 backdrop-blur-xl shadow-2xl" onClick={(e) => e.stopPropagation()}>
                         <div className='self-end flex gap-4 items-center'>
                             <SquarePen onClick={() => setIsUpdate(!isUpdate)} className={`w-5 h-5 cursor-pointer transition-transform hover:scale-110 active:scale-95 ${isUpdate ? 'text-amber-400' : 'text-gray-400'}`} />
+                            <Trash onClick={(e) => handleDeleteAccount()} className={`w-5 h-5 text-gray-400 hover:text-red-400 cursor-pointer transition-transform hover:scale-110 ${isUpdate ? 'inline' : 'hidden'} `} />
                             <X onClick={closeModal} className='w-7 h-7 text-red-400 hover:text-red-600 cursor-pointer transition-transform hover:scale-110 active:scale-95' />
                         </div>
 
                         {/* Profile Image Wrapper with Glow Plus Icon Layer */}
                         <div className='relative self-center group mt-2'>
-                            <img 
-                                src={previewUrl || profileImage} 
-                                alt='Avatar' 
-                                className='w-20 h-20 rounded-full bg-slate-800 object-cover border border-white/20' 
+                            <img
+                                src={previewUrl || profileImage}
+                                alt='Avatar'
+                                className='w-20 h-20 rounded-full bg-slate-800 object-cover border border-white/20'
                             />
                             {isUpdate && (
                                 <label className='absolute bottom-0 right-0 p-1 rounded-full bg-amber-500 border border-white/20  text-white cursor-pointer hover:bg-amber-400 active:scale-90 transition-all duration-200 flex items-center justify-center hover:scale-110 active:scale-95'>
-                                    <input 
-                                        type="file" 
-                                        accept="image/*" 
-                                        onChange={handleFileChange} 
-                                        className="hidden" 
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleFileChange}
+                                        className="hidden"
                                     />
                                     <Plus className="w-3.5 h-3.5 stroke-[3]" />
                                 </label>
