@@ -243,7 +243,7 @@ const AiQuizGenerator = () => {
                 );
                 setCreatedRoom(res.data);
             } else if (showPresetModal) {
-                const payload = { presetName: presetTitle, formattedQuestions };
+                const payload = { presetName: presetTitle, questions:formattedQuestions };
                 await axios.post(`${API_URL}/api/preset/create`, payload, {
                     headers: { Authorization: `Bearer ${token}` }
                 });

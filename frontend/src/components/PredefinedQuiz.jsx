@@ -136,9 +136,6 @@ const PredefinedQuiz = () => {
         }
     };
 
-
-    const question = questions[currentQuestion];
-
     // Form Panel Layout Navigation Helpers
     const handleAddPreset = () => {
         resetForm();
@@ -280,7 +277,7 @@ const PredefinedQuiz = () => {
         }
     };
 
-    const fetchAdminPresets =async () => {
+    const fetchAdminPresets = async () => {
         const res = await axios.get(`${API_URL}/api/preset/mine`, {
             headers: {
                 Authorization: `Bearer ${token}`
@@ -319,14 +316,20 @@ const PredefinedQuiz = () => {
         setTimeLeft(30);
         setShowResult(false);
     };
-    if (userAnswers.length === questions.length && showResult) {
+
+    // FIXED: Added safe arrays check to prevent premature renders or index out of bound execution checks
+    if (questions.length > 0 && userAnswers.length === questions.length && showResult) {
         return <Result questions={questions} userAnswers={userAnswers} title={selectedQuiz} onUniversalBack={universalBack} />;
     }
+
+    // FIXED SAFE-GUARD: Dynamically tracks if the index point exists, otherwise falls back gracefully to empty schema
+    const question = questions && questions.length > 0 ? questions[currentQuestion] : EMPTY_QUESTION;
 
     return (
         <>
             <Nav />
-            {selectedQuiz && !addPreset && !updatingRoom && !viewOnly && (
+            {/* FIXED SAFE-GUARD: Ensured rendering conditions check that questions are loaded before passing downstream */}
+            {selectedQuiz && questions.length > 0 && !addPreset && !updatingRoom && !viewOnly && (
                 <QuizScreen
                     currentQuestion={currentQuestion}
                     totalQuestions={questions.length}
@@ -357,12 +360,12 @@ const PredefinedQuiz = () => {
                         <input
                             type="text"
                             name="query"
-                            disabled={tab==='admin'?true:false}
+                            disabled={tab === 'admin' ? true : false}
                             value={query}
-                            className={`items-center cursor-pointer p-4 md:px-10 rounded-xl border  flex gap-5 mb-5 w-full outline-none focus:border-cyan-500/50 ${tab==='admin' ? 'border-red-500/30 bg-red-400/5':'border-white/10 bg-white/5'}`}
-                            placeholder={tab==="admin" ? 'You can`t search here we will fix soon !!':"Search quizzes..."}
+                            className={`items-center cursor-pointer p-4 md:px-10 rounded-xl border flex gap-5 mb-5 w-full outline-none focus:border-cyan-500/50 ${tab === 'admin' ? 'border-red-500/30 bg-red-400/5' : 'border-white/10 bg-white/5'}`}
+                            placeholder={tab === "admin" ? 'You can`t search here we will fix soon !!' : "Search quizzes..."}
                             onChange={(e) => {
-                                let value = tab==="admin" ? '' : e.target.value;
+                                let value = tab === "admin" ? '' : e.target.value;
                                 setQuery(value);
                             }}
                         />
@@ -390,9 +393,9 @@ const PredefinedQuiz = () => {
                                 result.map((item, index) => (
                                     <div key={index}
                                         onClick={() => handleSelectPreset(item)}
-                                        className={`items-center cursor-pointer p-4 md:px-10 bg-white/5 rounded-xl border border-white/10 flex justify-between gap-5 transition-all hover:bg-white/10 ${tab==='admin' ? 'flex-col items-start sm:flex-row' : ''} `}>
+                                        className={`items-center cursor-pointer p-4 md:px-10 bg-white/5 rounded-xl border border-white/10 flex justify-between gap-5 transition-all hover:bg-white/10 ${tab === 'admin' ? 'flex-col items-start sm:flex-row' : ''} `}>
                                         <div className='flex items-center gap-5'>
-                                            <FileChartPie className='w-6 h-6 tex-cyan-400' />
+                                            <FileChartPie className='w-6 h-6 text-cyan-400' />
                                             <h4 className='font-semibold text-xl'>{item.presetName || "Untitled Quiz"}</h4>
                                         </div>
                                         <div className='flex items-center gap-4'>
