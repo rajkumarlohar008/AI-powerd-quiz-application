@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Nav from './Nav';
-import { Undo2 } from 'lucide-react';
+import { Undo2, Users, FileChartPie } from 'lucide-react';
 
 const QuizScreen = ({
     currentQuestion,
@@ -17,6 +17,7 @@ const QuizScreen = ({
     timeLeft,
     role,
     onGenerateRoom,
+    onGeneratePreset,
     onUniversalBack
 }) => {
 
@@ -62,21 +63,34 @@ const QuizScreen = ({
                         {/* Optional Timer (For Standard Quiz) */}
                         <div className='flex items-center gap-5'>
                             {timeLeft !== undefined && (
-                            <div className={`px-4 py-2 rounded-full font-bold text-lg border transition-all duration-300 ${timeLeft <= 10
-                                ? 'bg-red-500/20 text-red-400 border-red-500/30 shadow-[0_0_15px_rgba(239,68,68,0.3)] animate-pulse'
-                                : 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30 shadow-[0_0_15px_rgba(6,182,212,0.2)]'
-                                }`}>
-                                {timeLeft}s
-                            </div>
-                        )}
-                        <Undo2
-                            onClick={onUniversalBack}
-                            className='w-7 h-7 text-white hover:text-blue-400 transition-all duration-200 hover:scale-110 active:scale-95 cursor-pointer'
-                            size={32}
-                        />
+                                <div className={`px-4 py-2 rounded-full font-bold text-lg border transition-all duration-300 ${timeLeft <= 10
+                                    ? 'bg-red-500/20 text-red-400 border-red-500/30 shadow-[0_0_15px_rgba(239,68,68,0.3)] animate-pulse'
+                                    : 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30 shadow-[0_0_15px_rgba(6,182,212,0.2)]'
+                                    }`}>
+                                    {timeLeft}s
+                                </div>
+                            )}
+                            <Undo2
+                                onClick={onUniversalBack}
+                                className='w-7 h-7 text-white hover:text-blue-400 transition-all duration-200 hover:scale-110 active:scale-95 cursor-pointer'
+                                size={32}
+                            />
                         </div>
                     </div>
-
+                    {role === 'admin' && (
+                        <div className={`flex w-full  justify-end`}>
+                            <div className='flex  gap-5  px-5 md:px-10'>
+                                <Users
+                                    onClick={onGenerateRoom}
+                                    className='w-7 h-7 text-gray-400 hover:text-amber-400 cursor-pointer transition-transform hover:scale-110 active:scale-95'
+                                />
+                                <FileChartPie
+                                    onClick={onGeneratePreset}
+                                    className='w-7 h-7 text-gray-400 hover:text-amber-400 cursor-pointer transition-transform hover:scale-110 active:scale-95'
+                                />
+                            </div>
+                        </div>
+                    )}
                     {/* Question */}
                     <h1 className='text-2xl md:text-3xl font-bold text-white mb-10 leading-relaxed'>
                         {questionData?.question}
@@ -120,20 +134,6 @@ const QuizScreen = ({
                             {nextText}
                         </button>
                     </div>
-                    {role === 'admin' && (
-
-                        <div className='flex justify-between gap-5'>
-                            <button
-                                onClick={onGenerateRoom}
-                                // disabled={isNextDisabled}
-                                className='flex-1  text-lg  hover:border-blue-400/40  duration-300 hover:shadow-[0_0_25px_rgba(59,130,246,0.2)] active:scale-[0.98] disabled:opacity-40 disabled:scale-100 disabled:hover:shadow-none disabled:cursor-not-allowed
-                            
-                            px-10 md:px-17 mt-3 w-full py-3.5 rounded-2xl font-bold bg-white/10 hover:bg-white/20 border border-white/10 transition-all text-center text-white'
-                            >
-                                Generate Room For this Quiz
-                            </button>
-                        </div>
-                    )}
                 </div>
             </div>
         </div>
