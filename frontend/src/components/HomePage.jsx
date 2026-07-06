@@ -6,9 +6,8 @@ import { Link } from 'react-router-dom'
 
 const HomePage = () => {
     return (
-        <div className='
-            relative
-            min-h-screen
+        <div className='relative
+            h-screen
             w-full
             overflow-hidden
             bg-linear-to-br
@@ -21,6 +20,8 @@ const HomePage = () => {
             justify-around'>
             <h1
                 className='z-10
+                mt-10
+                sm:mt-5
                 pt-10
                 mt-10
                 px-4

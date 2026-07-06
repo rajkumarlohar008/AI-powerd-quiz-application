@@ -1,6 +1,9 @@
 package com.example.server.dto;
 
 
+import lombok.Getter;
+
+@Getter
 public class CloudinaryResponse {
 
     private String imageUrl;
@@ -11,11 +14,4 @@ public class CloudinaryResponse {
         this.publicId = publicId;
     }
 
-    public String getImageUrl() {
-        return imageUrl;
-    }
-
-    public String getPublicId() {
-        return publicId;
-    }
 }

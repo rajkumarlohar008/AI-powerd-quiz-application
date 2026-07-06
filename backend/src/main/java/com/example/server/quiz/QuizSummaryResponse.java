@@ -1,8 +1,15 @@
 package com.example.server.quiz;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.util.List;
 import java.util.Map;
 
+@Setter
+@Getter
+@AllArgsConstructor
 public class QuizSummaryResponse {
 
     private Map<String, TopicStats> perTopic;
@@ -14,6 +21,7 @@ public class QuizSummaryResponse {
         private int total;
 
         public TopicStats() {
+            // TODO document why this constructor is empty
         }
 
         public int getCorrect() {
@@ -34,31 +42,9 @@ public class QuizSummaryResponse {
     }
 
     public QuizSummaryResponse() {
-    }
-
-    public Map<String, TopicStats> getPerTopic() {
-        return perTopic;
-    }
-
-    public void setPerTopic(Map<String, TopicStats> perTopic) {
-        this.perTopic = perTopic;
-    }
-
-    public String getOverallSummary() {
-        return overallSummary;
-    }
-
-    public void setOverallSummary(String overallSummary) {
-        this.overallSummary = overallSummary;
+        // TODO document why this constructor is empty
     }
 
 
-    public List<String> getRecommendations() {
-        return recommendations;
-    }
-
-    public void setRecommendations(List<String> recommendations) {
-        this.recommendations = recommendations;
-    }
 }
 

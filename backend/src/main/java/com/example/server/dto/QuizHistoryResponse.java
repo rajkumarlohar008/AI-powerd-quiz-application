@@ -1,9 +1,13 @@
 package com.example.server.dto;
 
 import com.example.server.model.QuizAttempt;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.List;
 
+@Setter
+@Getter
 public class QuizHistoryResponse {
 
     private List<QuizAttempt> attempts;
@@ -19,27 +23,4 @@ public class QuizHistoryResponse {
         this.averagePercentage = averagePercentage;
     }
 
-    public List<QuizAttempt> getAttempts() {
-        return attempts;
-    }
-
-    public void setAttempts(List<QuizAttempt> attempts) {
-        this.attempts = attempts;
-    }
-
-    public long getTotalAttempts() {
-        return totalAttempts;
-    }
-
-    public void setTotalAttempts(long totalAttempts) {
-        this.totalAttempts = totalAttempts;
-    }
-
-    public double getAveragePercentage() {
-        return averagePercentage;
-    }
-
-    public void setAveragePercentage(double averagePercentage) {
-        this.averagePercentage = averagePercentage;
-    }
 }

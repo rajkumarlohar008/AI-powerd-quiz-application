@@ -1,13 +1,18 @@
 package com.example.server.model;
 
 import com.example.server.dto.RoomResponseRequest;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import java.util.List;
 
+@Setter
+@Getter
 @Document(collection = "rooms")
 public class Room {
 
+    // WITHOUT THIS GETTER, JACKSON CANNOT SERIALIZE THE ID FIELD INTO JSON!
     @Id
     private String id;
     private String roomName;
@@ -37,36 +42,4 @@ public class Room {
     // CRITICAL FIX: Public Getters and Setters
     // ==========================================
 
-    // WITHOUT THIS GETTER, JACKSON CANNOT SERIALIZE THE ID FIELD INTO JSON!
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getRoomName() {
-        return roomName;
-    }
-
-    public void setRoomName(String roomName) {
-        this.roomName = roomName;
-    }
-
-    public List<RoomQuestions> getQuestions() {
-        return questions;
-    }
-
-    public void setQuestions(List<RoomQuestions> questions) {
-        this.questions = questions;
-    }
-
-    public List<RoomResponseRequest> getUserResponse() {
-        return userResponse;
-    }
-
-    public void setUserResponse(List<RoomResponseRequest> userResponse) {
-        this.userResponse = userResponse;
-    }
 }

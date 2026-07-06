@@ -26,7 +26,6 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api")
@@ -93,7 +92,7 @@ public class AuthController {
         if (file != null && !file.isEmpty()) {
             CloudinaryResponse response = cloudinaryService.uploadImage(file);
             user.setImageURL(response.getImageUrl());
-            user.setCoudinaryId(response.getPublicId());
+            user.setCloudinaryId(response.getPublicId());
         } else {
             user.setImageURL("https://api.dicebear.com/7.x/avataaars/svg?seed=" + request.getName());
         }
@@ -103,7 +102,7 @@ public class AuthController {
             Map<String, Object> body = new HashMap<>();
             body.put("message", message);
             body.put("user", saved);
-            return ResponseEntity.status(HttpStatus.OK).body(new UserInfo(saved.getId(), saved.getName(), saved.getEmail(), saved.getRole(), saved.getImageURL(), saved.getCoudinaryId()));
+            return ResponseEntity.status(HttpStatus.OK).body(new UserInfo(saved.getId(), saved.getName(), saved.getEmail(), saved.getRole(), saved.getImageURL(), saved.getCloudinaryId()));
         }
         Map<String, Object> body = new HashMap<>();
         body.put("message", "Registered Successfully");
@@ -134,7 +133,7 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
         }
         String token = jwtService.generateToken(user.getId(), user.getEmail());
-        LoginResponse response = new LoginResponse("Login successful", token, new UserInfo(user.getId(), user.getName(), user.getEmail(), user.getRole(), user.getImageURL(), user.getCoudinaryId()));
+        LoginResponse response = new LoginResponse("Login successful", token, new UserInfo(user.getId(), user.getName(), user.getEmail(), user.getRole(), user.getImageURL(), user.getCloudinaryId()));
 
         return ResponseEntity.ok(response);
     }
@@ -221,7 +220,7 @@ public class AuthController {
         String message = emailUpdated ? "Please Verify your email to login" : "Your account updated successfully";
 
 // Store the previously saved cloudinary id (the one currently stored in DB) to delete if needed
-        String previousCloudinaryId = savedUser.getCoudinaryId();
+        String previousCloudinaryId = savedUser.getCloudinaryId();
 
 // CASE A: removeImage = true -> delete previous image (if exists) and set avatar URL
         if (removeImage) {
@@ -232,7 +231,7 @@ public class AuthController {
 // optionally log the error; deletion failures should not block the update
 // logger.warn("Failed to delete image from Cloudinary: {}", previousCloudinaryId, e);
                 }
-                savedUser.setCoudinaryId("");
+                savedUser.setCloudinaryId("");
             }
 // Use avatar generator with the (possibly updated) name
             String seedName = savedUser.getName() != null ? savedUser.getName() : "user";
@@ -248,14 +247,14 @@ public class AuthController {
 // logger.warn("Failed to delete previous Cloudinary image: {}", previousCloudinaryId, e);
                     }
 // clear old id before uploading new
-                    savedUser.setCoudinaryId("");
+                    savedUser.setCloudinaryId("");
                 }
 
 // upload new image and set url + public id
                 CloudinaryResponse uploadResp = cloudinaryService.uploadImage(file);
                 if (uploadResp != null) {
                     savedUser.setImageURL(uploadResp.getImageUrl());
-                    savedUser.setCoudinaryId(uploadResp.getPublicId());
+                    savedUser.setCloudinaryId(uploadResp.getPublicId());
                 }
             } else {
 // no file provided and removeImage is false -> do nothing to image fields (keep existing)
@@ -264,7 +263,7 @@ public class AuthController {
 
         User saved = userRepository.save(savedUser);
 
-        UpdateResponse response = new UpdateResponse(message, emailUpdated, new UserInfo(saved.getId(), saved.getName(), saved.getEmail(), saved.getRole(), saved.getImageURL(), saved.getCoudinaryId()));
+        UpdateResponse response = new UpdateResponse(message, emailUpdated, new UserInfo(saved.getId(), saved.getName(), saved.getEmail(), saved.getRole(), saved.getImageURL(), saved.getCloudinaryId()));
 
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
@@ -296,7 +295,7 @@ public class AuthController {
             if (user.getPresets() != null && !user.getPresets().isEmpty()) {
                 presetRepository.deleteAll(user.getPresets());
             }
-            cloudinaryService.deleteImage(user.getCoudinaryId());
+            cloudinaryService.deleteImage(user.getCloudinaryId());
             // 4. Delete the main user entity
             userRepository.delete(user);
 

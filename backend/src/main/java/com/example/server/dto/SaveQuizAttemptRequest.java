@@ -1,7 +1,12 @@
 package com.example.server.dto;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.util.List;
 
+@Setter
+@Getter
 public class SaveQuizAttemptRequest {
 
     private String userId;
@@ -10,54 +15,6 @@ public class SaveQuizAttemptRequest {
     private int total;
     private double percentage;
     private List<QuestionAttemptDto> questions;
-
-    public String getUserId() {
-        return userId;
-    }
-
-    public void setUserId(String userId) {
-        this.userId = userId;
-    }
-
-    public String getQuizType() {
-        return quizType;
-    }
-
-    public void setQuizType(String quizType) {
-        this.quizType = quizType;
-    }
-
-    public int getCorrect() {
-        return correct;
-    }
-
-    public void setCorrect(int correct) {
-        this.correct = correct;
-    }
-
-    public int getTotal() {
-        return total;
-    }
-
-    public void setTotal(int total) {
-        this.total = total;
-    }
-
-    public double getPercentage() {
-        return percentage;
-    }
-
-    public void setPercentage(double percentage) {
-        this.percentage = percentage;
-    }
-
-    public List<QuestionAttemptDto> getQuestions() {
-        return questions;
-    }
-
-    public void setQuestions(List<QuestionAttemptDto> questions) {
-        this.questions = questions;
-    }
 
     public static class QuestionAttemptDto {
         private String question;

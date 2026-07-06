@@ -1,5 +1,6 @@
 package com.example.server.controller;
 
+import com.example.server.ai.AIOrchestrator;
 import com.example.server.dto.QuizHistoryResponse;
 import com.example.server.dto.SaveQuizAttemptRequest;
 import com.example.server.model.QuestionAttempt;
@@ -7,7 +8,7 @@ import com.example.server.model.QuizAttempt;
 import com.example.server.quiz.*;
 import com.example.server.repository.QuizAttemptRepository;
 import com.example.server.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.example.server.services.ExtractTextService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,18 +24,23 @@ import java.util.stream.Collectors;
 @CrossOrigin(origins = "*")
 public class QuizController {
 
-    @Autowired
-    QuizAttemptRepository quizAttemptRepository;
-    @Autowired
-    UserRepository userRepository;
-    @Autowired
-    GeminiService geminiService;
+    private final QuizAttemptRepository quizAttemptRepository;
+    private final UserRepository userRepository;
+    private final AIOrchestrator ai;
+    private final ExtractTextService extractTextService;
+
+    public QuizController(QuizAttemptRepository quizAttemptRepository, UserRepository userRepository, AIOrchestrator ai, ExtractTextService extractTextService) {
+        this.quizAttemptRepository = quizAttemptRepository;
+        this.userRepository = userRepository;
+        this.ai = ai;
+        this.extractTextService = extractTextService;
+    }
 
     @PostMapping(value = "/ai/generate-quiz", consumes = {"multipart/form-data"})
     public ResponseEntity<?> generateAiQuiz(@RequestPart(value = "text", required = false) String text, @RequestPart(value = "file", required = false) MultipartFile file) {
         try {
             String userText = text != null ? text : "";
-            String fileText = file != null ? geminiService.extractTextFromFile(file) : "";
+            String fileText = file != null ? extractTextService.extractTextFromFile(file) : "";
             String combined = (userText + "\n" + fileText).trim();
 
             if (combined.isEmpty()) {
@@ -43,26 +49,30 @@ public class QuizController {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
             }
 
-            AiQuizResponse quiz = geminiService.generateQuiz(combined);
+            AiQuizResponse quiz = ai.generateQuiz(combined);
             return ResponseEntity.ok(quiz);
         } catch (IOException | InterruptedException e) {
             Map<String, Object> body = new HashMap<>();
             body.put("message", "Failed to generate AI quiz.");
             body.put("error", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 
     @PostMapping("/ai/quiz-summary")
     public ResponseEntity<?> aiQuizSummary(@RequestBody QuizSummaryRequest request) {
         try {
-            QuizSummaryResponse summary = geminiService.generateSummary(request);
+            QuizSummaryResponse summary = ai.generateSummary(request);
             return ResponseEntity.ok(summary);
         } catch (IOException | InterruptedException e) {
             Map<String, Object> body = new HashMap<>();
             body.put("message", "Failed to generate AI quiz summary.");
             body.put("error", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 

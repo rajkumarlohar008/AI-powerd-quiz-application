@@ -13,23 +13,29 @@ const Result = ({ questions, userAnswers, quizType = 'PREDEFINED', title, summar
     const token = localStorage.getItem('token') || '';
     const [scoreData, setScoreData] = useState(null);
 
+    // Standardized helper to determine if a specific question was answered correctly
+    const checkIsCorrect = (question, index) => {
+        const userIdx = userAnswers[index];
+        // Safely fallback to correctAnswer if answerIndex is not defined
+        const correctIdx = question.answerIndex !== undefined && question.answerIndex !== null 
+            ? question.answerIndex 
+            : question.correctAnswer;
+
+        // If the user didn't answer, it's incorrect
+        if (userIdx === null || userIdx === undefined) return false;
+
+        return userIdx === correctIdx;
+    };
+
     // Calculate Score
     const calculateScore = () => {
-
         let correct = 0;
         let incorrect = 0;
 
         questions.forEach((question, index) => {
-
-            if (
-                userAnswers[index] ===
-                question.answerIndex || question.correctAnswer  
-            ) {
-
+            if (checkIsCorrect(question, index)) {
                 correct++;
-
             } else {
-
                 incorrect++;
             }
         });
@@ -43,9 +49,9 @@ const Result = ({ questions, userAnswers, quizType = 'PREDEFINED', title, summar
 
     const score = calculateScore();
 
-    const percentage = Math.round(
-        (score.correct / score.total) * 100
-    );
+    const percentage = score.total > 0 
+        ? Math.round((score.correct / score.total) * 100) 
+        : 0;
 
     // Save Quiz Attempt
     useEffect(() => {
@@ -65,32 +71,18 @@ const Result = ({ questions, userAnswers, quizType = 'PREDEFINED', title, summar
         savedRef.current = true;
 
         const payload = {
-
             userId: user.id,
-
             quizType: title || quizType, // Use the dynamic prop here
-
             correct: score.correct,
-
             total: score.total,
-
             percentage,
-
             questions: questions.map((q, index) => ({
-
                 question: q.question,
-
                 options: q.options,
-
-                correctAnswer: q.correctAnswer,
-
-                userAnswer:
-                    userAnswers[index] ?? null,
-
-                explanation: null,
-
-                topic: null,
-
+                correctAnswer: q.answerIndex !== undefined && q.answerIndex !== null ? q.answerIndex : q.correctAnswer,
+                userAnswer: userAnswers[index] ?? null,
+                explanation: q.explanation || null,
+                topic: q.topic || null,
             })),
         };
 
@@ -109,7 +101,7 @@ const Result = ({ questions, userAnswers, quizType = 'PREDEFINED', title, summar
         score.correct,
         score.total,
         percentage,
-        quizType // added to dependencies
+        quizType
     ]);
 
     // Retake Quiz
@@ -123,7 +115,6 @@ const Result = ({ questions, userAnswers, quizType = 'PREDEFINED', title, summar
     };
 
     return (
-
         <div className='relative min-h-screen overflow-y-auto bg-linear-to-br from-black via-slate-900 to-purple-950 flex items-center justify-center px-4 py-10 w-full'>
 
             {/* Glow */}
@@ -161,7 +152,7 @@ const Result = ({ questions, userAnswers, quizType = 'PREDEFINED', title, summar
 
                     <div className='rounded-2xl bg-red-500/10 border border-red-500/20 p-6'>
                         <h2 className='text-4xl font-bold text-red-400'>
-                            {score.total - score.correct}
+                            {score.incorrect}
                         </h2>
                         <p className='text-gray-300'>Incorrect</p>
                     </div>
@@ -208,13 +199,13 @@ const Result = ({ questions, userAnswers, quizType = 'PREDEFINED', title, summar
                         </div>
                     )}
 
-
                     {questions.map((q, idx) => {
                         const userIdx = userAnswers[idx];
-                        const correctIdx = q.answerIndex || q.correctAnswer;
-                        const isCorrect = userIdx === correctIdx;
+                        const correctIdx = q.answerIndex !== undefined && q.answerIndex !== null ? q.answerIndex : q.correctAnswer;
+                        const isCorrect = checkIsCorrect(q, idx);
+                        
                         const userAnswerText = userIdx !== null && userIdx !== undefined ? q.options[userIdx] : 'Not answered';
-                        const correctAnswerText = q.options[correctIdx];
+                        const correctAnswerText = q.options[correctIdx] !== undefined ? q.options[correctIdx] : 'N/A';
 
                         return (
                             <div key={idx} className={`rounded-xl border p-5 relative overflow-hidden ${isCorrect ? 'bg-emerald-500/5 border-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.02)]' : 'bg-red-500/5 border-red-500/20 shadow-[0_0_15px_rgba(239,68,68,0.02)]'}`}>
@@ -245,7 +236,6 @@ const Result = ({ questions, userAnswers, quizType = 'PREDEFINED', title, summar
                     })}
                     <Link
                         to='/dashboard'
-
                         className='self-center w-full py-3.5 rounded-2xl font-bold bg-white/10 hover:bg-white/20 border border-white/10 transition-all text-center text-white'
                     >
                         Back to Dashboard

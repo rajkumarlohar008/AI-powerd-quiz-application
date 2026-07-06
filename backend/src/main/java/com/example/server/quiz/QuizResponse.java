@@ -1,7 +1,12 @@
 package com.example.server.quiz;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.util.List;
 
+@Setter
+@Getter
 public class QuizResponse {
 
     private List<QuizQuestion> questions;
@@ -13,12 +18,5 @@ public class QuizResponse {
         this.questions = questions;
     }
 
-    public List<QuizQuestion> getQuestions() {
-        return questions;
-    }
-
-    public void setQuestions(List<QuizQuestion> questions) {
-        this.questions = questions;
-    }
 }
 
