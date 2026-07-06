@@ -368,7 +368,7 @@ const AdminDashBoard = () => {
                                                             <span className='truncate text-gray-500 font-semibold md:text-[15px]'>Room ID:{roomId}</span>
                                                             <span className='text-[8px] md:text-xs'>You can copy this id and share with the participants.</span>
                                                         </div>
-                                                        <div className='flex items-center  justify-between w-1/3 gap-3 w-28'>
+                                                        <div className='flex items-center  justify-between self-end mt-2 sm:mt-0 w-28 gap-3'>
                                                             <Eye size={28}
                                                                 onClick={(e) => { openPreview(e, room) }}
                                                                 className='w-6  text-gray-400 hover:text-cyan-400 cursor-pointer transition-transform hover:scale-110'
