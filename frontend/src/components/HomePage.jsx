@@ -21,9 +21,7 @@ const HomePage = () => {
             <h1
                 className='z-10
                 mt-10
-                sm:mt-5
                 pt-10
-                mt-10
                 px-4
                 text-3xl
                 md:text-5xl

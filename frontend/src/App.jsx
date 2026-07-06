@@ -21,7 +21,7 @@ const AppContent = () => {
     <>
       {/* If current path is NOT "/", show the Nav component */}
       {/* {location.pathname !== "/" && <Nav />} */}
-      <Nav />
+      {location.pathname === "/" ? '' : <Nav />}
       <Routes>
         <Route path='/' element={<HomePage />} />
         <Route path="/login" element={<Login />} />
