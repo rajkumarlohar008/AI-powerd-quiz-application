@@ -3,7 +3,6 @@ import axios from 'axios';
 import API_URL from '../config';
 import { Link } from 'react-router-dom';
 import { Home, ShieldCheck, ChevronDown, X } from 'lucide-react';
-import Nav from './Nav';
 import Result from './Result';
 import QuizScreen from './QuizScreen'; 
 
@@ -216,7 +215,6 @@ const RoomQuiz = () => {
             {/* Glow */}
             <div className='absolute top-[-120px] left-[-120px] w-[350px] h-[350px] bg-cyan-500/20 rounded-full blur-3xl' />
             <div className='absolute bottom-[-120px] right-[-120px] w-[350px] h-[350px] bg-purple-500/20 rounded-full blur-3xl' />
-            <Nav />
 
             {/* Card */}
             <div className='relative z-10 w-full max-w-2xl rounded-3xl border border-white/10 bg-white/10 backdrop-blur-xl shadow-2xl p-6 md:p-10'>

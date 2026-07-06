@@ -3,7 +3,6 @@ import axios from 'axios';
 import API_URL from '../config';
 import { Link } from 'react-router-dom';
 import { ChevronDown, CirclePlus, Eye, Home, Plus, ShieldCheck, SquarePen, Trash, Undo2, X } from 'lucide-react';
-import Nav from './Nav';
 import { toast } from 'react-toastify';
 
 // Reusable blueprint structure for empty questions
@@ -315,8 +314,6 @@ const AdminDashBoard = () => {
             {/* Glow Background Rings */}
             <div className='absolute top-[-120px] left-[-120px] w-[350px] h-[350px] bg-cyan-500/20 rounded-full blur-3xl pointer-events-none' />
             <div className='absolute bottom-[-120px] right-[-120px] w-[350px] h-[350px] bg-purple-500/20 rounded-full blur-3xl pointer-events-none' />
-
-            <Nav />
             {/* Main Wrapper Panel Container */}
             <div className='mt-12 relative z-10 max-w-6xl mx-auto rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-2xl p-6 md:p-10'>
 

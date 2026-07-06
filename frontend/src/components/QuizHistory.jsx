@@ -16,7 +16,6 @@ import {
     LogOut,
     ArrowRight
 } from 'lucide-react';
-import Nav from './Nav';
 
 const QuizHistory = () => {
 
@@ -154,7 +153,7 @@ const QuizHistory = () => {
             <div className='pointer-events-none absolute -top-30 -left-30 w-80 h-80 bg-cyan-500/20 rounded-full blur-3xl' />
             <div className='pointer-events-none absolute -bottom-30 -right-30 w-80 h-80 bg-purple-500/20 rounded-full blur-3xl' />
 
-            <Nav />
+        
 
             {/* CONDITIONAL RENDER: SHOW DETAIL VIEW */}
             {selectedAttempt ? (

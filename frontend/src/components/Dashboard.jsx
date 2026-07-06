@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import Nav from './Nav';
 import { 
     Home, 
     ShieldCheck, 
@@ -53,8 +52,7 @@ const Dashboard = () => {
             <div className="absolute top-1/3 -right-20 w-[500px] h-[500px] bg-purple-600/20 rounded-full blur-[150px] pointer-events-none" />
             <div className="absolute inset-0 bg-[radial-gradient(transparent_1px,#0b0c20_1px)] [background-size:20px_20px] opacity-30 pointer-events-none" />
 
-            {/* Navbar */}
-            <Nav />
+            
             {/* Main Content Dashboard Wrapper */}
             <main className="mt-20 flex-1 flex items-center justify-center px-4 py-5 relative z-10">
                 

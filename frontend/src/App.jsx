@@ -11,6 +11,7 @@ import AdminDashBoard from './components/AdminDashBoard';
 import RoomQuiz from './components/RoomQuiz';
 import { ToastContainer } from 'react-toastify';
 import PredefinedQuiz from './components/PredefinedQuiz';
+import Nav from './components/Nav';
 
 // 1. Create a helper component to manage the conditional Navbar
 const AppContent = () => {
@@ -20,7 +21,7 @@ const AppContent = () => {
     <>
       {/* If current path is NOT "/", show the Nav component */}
       {/* {location.pathname !== "/" && <Nav />} */}
-
+      <Nav />
       <Routes>
         <Route path='/' element={<HomePage />} />
         <Route path="/login" element={<Login />} />

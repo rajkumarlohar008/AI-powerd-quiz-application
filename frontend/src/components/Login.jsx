@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
 import API_URL from '../config';
-import Nav from './Nav';
 import { toast } from 'react-toastify';
 
 
@@ -111,7 +110,7 @@ const Login = () => {
                 blur-3xl
             ' />
 
-            <Nav />
+            
             {/* Login Card */}
 
             <div className='

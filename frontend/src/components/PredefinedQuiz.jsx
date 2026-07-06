@@ -5,7 +5,6 @@ import { CirclePlus, FileChartPie, Plus, Trash, Undo2, SquarePen, Eye, X, Notebo
 import { useNavigate } from 'react-router-dom';
 import QuizScreen from './QuizScreen';
 import Result from './Result';
-import Nav from './Nav';
 import { toast } from 'react-toastify';
 
 const PredefinedQuiz = () => {
@@ -327,7 +326,7 @@ const PredefinedQuiz = () => {
 
     return (
         <>
-            <Nav />
+            
             {/* FIXED SAFE-GUARD: Ensured rendering conditions check that questions are loaded before passing downstream */}
             {selectedQuiz && questions.length > 0 && !addPreset && !updatingRoom && !viewOnly && (
                 <QuizScreen

@@ -3,7 +3,6 @@ import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import API_URL from '../config';
 import { ChevronDown, Flag, Home, ShieldCheck } from 'lucide-react';
-import Nav from './Nav';
 import QuizScreen from './QuizScreen';
 import { toast } from "react-toastify";
 import Result from './Result';
@@ -300,7 +299,7 @@ const AiQuizGenerator = () => {
             <div className='relative min-h-screen overflow-hidden flex items-center justify-center bg-linear-to-br from-black via-slate-900 to-purple-950 px-4 py-10'>
                 <div className='absolute -top-30 -left-30 w-87.5 h-87.5 bg-cyan-500/20 rounded-full blur-3xl' />
                 <div className='absolute -bottom-30 -right-30 w-87.5 h-87.5 bg-purple-500/20 rounded-full blur-3xl' />
-                <Nav />
+                
 
                 <div className='mt-15 relative z-10 w-full max-w-3xl rounded-3xl border border-white/10 bg-white/10 backdrop-blur-xl shadow-2xl p-6 md:p-10'>
                     <h1 className='text-4xl md:text-5xl font-extrabold text-center mb-10 bg-linear-to-r from-cyan-400 via-blue-500 to-purple-500 bg-clip-text text-transparent tracking-wide drop-shadow-[0_0_15px_rgba(6,182,212,0.3)]'>

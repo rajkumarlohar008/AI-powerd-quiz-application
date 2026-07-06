@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import Nav from './Nav';
 import { Undo2, Users, FileChartPie } from 'lucide-react';
 
 const QuizScreen = ({
@@ -41,7 +40,6 @@ const QuizScreen = ({
             <div className='absolute top-[-120px] left-[-120px] w-[350px] h-[350px] bg-cyan-500/20 rounded-full blur-3xl' />
             <div className='absolute bottom-[-120px] right-[-120px] w-[350px] h-[350px] bg-purple-500/20 rounded-full blur-3xl' />
 
-            <Nav />
 
             <div className='relative z-10 w-full max-w-3xl mx-auto rounded-3xl border border-white/10 bg-white/10 backdrop-blur-xl shadow-2xl p-6 md:p-10 text-white'>
 
@@ -131,7 +129,7 @@ const QuizScreen = ({
                 </div>
 
                 {/* Action Controls Footer */}
-                <div className='flex flex-col sm:flex-row gap-4 border-t border-white/5 pt-6'>
+                <div className='flex flex-row gap-4 border-t border-white/5 pt-6'>
                     <button
                         onClick={onBack}
                         disabled={isBackDisabled}

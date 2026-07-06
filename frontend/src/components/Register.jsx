@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import API_URL from '../config';
-import Nav from './Nav';
 import { toast } from 'react-toastify';
 import { Check, X, Upload } from 'lucide-react';
 import axios from 'axios';
@@ -169,7 +168,6 @@ const Register = () => {
 
     return (
         <div className='relative min-h-screen bg-linear-to-br from-black via-slate-900 to-purple-950 px-4 pt-28 pb-10 flex justify-center items-center overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]'>
-            <Nav />
             <div className='absolute top-[-120px] left-[-120px] w-[350px] h-[350px] bg-cyan-500/20 rounded-full blur-3xl' />
             <div className='absolute bottom-[-120px] right-[-120px] w-[350px] h-[350px] bg-purple-500/20 rounded-full blur-3xl' />
 
