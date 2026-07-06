@@ -398,7 +398,7 @@ const PredefinedQuiz = () => {
                                             <FileChartPie className='w-6 h-6 text-cyan-400' />
                                             <h4 className='font-semibold text-xl'>{item.presetName || "Untitled Quiz"}</h4>
                                         </div>
-                                        <div className='flex items-center gap-4'>
+                                        <div className='flex items-center gap-4 self-end justify-end'>
                                             {isAdmin && tab === 'admin' && (
                                                 <>
                                                     <Eye onClick={(e) => handleViewPresetClick(e, item)} className="w-5 h-5 text-gray-400 hover:text-cyan-400 cursor-pointer transition-transform hover:scale-110" />
