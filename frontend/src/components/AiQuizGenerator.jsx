@@ -4,15 +4,17 @@ import axios from 'axios';
 import API_URL from '../config';
 import { ChevronDown, Flag, Home, ShieldCheck } from 'lucide-react';
 import Nav from './Nav';
-import QuizScreen from './QuizScreen'; 
+import QuizScreen from './QuizScreen';
 import { toast } from "react-toastify";
 import Result from './Result';
+
 
 const AiQuizGenerator = () => {
     const [text, setText] = useState('');
     const [file, setFile] = useState(null);
     const token = localStorage.getItem('token');
     const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+    const summaryController = useRef(null);
 
     const [loading, setLoading] = useState(false);
     const [quiz, setQuiz] = useState(null);
@@ -31,7 +33,6 @@ const AiQuizGenerator = () => {
     const [creatingRoom, setCreatingRoom] = useState(false);
     const [createdRoom, setCreatedRoom] = useState(null);
 
-    // React ref to replace native document.querySelector for file inputs cleanly
     const fileInputRef = useRef(null);
 
     const handleNextClick = async () => {
@@ -39,7 +40,7 @@ const AiQuizGenerator = () => {
             setIsSubmitting(true);
             try {
                 await handleNext();
-            } catch {
+            } finally {
                 setIsSubmitting(false);
             }
         } else {
@@ -47,7 +48,6 @@ const AiQuizGenerator = () => {
         }
     };
 
-    // Timer Implementation
     useEffect(() => {
         if (loading || showRoomModal || showPresetModal || !quiz) return;
 
@@ -55,7 +55,7 @@ const AiQuizGenerator = () => {
             setTimeLeft((prev) => {
                 if (prev <= 1) {
                     handleNext();
-                    return 60; 
+                    return 60;
                 }
                 return prev - 1;
             });
@@ -64,7 +64,6 @@ const AiQuizGenerator = () => {
         return () => clearInterval(timer);
     }, [currentQuestion, loading, showRoomModal, showPresetModal, quiz]);
 
-    // Generate AI Quiz
     const handleGenerate = async (e) => {
         e.preventDefault();
         setLoading(true);
@@ -114,8 +113,7 @@ const AiQuizGenerator = () => {
 
     const openRoomModal = () => setShowRoomModal(true);
     const openPresetModal = () => setShowPresetModal(true);
-    
-    // Fixed: Now clears both room and preset states safely
+
     const closeRoomModal = () => {
         setShowRoomModal(false);
         setShowPresetModal(false);
@@ -125,9 +123,11 @@ const AiQuizGenerator = () => {
     };
 
     const handleAnswerSelect = (index) => {
-        const updated = [...userAnswers];
-        updated[currentQuestion] = index;
-        setUserAnswers(updated);
+        setUserAnswers(prev => {
+            const updated = [...prev];
+            updated[currentQuestion] = index;
+            return updated;
+        });
     };
 
     const handleNext = async () => {
@@ -145,13 +145,23 @@ const AiQuizGenerator = () => {
             setCurrentQuestion(currentQuestion - 1);
             setTimeLeft(60);
         }
+        if (currentQuestion === quiz?.questions?.length - 1) {
+            summaryController.current?.abort();
+            summaryController.current = null;
+        }
     };
 
-    // Submit Answers
     const handleSubmitAnswers = async () => {
         if (!quiz) return;
+
+        // Cancel any previous request
+        summaryController.current?.abort();
+
+        // Create a new controller
+        summaryController.current = new AbortController();
+
         setLoading(true);
-        setError('');
+        setError("");
 
         try {
             const res = await axios.post(
@@ -161,7 +171,10 @@ const AiQuizGenerator = () => {
                     userAnswers
                 },
                 {
-                    headers: { Authorization: `Bearer ${token}` }
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    },
+                    signal: summaryController.current.signal
                 }
             );
 
@@ -173,7 +186,7 @@ const AiQuizGenerator = () => {
                 const total = quiz.questions.length;
                 const correct = quiz.questions.filter((q, i) => userAnswers[i] === q.answerIndex).length;
                 const percentage = total > 0 ? Math.round((correct / total) * 100) : 0;
-                
+
                 const payload = {
                     userId: user.id,
                     quizType: 'AI',
@@ -190,7 +203,6 @@ const AiQuizGenerator = () => {
                     })),
                 };
 
-                // Awaited to prevent floating promise rejections
                 await axios.post(
                     `${API_URL}/api/quiz-attempts`,
                     payload,
@@ -200,11 +212,20 @@ const AiQuizGenerator = () => {
                 );
             }
         } catch (err) {
-            setError('Failed to generate quiz summary.');
+
+            if (err.name === "CanceledError" || err.code === "ERR_CANCELED") {
+                console.log("Summary request cancelled.");
+                return;
+            }
+
+            setError("Failed to generate summary.");
+
         } finally {
             setLoading(false);
+            summaryController.current = null;
         }
     };
+
 
     const handleCreateRoom = async () => {
         const titleToCheck = showRoomModal ? roomTitle : presetTitle;
@@ -243,12 +264,13 @@ const AiQuizGenerator = () => {
                 );
                 setCreatedRoom(res.data);
             } else if (showPresetModal) {
-                const payload = { presetName: presetTitle, questions:formattedQuestions };
+                // FIXED: Property name assigned cleanly as expected by backend endpoints
+                const payload = { presetName: presetTitle, questions: formattedQuestions };
                 await axios.post(`${API_URL}/api/preset/create`, payload, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 toast.success('Preset created successfully!');
-                closeRoomModal(); 
+                closeRoomModal();
             }
         } catch (err) {
             console.error(err);
@@ -259,9 +281,11 @@ const AiQuizGenerator = () => {
     };
 
     const universalBack = () => {
+        summaryController.current?.abort();
+        summaryController.current = null;
         setQuiz(null);
         setUserAnswers([]);
-        setShowSummary(false); // Fixed: Properly triggers state changes now instead of crashing
+        setShowSummary(false);
         setSummary(null);
         setText('');
         setFile(null);
@@ -271,7 +295,6 @@ const AiQuizGenerator = () => {
 
     const current = quiz && quiz.questions[currentQuestion];
 
-    // INITIAL SETUP / DASHBOARD SCREEN
     if (!quiz && !showSummary) {
         return (
             <div className='relative min-h-screen overflow-hidden flex items-center justify-center bg-linear-to-br from-black via-slate-900 to-purple-950 px-4 py-10'>
@@ -337,7 +360,6 @@ const AiQuizGenerator = () => {
         );
     }
 
-    // ACTIVE QUIZ RUNNING SCREEN
     if (quiz && !showSummary && current) {
         return (
             <>
@@ -349,16 +371,17 @@ const AiQuizGenerator = () => {
                     onSelectAnswer={handleAnswerSelect}
                     onNext={handleNextClick}
                     onBack={handleBack}
-                    isNextDisabled={userAnswers[currentQuestion] === null || isSubmitting}
+                    // FIXED: Strict null assessment prevents disabling button when choice index evaluates to 0
+                    isNextDisabled={userAnswers[currentQuestion] === null || userAnswers[currentQuestion] === undefined || isSubmitting}
                     isBackDisabled={currentQuestion === 0}
                     nextText={currentQuestion === quiz.questions.length - 1 ? (isSubmitting ? 'Submitting...' : 'Finish') : 'Next'}
                     timeLeft={timeLeft}
                     role={storedUser.role}
                     onGenerateRoom={openRoomModal}
-                    onGeneratePreset={openPresetModal} 
+                    onGeneratePreset={openPresetModal}
                     onUniversalBack={universalBack}
                 />
-                
+
                 {(showRoomModal || showPresetModal) && (
                     <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50" onClick={closeRoomModal}>
                         <div className="p-8 w-90 md:w-120 rounded-3xl border border-white/10 bg-white/10 backdrop-blur-xl shadow-2xl" onClick={(e) => e.stopPropagation()}>
@@ -375,7 +398,7 @@ const AiQuizGenerator = () => {
                                         className="w-full p-4 rounded-xl bg-black/40 border border-white/10 text-white outline-none"
                                     />
                                     <button
-                                        onClick={handleCreateRoom} 
+                                        onClick={handleCreateRoom}
                                         disabled={creatingRoom}
                                         className="flex-1 text-lg hover:border-blue-400/40 duration-300 hover:shadow-[0_0_25px_rgba(59,130,246,0.2)] active:scale-[0.98] disabled:opacity-40 disabled:scale-100 disabled:hover:shadow-none disabled:cursor-not-allowed px-10 md:px-17 mt-3 w-full py-3.5 rounded-2xl font-bold bg-white/10 hover:bg-white/20 border border-white/10 transition-all text-center text-white"
                                     >
@@ -413,16 +436,15 @@ const AiQuizGenerator = () => {
         );
     }
 
-    // SUMMARY / METRICS SCOREBOARD SCREEN
     if (quiz && showSummary && summary) {
         return (
-            <Result 
-                questions={quiz.questions} 
-                userAnswers={userAnswers} 
-                title={quiz.questions[0].topic} 
-                summary={summary.overallSummary} 
-                recommendation={summary.recommendations} 
-                onUniversalBack={universalBack} 
+            <Result
+                questions={quiz.questions}
+                userAnswers={userAnswers}
+                title={quiz.questions[0].topic}
+                summary={summary.overallSummary}
+                recommendation={summary.recommendations}
+                onUniversalBack={universalBack}
             />
         );
     }

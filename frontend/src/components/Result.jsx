@@ -24,7 +24,7 @@ const Result = ({ questions, userAnswers, quizType = 'PREDEFINED', title, summar
 
             if (
                 userAnswers[index] ===
-                question.correctAnswer
+                question.answerIndex || question.correctAnswer  
             ) {
 
                 correct++;
@@ -52,7 +52,7 @@ const Result = ({ questions, userAnswers, quizType = 'PREDEFINED', title, summar
     useEffect(() => {
         if (
             savedRef.current ||
-            !questions?.length
+            !questions?.length || title === questions[0].topic
         ) {
             return;
         }

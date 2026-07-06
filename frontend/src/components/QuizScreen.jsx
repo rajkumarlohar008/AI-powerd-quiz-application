@@ -25,13 +25,14 @@ const QuizScreen = ({
 
     let handleCreateRoom = () => {
         setPopedUp(true);
-        const newQuestions = questions.questions.map(({ question, options, answerIndex }) => ({
-            question,
-            options,
-            correctAnswer: answerIndex
-        }));
-
-        console.log(newQuestions);
+        if (questionData && questionData.questions) {
+            const newQuestions = questionData.questions.map(({ question, options, answerIndex }) => ({
+                question,
+                options,
+                correctAnswer: answerIndex
+            }));
+            console.log(newQuestions);
+        }
     }
 
     return (
@@ -40,100 +41,112 @@ const QuizScreen = ({
             <div className='absolute top-[-120px] left-[-120px] w-[350px] h-[350px] bg-cyan-500/20 rounded-full blur-3xl' />
             <div className='absolute bottom-[-120px] right-[-120px] w-[350px] h-[350px] bg-purple-500/20 rounded-full blur-3xl' />
 
-            {/* Header */}
             <Nav />
 
-            {/* Quiz Card */}
-            <div className='relative z-10 flex justify-center'>
-                <div className='w-full max-w-4xl rounded-3xl border border-white/10 bg-white/10 backdrop-blur-xl shadow-2xl p-6 md:p-10'>
+            <div className='relative z-10 w-full max-w-3xl mx-auto rounded-3xl border border-white/10 bg-white/10 backdrop-blur-xl shadow-2xl p-6 md:p-10 text-white'>
 
-                    {/* Top */}
-                    <div className='flex justify-between items-center mb-10 gap-4'>
-                        <h2 className='text-cyan-400 text-xl font-bold tracking-wide drop-shadow-[0_0_10px_rgba(34,211,238,0.3)]'>
-                            Question {currentQuestion + 1} of {totalQuestions}
+                {/* Header Section */}
+                <div className='flex items-center justify-between border-b border-white/5 pb-5 mb-6 gap-3'>
+                    <div className='flex flex-col gap-1'>
+                        <h2 className='text-xs font-semibold text-cyan-400 uppercase tracking-wider'>
+                            {title || 'AI Generated Quiz'}
                         </h2>
-
-                        {/* Optional Title (For Room Quiz) */}
-                        {title && questionData.topic && (
-                            <div className='text-white font-semibold  text-center'>
-                                {questionData.topic || title}
-                            </div>
-                        )}
-
-                        {/* Optional Timer (For Standard Quiz) */}
-                        <div className='flex items-center gap-5'>
-                            {timeLeft !== undefined && (
-                                <div className={`px-4 py-2 rounded-full font-bold text-lg border transition-all duration-300 ${timeLeft <= 10
-                                    ? 'bg-red-500/20 text-red-400 border-red-500/30 shadow-[0_0_15px_rgba(239,68,68,0.3)] animate-pulse'
-                                    : 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30 shadow-[0_0_15px_rgba(6,182,212,0.2)]'
-                                    }`}>
-                                    {timeLeft}s
-                                </div>
-                            )}
-                            <Undo2
-                                onClick={onUniversalBack}
-                                className='w-7 h-7 text-white hover:text-blue-400 transition-all duration-200 hover:scale-110 active:scale-95 cursor-pointer'
-                                size={32}
-                            />
-                        </div>
+                        <h1 className='text-xl md:text-2xl font-bold text-white'>
+                            Question {currentQuestion + 1} <span className='text-gray-400 font-normal'>/ {totalQuestions}</span>
+                        </h1>
                     </div>
-                    {role === 'admin' && (
-                        <div className={`flex w-full  justify-end`}>
-                            <div className='flex  gap-5  px-5 md:px-10'>
+
+                    <div className='flex items-center gap-4'>
+                        {role === 'admin' && (
+                            <div className='flex items-center gap-2 bg-white/5 border border-white/10 rounded-xl p-1.5'>
                                 <Users
                                     onClick={onGenerateRoom}
-                                    className='w-7 h-7 text-gray-400 hover:text-amber-400 cursor-pointer transition-transform hover:scale-110 active:scale-95'
+                                    className='w-5 h-5 text-gray-400 hover:text-cyan-400 transition-colors duration-200 cursor-pointer'
                                 />
                                 <FileChartPie
                                     onClick={onGeneratePreset}
-                                    className='w-7 h-7 text-gray-400 hover:text-amber-400 cursor-pointer transition-transform hover:scale-110 active:scale-95'
+                                    className='w-5 h-5 text-gray-400 hover:text-purple-400 transition-colors duration-200 cursor-pointer'
                                 />
                             </div>
-                        </div>
-                    )}
-                    {/* Question */}
-                    <h1 className='text-2xl md:text-3xl font-bold text-white mb-10 leading-relaxed'>
-                        {questionData?.question}
-                    </h1>
+                        )}
+                        <Undo2
+                            onClick={onUniversalBack}
+                            className='w-6 h-6 text-gray-400 hover:text-white transition-all duration-200 cursor-pointer hover:scale-110 active:scale-95'
+                        />
+                    </div>
+                </div>
 
-                    {/* Options */}
-                    <div className='flex flex-col gap-4 mb-10'>
-                        {questionData?.options?.map((opt, index) => (
+                {/* Progress Bar & Timer */}
+                <div className='space-y-4 mb-8'>
+                    <div className='w-full bg-white/5 h-2 rounded-full overflow-hidden border border-white/5'>
+                        <div
+                            className='bg-linear-to-r from-cyan-400 to-purple-500 h-full transition-all duration-500'
+                            style={{ width: `${((currentQuestion + 1) / totalQuestions) * 100}%` }}
+                        />
+                    </div>
+
+                    <div className='flex justify-between items-center text-xs font-semibold tracking-wider uppercase text-gray-400'>
+                        <span>Progress: {Math.round(((currentQuestion + 1) / totalQuestions) * 100)}%</span>
+                        <span className={`${timeLeft <= 10 ? 'text-rose-400 animate-pulse' : 'text-cyan-400'}`}>
+                            Time Remaining: {timeLeft}s
+                        </span>
+                    </div>
+                </div>
+
+                {/* Question Area */}
+                <div className='bg-white/5 border border-white/5 rounded-2xl p-6 mb-8 shadow-inner'>
+                    <p className='text-lg md:text-xl font-medium leading-relaxed text-gray-100'>
+                        {questionData?.question}
+                    </p>
+                </div>
+
+                {/* Options Layout */}
+                <div className='grid grid-cols-1 gap-4 mb-8'>
+                    {questionData?.options?.map((option, index) => {
+                        const isSelected = selectedAnswer === index;
+
+                        return (
                             <button
                                 key={index}
-                                onClick={() => onSelectAnswer(index)}
-                                className={`w-full text-left px-6 py-4 rounded-2xl border transition-all duration-300 font-semibold text-lg ${selectedAnswer === index
-                                    ? 'bg-linear-to-r from-cyan-500 to-purple-600 text-white border-transparent shadow-[0_0_25px_rgba(168,85,247,0.4)] scale-[1.02]'
-                                    : 'bg-white/5 border-white/10 text-gray-300 hover:bg-white/10 hover:border-cyan-400/40 hover:text-white hover:scale-[1.01]'
+                                onClick={() => {
+                                    onSelectAnswer(index);
+                                }}
+                                className={`w-full text-left p-5 rounded-2xl border transition-all duration-300 transform hover:scale-[1.01] active:scale-[0.99] group cursor-pointer flex justify-between items-center ${isSelected
+                                    ? 'bg-linear-to-r from-cyan-500/20 to-purple-500/20 border-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.15)] text-white'
+                                    : 'bg-white/5 border-white/10 text-gray-300 hover:bg-white/10 hover:border-white/20 hover:text-white'
                                     }`}
                             >
-                                {opt}
+                                <span className='font-medium text-base md:text-lg leading-snug pr-4'>
+                                    {option}
+                                </span>
+                                <div className={`w-6 h-6 rounded-full border flex items-center justify-center shrink-0 transition-all duration-300 ${isSelected
+                                    ? 'border-cyan-400 bg-cyan-400'
+                                    : 'border-gray-500 group-hover:border-gray-400'
+                                    }`}>
+                                    {isSelected && <div className='w-2.5 h-2.5 rounded-full bg-slate-950' />}
+                                </div>
                             </button>
-                        ))}
-                    </div>
+                        );
+                    })}
+                </div>
 
-                    {/* Actions */}
-                    <div className='flex justify-between gap-5'>
-                        <button
-                            onClick={onBack}
-                            disabled={isBackDisabled}
-                            className='flex-1  text-lg text-gray-300 border border-white/10 bg-white/5 hover:bg-white/10 hover:text-white hover:scale-[1.02] active:scale-95 transition-all duration-300 disabled:opacity-20 disabled:scale-100 disabled:hover:bg-white/5 disabled:hover:text-gray-300 disabled:cursor-not-allowed
-                            
-                            px-10 md:px-17 mt-3 w-full py-3.5 rounded-2xl font-bold  text-center '
-                        >
-                            Back
-                        </button>
+                {/* Action Controls Footer */}
+                <div className='flex flex-col sm:flex-row gap-4 border-t border-white/5 pt-6'>
+                    <button
+                        onClick={onBack}
+                        disabled={isBackDisabled}
+                        className='flex-1 text-lg text-gray-300 border border-white/10 bg-white/5 hover:bg-white/10 hover:text-white hover:scale-[1.02] active:scale-95 transition-all duration-300 disabled:opacity-20 disabled:scale-100 disabled:hover:bg-white/5 disabled:hover:text-gray-300 disabled:cursor-not-allowed px-10 md:px-17 mt-3 w-full py-3.5 rounded-2xl font-bold text-center'
+                    >
+                        Back
+                    </button>
 
-                        <button
-                            onClick={onNext}
-                            disabled={isNextDisabled}
-                            className='flex-1  text-lg  hover:border-blue-400/40  duration-300 hover:shadow-[0_0_25px_rgba(59,130,246,0.2)] active:scale-[0.98] disabled:opacity-40 disabled:scale-100 disabled:hover:shadow-none disabled:cursor-not-allowed
-                            
-                            px-10 md:px-17 mt-3 w-full py-3.5 rounded-2xl font-bold bg-white/10 hover:bg-white/20 border border-white/10 transition-all text-center text-white'
-                        >
-                            {nextText}
-                        </button>
-                    </div>
+                    <button
+                        onClick={onNext}
+                        disabled={isNextDisabled}
+                        className='flex-1 text-lg hover:border-blue-400/40 duration-300 hover:shadow-[0_0_25px_rgba(59,130,246,0.2)] active:scale-[0.98] disabled:opacity-40 disabled:scale-100 disabled:hover:shadow-none disabled:cursor-not-allowed px-10 md:px-17 mt-3 w-full py-3.5 rounded-2xl font-bold bg-white/10 hover:bg-white/20 border border-white/10 transition-all text-center text-white'
+                    >
+                        {nextText}
+                    </button>
                 </div>
             </div>
         </div>
