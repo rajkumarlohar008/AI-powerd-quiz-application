@@ -7,7 +7,6 @@ import { Link } from 'react-router-dom'
 const HomePage = () => {
     return (
         <div className='
-            mt-15
             relative
             min-h-screen
             w-full
@@ -23,6 +22,7 @@ const HomePage = () => {
             <h1
                 className='z-10
                 pt-10
+                mt-10
                 px-4
                 text-3xl
                 md:text-5xl
