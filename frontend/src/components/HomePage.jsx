@@ -6,7 +6,9 @@ import { Link } from 'react-router-dom'
 
 const HomePage = () => {
     return (
-        <div className='relative
+        <div className='
+            mt-15
+            relative
             min-h-screen
             w-full
             overflow-hidden
