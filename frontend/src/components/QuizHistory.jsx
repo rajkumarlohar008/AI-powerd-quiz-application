@@ -14,8 +14,10 @@ import {
     Users,
     History,
     LogOut,
-    ArrowRight
+    ArrowRight,
+    Trash
 } from 'lucide-react';
+import { toast } from 'react-toastify';
 
 const QuizHistory = () => {
 
@@ -34,12 +36,14 @@ const QuizHistory = () => {
     const [deletingId, setDeletingId] = useState(null);
 
     const handleDeleteClick = async (e, id) => {
+        toast.info("Deleting your Quiz History Please wait !!");
         e.stopPropagation();
 
         setDeletingId(id);
 
         try {
             await handleDelete(id);
+            toast.error("History Deleted");
         } finally {
             setDeletingId(null);
         }
@@ -304,14 +308,9 @@ const QuizHistory = () => {
                                                     <h3 className='text-lg md:text-xl font-bold text-white'>
                                                         {attempt.quizType === 'AI' ? 'AI Quiz' : attempt.quizType}
                                                     </h3>
-                                                    <button
-                                                        type="button"
-                                                        className='bg-red-500/80 text-xs px-2.5 py-1 rounded-md font-semibold hover:bg-red-500 active:scale-95 transition-all text-white relative z-20'
-                                                        onClick={(e) => handleDeleteClick(e, attempt.id || attempt._id)}
-                                                        disabled={deletingId === (attempt.id || attempt._id)}
-                                                    >
-                                                        {deletingId === (attempt.id || attempt._id) ? 'Deleting...' : 'Delete'}
-                                                    </button>
+                                                    <Trash 
+                                                    disabled={deletingId === (attempt.id || attempt._id)}
+                                                    onClick={(e) => handleDeleteClick(e, attempt.id || attempt._id)} className="w-5 h-5 text-gray-400 hover:text-red-400 cursor-pointer transition-transform hover:scale-110 active:scale-95" />
                                                 </div>
                                                 <p className='text-gray-400 text-sm'>
                                                     {attempt.createdAt ? new Date(attempt.createdAt).toLocaleString() : '—'}
