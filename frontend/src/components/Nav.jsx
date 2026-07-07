@@ -1,74 +1,54 @@
 import React, { useEffect, useState } from 'react';
-import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { logout as logoutAction, updateUser as updateUserAction } from '../redux/slices/authSlice';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Home, ShieldCheck, ChevronDown, X, LogOut, Check, SquarePen, Plus, Trash } from 'lucide-react';
 import { toast } from 'react-toastify';
 import axios from 'axios';
 import API_URL from '../config';
 
 const Nav = () => {
+    const navigate = useNavigate();
+    const location = useLocation();
+    const dispatch = useDispatch();
+    
+    // Grabbing authenticated user and token from Redux Global State
+    const { user, token } = useSelector(state => state.auth) || { user: {} };
+    const profileImage = user?.imageUrl || user?.imageURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name}`;
 
+    // Layout toggles remain local as they only affect this specific instance of the UI layout
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isModelOpen, setIsModelOpen] = useState(false);
+
     const [isDisabled, setIsDisabled] = useState(false);
     const [isUpdate, setIsUpdate] = useState(false);
-    const [profileImage, setProfileImage] = useState('');
 
-    // New File upload states
+    // File upload states
     const [file, setFile] = useState(null);
     const [previewUrl, setPreviewUrl] = useState(null);
     const [removeImage, setRemoveImage] = useState(false);
 
     const [message, setMessage] = useState('');
     const [error, setError] = useState('');
-
-    let [user, setUser] = useState({});
-    const navigate = useNavigate();
-    const location = useLocation();
-
-    useEffect(() => {
-        // Fallback to user's image or Dicebear generator
-        const fallbackImg = user?.imageUrl || user?.imageURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name}`;
-        setProfileImage(fallbackImg);
-    }, [user]);
-
-    const handleLogout = (msg) => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        toast.error(msg || "Logged Out! Please visit again ‼️");
-        navigate('/login');
-        setUser('');
-    };
-
-    const getLocalUser = () => {
-        try {
-            const data = localStorage.getItem('user');
-            return data ? JSON.parse(data) : null;
-        } catch (e) {
-            return null;
-        }
-    };
-
     const [formData, setFormData] = useState({
-        name: getLocalUser()?.name || '',
-        email: getLocalUser()?.email || '',
+        name: user?.name || '',
+        email: user?.email || '',
         password: '',
     });
 
+    // Synchronize local modal form data when Redux user state changes or modal opens
     useEffect(() => {
-        const userData = getLocalUser();
-        if (userData) {
-            setUser(userData);
+        if (user) {
             setFormData({
-                name: userData.name || '',
-                email: userData.email || '',
+                name: user.name || '',
+                email: user.email || '',
                 password: '',
             });
         }
-        // Reset file selection states when opening/closing modal
         setFile(null);
         setPreviewUrl(null);
         setRemoveImage(false);
-    }, [isModelOpen]);
+    }, [isModelOpen, user]);
 
     const [rules, setRules] = useState({
         minLength: false,
@@ -101,7 +81,6 @@ const Nav = () => {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-
         setFormData(prev => ({
             ...prev,
             [name]: value
@@ -119,6 +98,14 @@ const Nav = () => {
             setPreviewUrl(URL.createObjectURL(selectedFile));
             setRemoveImage(false);
         }
+    };
+
+    // Consolidated Redux-driven logout action
+    const handleLogout = (msg) => {
+        dispatch(logoutAction());
+        setIsSidebarOpen(false);
+        toast.error(msg || "Logged Out! Please visit again ‼️");
+        navigate('/login');
     };
 
     const handleSubmit = async (e) => {
@@ -155,7 +142,6 @@ const Nav = () => {
             return;
         }
 
-        // Prepare object mapping exactly to UpdateRequest structure
         const updateRequestPayload = {
             id: user.id,
             name: trimmedName,
@@ -166,7 +152,6 @@ const Nav = () => {
 
         setIsDisabled(true);
 
-        // Building Multipart Form Data payload
         const formPayload = new FormData();
         formPayload.append("user", new Blob([JSON.stringify(updateRequestPayload)], { type: "application/json" }));
 
@@ -175,15 +160,14 @@ const Nav = () => {
         }
 
         try {
-            const token = localStorage.getItem('token');
+            const currentToken = token || localStorage.getItem('token');
 
-            // POST with file data & append query routing fields expected by backend
             const response = await axios.put(
                 `${API_URL}/api/acc/update?removeImage=${removeImage}`,
                 formPayload,
                 {
                     headers: {
-                        'Authorization': `Bearer ${token}`,
+                        'Authorization': `Bearer ${currentToken}`,
                         'Content-Type': 'multipart/form-data'
                     }
                 }
@@ -195,25 +179,13 @@ const Nav = () => {
             if (response.data.emailUpdate) {
                 handleLogout("Email updated! Please verify your email and login again.");
             } else if (response.data.user) {
-                localStorage.setItem(
-                    'user',
-                    JSON.stringify(response.data.user)
-                );
-                setUser(response.data.user);
+                // Instantly update Redux Global State store
+                dispatch(updateUserAction(response.data.user));
+                localStorage.setItem('user', JSON.stringify(response.data.user));
             }
 
-            setFormData({
-                name: '',
-                email: '',
-                password: '',
-            });
-            setRules({
-                minLength: false,
-                hasUpper: false,
-                hasLower: false,
-                hasNumber: false,
-                hasSpecial: false,
-            });
+            setFormData({ name: '', email: '', password: '' });
+            setRules({ minLength: false, hasUpper: false, hasLower: false, hasNumber: false, hasSpecial: false });
 
             setTimeout(() => {
                 closeModal();
@@ -236,23 +208,21 @@ const Nav = () => {
             return;
         }
 
-        // 1. Capture the unique toast session id
         const toastId = toast.loading("Deleting your account, please wait...");
         setIsDisabled(true);
 
         try {
-            const token = localStorage.getItem('token');
+            const currentToken = token || localStorage.getItem('token');
             const payload = { id: user.id, email: user.email };
 
             const response = await axios.delete(`${API_URL}/api/acc/delete`, {
                 headers: {
-                    'Authorization': `Bearer ${token}`,
+                    'Authorization': `Bearer ${currentToken}`,
                     'Content-Type': 'application/json'
                 },
                 data: payload
             });
 
-            // 2. Turn the loader into a success message using the captured ID
             toast.update(toastId, { 
                 render: response.data.message || "Account deleted successfully.", 
                 type: "success", 
@@ -260,11 +230,9 @@ const Nav = () => {
                 autoClose: 2000 
             });
 
-            // 3. Clear session
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-
+            dispatch(logoutAction());
             closeModal();
+            
             setTimeout(() => {
                 navigate('/register');
             }, 1500);
@@ -273,7 +241,6 @@ const Nav = () => {
             console.error('Account deletion failed:', error);
             const apiError = error.response?.data?.message || 'Failed to delete your account.';
             
-            // 4. Turn the loader into an error message on failure
             toast.update(toastId, { 
                 render: apiError, 
                 type: "error", 
@@ -289,10 +256,8 @@ const Nav = () => {
         <>
             {/* Header */}
             <header className='fixed top-0 left-0 z-50 w-full px-6 py-4 flex items-center justify-between border-b border-white/5 bg-slate-950/60 backdrop-blur-md'>
-
                 {/* Left Section */}
                 <div className='px-0 md:px-10 flex items-center gap-6'>
-
                     {/* Logo */}
                     <div className='flex items-center gap-2 font-black text-xl tracking-wide text-white'>
                         <span className='bg-linear-to-r from-amber-400 via-pink-500 to-purple-600 p-1.5 rounded-lg text-white inline-flex items-center justify-center'>
@@ -326,7 +291,7 @@ const Nav = () => {
                     </nav>
                 </div>
 
-                {/* Profile */}
+                {/* Profile Widget */}
                 {user?.name && (
                     <div onClick={() => setIsSidebarOpen(true)} className='flex items-center gap-3 bg-white/5 border border-white/10 rounded-full pl-2 pr-4 py-1.5 hover:bg-white/10 transition cursor-pointer'>
                         <img src={profileImage} alt='Avatar' className='w-8 h-8 rounded-full bg-slate-800 border object-cover border-white/20' />
@@ -345,7 +310,7 @@ const Nav = () => {
                 <div className={`absolute top-0 right-0 h-full w-72 max-w-[80vw] border-l border-white/10 bg-slate-950/90 backdrop-blur-xl p-6 shadow-2xl transition-transform duration-300 transform ${isSidebarOpen ? 'translate-x-0' : 'translate-x-full'}`}>
                     <div className='flex items-center justify-between pb-6 border-b border-white/5 mb-6'>
                         <div onClick={() => setIsModelOpen(true)} className='flex items-center gap-3 cursor-pointer'>
-                            <img src={profileImage || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name}` } alt='Avatar' className='w-10 h-10 rounded-full bg-slate-800 border border-white/20 object-cover' />
+                            <img src={profileImage} alt='Avatar' className='w-10 h-10 rounded-full bg-slate-800 border border-white/20 object-cover' />
                             <div className='text-left'>
                                 <p className='text-[10px] text-gray-400 leading-none'>User Profile</p>
                                 <p className='text-sm font-bold text-white mt-1'>{user?.name}</p>
@@ -384,17 +349,17 @@ const Nav = () => {
                 </div>
             </div>
 
-            {/* Modal */}
+            {/* Account Settings / Profile Modal */}
             {isModelOpen && (
                 <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50" onClick={closeModal}>
                     <div className="flex flex-col p-8 w-90 md:w-120 rounded-3xl border border-white/10 bg-white/10 backdrop-blur-xl shadow-2xl" onClick={(e) => e.stopPropagation()}>
                         <div className='self-end flex gap-4 items-center'>
                             <SquarePen onClick={() => setIsUpdate(!isUpdate)} className={`w-5 h-5 cursor-pointer transition-transform hover:scale-110 active:scale-95 ${isUpdate ? 'text-amber-400' : 'text-gray-400'}`} />
-                            <Trash onClick={(e) => handleDeleteAccount()} className={`w-5 h-5 text-gray-400 hover:text-red-400 cursor-pointer transition-transform hover:scale-110 ${isUpdate ? 'inline' : 'hidden'} `} />
+                            <Trash onClick={() => handleDeleteAccount()} className={`w-5 h-5 text-gray-400 hover:text-red-400 cursor-pointer transition-transform hover:scale-110 ${isUpdate ? 'inline' : 'hidden'} `} />
                             <X onClick={closeModal} className='w-7 h-7 text-red-400 hover:text-red-600 cursor-pointer transition-transform hover:scale-110 active:scale-95' />
                         </div>
 
-                        {/* Profile Image Wrapper with Glow Plus Icon Layer */}
+                        {/* Profile Image Preview */}
                         <div className='relative self-center group mt-2'>
                             <img
                                 src={previewUrl || profileImage}
@@ -402,7 +367,7 @@ const Nav = () => {
                                 className='w-20 h-20 rounded-full bg-slate-800 object-cover border border-white/20'
                             />
                             {isUpdate && (
-                                <label className='absolute bottom-0 right-0 p-1 rounded-full bg-amber-500 border border-white/20  text-white cursor-pointer hover:bg-amber-400 active:scale-90 transition-all duration-200 flex items-center justify-center hover:scale-110 active:scale-95'>
+                                <label className='absolute bottom-0 right-0 p-1 rounded-full bg-amber-500 border border-white/20 text-white cursor-pointer hover:bg-amber-400 active:scale-90 transition-all duration-200 flex items-center justify-center hover:scale-110 active:scale-95'>
                                     <input
                                         type="file"
                                         accept="image/*"

@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { useDispatch } from 'react-redux';
+import { loginSuccess } from '../redux/slices/authSlice';
 import { useNavigate, Link } from 'react-router-dom';
 import API_URL from '../config';
 import { toast } from 'react-toastify';
@@ -17,6 +19,7 @@ const Login = () => {
     const [isDisabled, setIsDisabled] = useState(false);
 
     const navigate = useNavigate();
+    const dispatch = useDispatch();
 
 
     const handleChange = (e) => {
@@ -42,15 +45,10 @@ const Login = () => {
                 formData
             );
 
-            localStorage.setItem(
-                'token',
-                response.data.token
-            );
-
-            localStorage.setItem(
-                'user',
-                JSON.stringify(response.data.user)
-            );
+            dispatch(loginSuccess({
+                token: response.data.token,
+                user: response.data.user
+            }));
 
             setMessage('Login successful!');
             toast.success("Login successful !")
