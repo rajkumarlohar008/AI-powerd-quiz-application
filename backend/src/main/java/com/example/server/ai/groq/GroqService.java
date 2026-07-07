@@ -42,31 +42,29 @@ public class GroqService implements AIService {
     @Override
     public AiQuizResponse generateQuiz(String combinedText) throws Exception {
         validateApiKey();
-
+        if (combinedText.length() > 25000) {
+            combinedText = combinedText.substring(0, 25000);
+        }
         String prompt = """
                 You are an expert tutor.
                 Read the following study material detect language and in this language create a quiz.
                 
-                - Generate 10 multiple-choice questions.
-                - Each question must contain:
-                  - "question": string
-                  - "options": array of 4 strings
-                  - "answerIndex": correct option index (0-3)
-                  - "topic": short topic name
-                  - "explanation": short explanation
+                Return exactly 10 questions.
                 
-                Return ONLY valid JSON matching this schema:
-                {
+                 Schema:
+                 {
                   "questions":[
                     {
-                      "question":"...",
-                      "options":["...","...","...","..."],
+                      "question":"",
+                      "options":["","","",""],
                       "answerIndex":0,
-                      "topic":"...",
-                      "explanation":"..."
+                      "topic":"",
+                      "explanation":""
                     }
                   ]
-                }
+                 }
+                
+                 Return only JSON.
                 
                 Study material:
                 """ + combinedText;

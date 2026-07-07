@@ -334,7 +334,7 @@ const AiQuizGenerator = () => {
                             <button
                                 type='button'
                                 onClick={() => fileInputRef.current?.click()}
-                                className='w-full py-4 rounded-2xl border border-dashed border-cyan-400/40 bg-white/5 text-gray-300 font-semibold hover:bg-white/10 hover:border-cyan-400/60 hover:text-white hover:scale-[1.01] transition-all duration-300 cursor-pointer'
+                                className='w-full py-4 rounded-2xl border border-dashed border-cyan-400/40 bg-white/5 text-gray-300 font-semibold hover:bg-white/10 hover:border-cyan-400/60 hover:text-white hover:scale-[1.01] transition-all duration-300 cursor-pointer overflow-clip'
                             >
                                 {file ? file.name : "Upload File"}
                             </button>

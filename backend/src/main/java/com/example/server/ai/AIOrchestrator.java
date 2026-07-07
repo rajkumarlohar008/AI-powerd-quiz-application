@@ -1,5 +1,4 @@
 package com.example.server.ai;
-
 import com.example.server.customexception.AIException;
 import com.example.server.quiz.AiQuizResponse;
 import com.example.server.quiz.QuizSummaryRequest;
@@ -11,105 +10,89 @@ import org.springframework.stereotype.Service;
 public class AIOrchestrator {
 
     private final AIServiceFactory factory;
+
     @Value("${ai.primary}")
     private String primaryProvider;
 
-
     public AIOrchestrator(AIServiceFactory factory) {
-
         this.factory = factory;
     }
 
-    public AiQuizResponse generateQuiz(String text)
-            throws Exception {
-        if (primaryProvider.equalsIgnoreCase("groq")) {
-            try {
+    public AiQuizResponse generateQuiz(String text) throws Exception {
 
-                return factory
-                        .getProvider(AIProvider.GROQ)
-                        .generateQuiz(text);
+        AIProvider[] providers = getProviderOrder();
+
+        Exception lastException = null;
+
+        for (AIProvider provider : providers) {
+            try {
+                System.out.println("Trying " + provider);
+                return factory.getProvider(provider).generateQuiz(text);
 
             } catch (Exception ex) {
 
-                System.out.println("Groq failed");
-                try {
-                    return factory
-                            .getProvider(AIProvider.OPENROUTER)
-                            .generateQuiz(text);
-                } catch (Exception e) {
-                    throw new AIException(
-                            "Both AI providers are unavailable."
-                    );
-                }
-            }
-        } else {
-            try {
+                lastException = ex;
 
-                return factory
-                        .getProvider(AIProvider.OPENROUTER)
-                        .generateQuiz(text);
-
-            } catch (Exception ex) {
-
-                System.out.println("OpenRoute failed");
-                try {
-                    return factory
-                            .getProvider(AIProvider.GROQ)
-                            .generateQuiz(text);
-                } catch (Exception e) {
-                    throw new AIException(
-                            "Both AI providers are unavailable."
-                    );
-                }
+                System.out.println(provider + " failed : " + ex.getMessage());
             }
         }
 
+        throw new AIException(
+                "All AI providers are unavailable.",
+                lastException
+        );
     }
 
-    public QuizSummaryResponse generateSummary(QuizSummaryRequest request)
-            throws Exception {
+    public QuizSummaryResponse generateSummary(QuizSummaryRequest request) throws Exception {
 
-        if (primaryProvider.equalsIgnoreCase("groq")) {
+        AIProvider[] providers = getProviderOrder();
+
+        Exception lastException = null;
+
+        for (AIProvider provider : providers) {
             try {
-
-                return factory
-                        .getProvider(AIProvider.GROQ)
-                        .generateSummary(request);
+                System.out.println("Trying " + provider);
+                return factory.getProvider(provider).generateSummary(request);
 
             } catch (Exception ex) {
 
-                System.out.println("Groq failed");
-                try {
-                    return factory
-                            .getProvider(AIProvider.OPENROUTER)
-                            .generateSummary(request);
-                } catch (Exception e) {
-                    throw new AIException(
-                            "Both AI providers are unavailable."
-                    );
-                }
-            }
-        } else {
-            try {
+                lastException = ex;
 
-                    return factory
-                            .getProvider(AIProvider.OPENROUTER)
-                            .generateSummary(request);
-
-            } catch (Exception ex) {
-
-                System.out.println("OpenRoute failed");
-                try {
-                    return factory
-                            .getProvider(AIProvider.GROQ)
-                            .generateSummary(request);
-                }catch (Exception e){
-                    throw new AIException(
-                            "Both AI providers are unavailable."
-                    );
-                }
+                System.out.println(provider + " failed : " + ex.getMessage());
             }
         }
+
+        throw new AIException(
+                "All AI providers are unavailable.",
+                lastException
+        );
     }
 
+    private AIProvider[] getProviderOrder() {
+
+        switch (primaryProvider.toLowerCase()) {
+
+            case "groq":
+                return new AIProvider[]{
+                        AIProvider.GROQ,
+                        AIProvider.OPENROUTER,
+                        AIProvider.GEMINI
+                };
+
+            case "gemini":
+                return new AIProvider[]{
+                        AIProvider.GEMINI,
+                        AIProvider.GROQ,
+                        AIProvider.OPENROUTER
+                };
+
+            case "openrouter":
+            default:
+                return new AIProvider[]{
+                        AIProvider.OPENROUTER,
+                        AIProvider.GROQ,
+                        AIProvider.GEMINI
+                };
+        }
+    }
 }

@@ -34,7 +34,9 @@ public class OpenRouterService implements AIService {
     private final HttpClient httpClient;
     private final String model;
 
-    public OpenRouterService(@Value("${openrouter.api.key:}") String apiKey, ObjectMapper objectMapper,@Value("${openrouter.model}") String model) {
+    public OpenRouterService(@Value("${openrouter.api.key:}") String apiKey,
+                             ObjectMapper objectMapper,
+                             @Value("${openrouter.model}") String model) {
         this.apiKey = apiKey;
         this.objectMapper = objectMapper;
         this.model = model;
@@ -43,39 +45,63 @@ public class OpenRouterService implements AIService {
 
     @Override
     public AiQuizResponse generateQuiz(String combinedText) throws Exception {
+        for (int attempt = 1; attempt <= 2; attempt++) {
+            try {
+                return executeGenerateQuiz(combinedText);
+            } catch (AIException e) {
+                if (attempt == 2) {
+                    throw e;
+                }
+                System.out.println("Retrying OpenRouter quiz generation (Attempt " + attempt + " failed)...");
+            }
+        }
+        throw new AIException("OpenRouter failed to generate a valid quiz after retries.");
+    }
+
+    private AiQuizResponse executeGenerateQuiz(String combinedText) throws Exception {
         validateApiKey();
 
         String prompt = """
                 You are an expert tutor.
-                Read the following study material detect language and in this language  and create a quiz.
                 
-                - Generate 10 multiple-choice questions.
-                - Each question must contain:
-                  - "question": string
-                  - "options": array of 4 strings
-                  - "answerIndex": correct option index (0-3)
-                  - "topic": short topic name
-                  - "explanation": short explanation
+                Read the study material carefully.
                 
-                Return ONLY valid JSON matching this schema:
+                Generate EXACTLY 10 multiple choice questions.
+                
+                Each question MUST have:
+                - question
+                - options (exactly 4)
+                - answerIndex
+                - topic
+                - explanation
+                
+                IMPORTANT:
+                
+                Return ONLY valid JSON.
+                
+                Do NOT write markdown.
+                
+                Do NOT write ```json.
+                
+                Do NOT write any explanation.
+                
+                Do NOT write any text before or after the JSON.
+                
+                Your response MUST start with {
+                
+                and MUST end with }
+                
+                If you cannot generate the quiz, return
+                
                 {
-                  "questions":[
-                    {
-                      "question":"...",
-                      "options":["...","...","...","..."],
-                      "answerIndex":0,
-                      "topic":"...",
-                      "explanation":"..."
-                    }
-                  ]
+                  "questions":[]
                 }
                 
                 Study material:
+                
                 """ + combinedText;
 
-        // Choose your preferred OpenRouter fallback model here
-        ObjectNode body = buildOpenAiCompatibleRequest(model, prompt, true);
-
+        ObjectNode body = buildOpenAiCompatibleRequest(model, prompt);
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("https://openrouter.ai/api/v1/chat/completions"))
                 .header("Content-Type", MediaType.APPLICATION_JSON_VALUE)
@@ -84,34 +110,49 @@ public class OpenRouterService implements AIService {
                 .build();
 
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-        switch (response.statusCode()) {
-
-            case 200:
-                break;
-
-            case 429:
-                throw new RateLimitException("OpenRoute rate limit exceeded.");
-
-            case 500:
-            case 502:
-            case 503:
-            case 504:
-                throw new AIServiceUnavailableException(
-                        "OpenRoute is temporarily unavailable.");
-
-            default:
-                throw new AIException(response.body());
-        }
+        handleErrorStatusCodes(response);
 
         String text = extractTextFromOpenAiResponse(response.body());
-        Map<String, Object> parsed = objectMapper.readValue(text, new TypeReference<>() {});
-        List<AiQuizQuestion> questions = objectMapper.convertValue(parsed.get("questions"), new TypeReference<List<AiQuizQuestion>>() {});
+        JsonNode root = parseJson(text);
+
+        if (root.isNull()) {
+            throw new AIException("OpenRouter returned null.");
+        }
+
+        if (!root.has("questions")) {
+            System.out.println("Missing 'questions' node. Raw content:\n" + text);
+            throw new AIException("OpenRouter returned an unexpected response structure missing 'questions'.");
+        }
+
+        List<AiQuizQuestion> questions = objectMapper.convertValue(
+                root.get("questions"),
+                new TypeReference<List<AiQuizQuestion>>() {}
+        );
+
+        if (questions == null || questions.size() != 10) {
+            throw new AIException("OpenRouter generated an invalid quiz size. Expected exactly 10, got: "
+                    + (questions == null ? 0 : questions.size()));
+        }
 
         return new AiQuizResponse(questions);
     }
 
     @Override
     public QuizSummaryResponse generateSummary(QuizSummaryRequest request) throws Exception {
+        for (int attempt = 1; attempt <= 2; attempt++) {
+            try {
+                return executeGenerateSummary(request);
+            } catch (AIException e) {
+                if (attempt == 2) {
+                    throw e;
+                }
+                System.out.println("Retrying OpenRouter summary generation (Attempt " + attempt + " failed)...");
+            }
+        }
+        throw new AIException("OpenRouter failed to generate a valid summary after retries.");
+    }
+
+    private QuizSummaryResponse executeGenerateSummary(QuizSummaryRequest request) throws Exception {
         validateApiKey();
 
         Map<String, QuizSummaryResponse.TopicStats> perTopic = new HashMap<>();
@@ -141,7 +182,7 @@ public class OpenRouterService implements AIService {
                 1. Determine strong, medium and weak topics.
                 2. Write an overall summary.
                 3. Give review recommendations.
-                4.detect language of data and give response in that language.
+                4. detect language of data and give response in that language.
                 
                 Return ONLY this JSON format. Do not include markdown code blocks.
                 {
@@ -153,40 +194,32 @@ public class OpenRouterService implements AIService {
                 }
                 """;
 
-        ObjectNode body = buildOpenAiCompatibleRequest("google/gemini-2.5-flash", prompt, true);
+        ObjectNode body = buildOpenAiCompatibleRequest(model, prompt);
 
         HttpRequest httpRequest = HttpRequest.newBuilder()
-                .uri(URI.create("[https://openrouter.ai/api/v1/chat/completions](https://openrouter.ai/api/v1/chat/completions)"))
+                .uri(URI.create("https://openrouter.ai/api/v1/chat/completions"))
                 .header("Content-Type", MediaType.APPLICATION_JSON_VALUE)
                 .header("Authorization", "Bearer " + apiKey)
                 .POST(HttpRequest.BodyPublishers.ofByteArray(objectMapper.writeValueAsBytes(body)))
                 .build();
 
         HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
-
-        switch (response.statusCode()) {
-
-            case 200:
-                break;
-
-            case 429:
-                throw new RateLimitException("OpenRoute rate limit exceeded.");
-
-            case 500:
-            case 502:
-            case 503:
-            case 504:
-                throw new AIServiceUnavailableException(
-                        "OpenRoute is temporarily unavailable.");
-
-            default:
-                throw new AIException(response.body());
-        }
+        handleErrorStatusCodes(response);
 
         String text = extractTextFromOpenAiResponse(response.body());
-        Map<String, Object> parsed = objectMapper.readValue(text, new TypeReference<>() {});
+        JsonNode root = parseJson(text);
 
-        return new QuizSummaryResponse(perTopic,(String) parsed.get("overallSummary"),objectMapper.convertValue(parsed.get("recommendations"), new TypeReference<List<String>>() {}));
+        if (root.isNull()) {
+            throw new AIException("OpenRouter returned null summary.");
+        }
+
+        String overallSummary = root.has("overallSummary") ? root.get("overallSummary").asText("") : "";
+        List<String> recommendations = objectMapper.convertValue(
+                root.get("recommendations"),
+                new TypeReference<List<String>>() {}
+        );
+
+        return new QuizSummaryResponse(perTopic, overallSummary, recommendations);
     }
 
     private void validateApiKey() {
@@ -195,18 +228,20 @@ public class OpenRouterService implements AIService {
         }
     }
 
-    private ObjectNode buildOpenAiCompatibleRequest(String model, String prompt, boolean forceJson) {
+    private ObjectNode buildOpenAiCompatibleRequest(String model, String prompt) {
         ObjectNode body = objectMapper.createObjectNode();
         body.put("model", model);
+        body.put("max_tokens", 3000);
 
         ArrayNode messages = body.putArray("messages");
-        ObjectNode message = messages.addObject();
-        message.put("role", "user");
-        message.put("content", prompt);
+        ObjectNode msg = messages.addObject();
+        msg.put("role", "user");
+        msg.put("content", prompt);
 
-        if (forceJson) {
-            ObjectNode responseFormat = body.putObject("response_format");
-            responseFormat.put("type", "json_object");
+        // Only enable json_object for models that support it
+        if (!model.startsWith("tencent/")) {
+            ObjectNode format = body.putObject("response_format");
+            format.put("type", "json_object");
         }
 
         return body;
@@ -217,14 +252,51 @@ public class OpenRouterService implements AIService {
         JsonNode choices = root.path("choices");
 
         if (!choices.isArray() || choices.isEmpty()) {
-            throw new IOException("No choices returned from the API.");
+            throw new AIException("OpenRouter returned no choices.\n" + responseBody);
         }
 
-        String text = choices.get(0).path("message").path("content").asText().trim();
+        String text = choices.get(0)
+                .path("message")
+                .path("content")
+                .asText("");
+
+        text = text.trim();
 
         if (text.startsWith("```")) {
-            text = text.replaceAll("```json", "").replaceAll("```", "").trim();
+            text = text.replace("```json", "")
+                    .replace("```", "")
+                    .trim();
         }
+
         return text;
+    }
+
+    private JsonNode parseJson(String text) {
+        try {
+            return objectMapper.readTree(text);
+        } catch (Exception e) {
+            System.out.println("========== INVALID JSON ==========");
+            System.out.println(text);
+            System.out.println("=================================");
+            throw new AIException("Invalid JSON returned by OpenRouter.");
+        }
+    }
+
+    private void handleErrorStatusCodes(HttpResponse<String> response) {
+        switch (response.statusCode()) {
+            case 200:
+                break;
+            case 429:
+                System.out.println("Status : " + response.statusCode() + " | Response : " + response.body());
+                throw new RateLimitException("OpenRouter rate limit exceeded.");
+            case 500:
+            case 502:
+            case 503:
+            case 504:
+                System.out.println("Status : " + response.statusCode() + " | Response : " + response.body());
+                throw new AIServiceUnavailableException("OpenRouter is temporarily unavailable.");
+            default:
+                throw new AIException("Unexpected status code from OpenRouter: " + response.statusCode() + "\n" + response.body());
+        }
     }
 }

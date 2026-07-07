@@ -27,7 +27,7 @@ const Nav = () => {
 
     useEffect(() => {
         // Fallback to user's image or Dicebear generator
-        const fallbackImg = user.imageUrl || user.imageURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`;
+        const fallbackImg = user?.imageUrl || user?.imageURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name}`;
         setProfileImage(fallbackImg);
     }, [user]);
 
@@ -36,6 +36,7 @@ const Nav = () => {
         localStorage.removeItem('user');
         toast.error(msg || "Logged Out! Please visit again ‼️");
         navigate('/login');
+        setUser('');
     };
 
     const getLocalUser = () => {
@@ -344,7 +345,7 @@ const Nav = () => {
                 <div className={`absolute top-0 right-0 h-full w-72 max-w-[80vw] border-l border-white/10 bg-slate-950/90 backdrop-blur-xl p-6 shadow-2xl transition-transform duration-300 transform ${isSidebarOpen ? 'translate-x-0' : 'translate-x-full'}`}>
                     <div className='flex items-center justify-between pb-6 border-b border-white/5 mb-6'>
                         <div onClick={() => setIsModelOpen(true)} className='flex items-center gap-3 cursor-pointer'>
-                            <img src={profileImage || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}` } alt='Avatar' className='w-10 h-10 rounded-full bg-slate-800 border border-white/20 object-cover' />
+                            <img src={profileImage || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name}` } alt='Avatar' className='w-10 h-10 rounded-full bg-slate-800 border border-white/20 object-cover' />
                             <div className='text-left'>
                                 <p className='text-[10px] text-gray-400 leading-none'>User Profile</p>
                                 <p className='text-sm font-bold text-white mt-1'>{user?.name}</p>

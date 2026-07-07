@@ -4,6 +4,9 @@ public enum AIProvider {
 
     GROQ,
 
-    OPENROUTER
+    OPENROUTER,
+
+    GEMINI
+
 
 }
