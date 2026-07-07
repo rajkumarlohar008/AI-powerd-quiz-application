@@ -188,7 +188,7 @@ const AiQuizGenerator = () => {
 
                 const payload = {
                     userId: user.id,
-                    quizType: 'AI',
+                    quizType:quiz.questions[0].topic || 'AI',
                     correct,
                     total,
                     percentage,
