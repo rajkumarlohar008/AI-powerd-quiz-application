@@ -48,7 +48,7 @@ const AiQuizGenerator = () => {
     };
 
     useEffect(() => {
-        if (loading || showRoomModal || showPresetModal || !quiz) return;
+        if (loading || showRoomModal || showPresetModal || !quiz || showSummary) return;
 
         const timer = setInterval(() => {
             setTimeLeft((prev) => {
@@ -61,7 +61,7 @@ const AiQuizGenerator = () => {
         }, 1000);
 
         return () => clearInterval(timer);
-    }, [currentQuestion, loading, showRoomModal, showPresetModal, quiz]);
+    }, [currentQuestion, loading, showRoomModal, showPresetModal, quiz,showSummary]);
 
     const handleGenerate = async (e) => {
         e.preventDefault();
