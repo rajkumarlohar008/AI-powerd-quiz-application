@@ -88,7 +88,8 @@ public class SecurityConfig {
                 List.of(
                         "http://localhost:5173",
                         "http://localhost:8089",
-                        "https://ai-powerd-quiz-application-7drs.vercel.app"
+                        "https://ai-powerd-quiz-application-7drs.vercel.app",
+                        "https://quiz-app-ruby-two-98.vercel.app"
                 )
         );
 
