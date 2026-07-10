@@ -11,9 +11,10 @@ const Nav = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const dispatch = useDispatch();
-    
-    // Grabbing authenticated user and token from Redux Global State
-    const { user, token } = useSelector(state => state.auth) || { user: {} };
+
+    // Grab state perfectly from Redux. Fallback to an empty object if auth state doesn't exist.
+    // Force standard fallback defaults so state structure remains stable post-logout
+    const { user, isAuthenticated } = useSelector(state => state.auth) || { user: null, isAuthenticated: false };
     const profileImage = user?.imageUrl || user?.imageURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name}`;
 
     // Layout toggles remain local as they only affect this specific instance of the UI layout
@@ -160,14 +161,12 @@ const Nav = () => {
         }
 
         try {
-            const currentToken = token || localStorage.getItem('token');
-
             const response = await axios.put(
                 `${API_URL}/api/acc/update?removeImage=${removeImage}`,
                 formPayload,
                 {
                     headers: {
-                        'Authorization': `Bearer ${currentToken}`,
+                        'Authorization': `Bearer ${token}`, // Access token directly from Redux state
                         'Content-Type': 'multipart/form-data'
                     }
                 }
@@ -179,9 +178,8 @@ const Nav = () => {
             if (response.data.emailUpdate) {
                 handleLogout("Email updated! Please verify your email and login again.");
             } else if (response.data.user) {
-                // Instantly update Redux Global State store
+                // Instantly update Redux Global State store (which automatically manages localStorage updates)
                 dispatch(updateUserAction(response.data.user));
-                localStorage.setItem('user', JSON.stringify(response.data.user));
             }
 
             setFormData({ name: '', email: '', password: '' });
@@ -202,7 +200,7 @@ const Nav = () => {
 
     const handleDeleteAccount = async () => {
         const isConfirmed = window.confirm("Are you absolute sure you want to delete your account? This action is permanent and cannot be undone !!");
-        
+
         if (!isConfirmed) {
             toast.info("Account deletion canceled.");
             return;
@@ -212,27 +210,26 @@ const Nav = () => {
         setIsDisabled(true);
 
         try {
-            const currentToken = token || localStorage.getItem('token');
             const payload = { id: user.id, email: user.email };
 
             const response = await axios.delete(`${API_URL}/api/acc/delete`, {
                 headers: {
-                    'Authorization': `Bearer ${currentToken}`,
+                    'Authorization': `Bearer ${token}`, // Access token directly from Redux state
                     'Content-Type': 'application/json'
                 },
                 data: payload
             });
 
-            toast.update(toastId, { 
-                render: response.data.message || "Account deleted successfully.", 
-                type: "success", 
+            toast.update(toastId, {
+                render: response.data.message || "Account deleted successfully.",
+                type: "success",
                 isLoading: false,
-                autoClose: 2000 
+                autoClose: 2000
             });
 
             dispatch(logoutAction());
             closeModal();
-            
+
             setTimeout(() => {
                 navigate('/register');
             }, 1500);
@@ -240,12 +237,12 @@ const Nav = () => {
         } catch (error) {
             console.error('Account deletion failed:', error);
             const apiError = error.response?.data?.message || 'Failed to delete your account.';
-            
-            toast.update(toastId, { 
-                render: apiError, 
-                type: "error", 
+
+            toast.update(toastId, {
+                render: apiError,
+                type: "error",
                 isLoading: false,
-                autoClose: 3000 
+                autoClose: 3000
             });
         } finally {
             setIsDisabled(false);
@@ -282,7 +279,7 @@ const Nav = () => {
                             </Link>
                         )}
 
-                        {user?.role === 'admin' && (
+                        {isAuthenticated && user?.role === 'admin' && (
                             <Link to='/admin' className='flex items-center gap-1.5 px-4 py-2 rounded-full hover:bg-white/10 hover:text-white transition'>
                                 <ShieldCheck className='w-4 h-4' />
                                 Admin
@@ -291,8 +288,8 @@ const Nav = () => {
                     </nav>
                 </div>
 
-                {/* Profile Widget */}
-                {user?.name && (
+                {/* Profile Widget - Only visible when user is Authenticated */}
+                {isAuthenticated && user && user?.name && (
                     <div onClick={() => setIsSidebarOpen(true)} className='flex items-center gap-3 bg-white/5 border border-white/10 rounded-full pl-2 pr-4 py-1.5 hover:bg-white/10 transition cursor-pointer'>
                         <img src={profileImage} alt='Avatar' className='w-8 h-8 rounded-full bg-slate-800 border object-cover border-white/20' />
                         <div className='hidden sm:block text-left'>
@@ -304,53 +301,55 @@ const Nav = () => {
                 )}
             </header>
 
-            {/* Sidebar Drawer */}
-            <div className={`fixed inset-0 z-50 transition-opacity duration-300 ${isSidebarOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
-                <div onClick={() => setIsSidebarOpen(false)} className='absolute inset-0 bg-black/60 backdrop-blur-xs' />
-                <div className={`absolute top-0 right-0 h-full w-72 max-w-[80vw] border-l border-white/10 bg-slate-950/90 backdrop-blur-xl p-6 shadow-2xl transition-transform duration-300 transform ${isSidebarOpen ? 'translate-x-0' : 'translate-x-full'}`}>
-                    <div className='flex items-center justify-between pb-6 border-b border-white/5 mb-6'>
-                        <div onClick={() => setIsModelOpen(true)} className='flex items-center gap-3 cursor-pointer'>
-                            <img src={profileImage} alt='Avatar' className='w-10 h-10 rounded-full bg-slate-800 border border-white/20 object-cover' />
-                            <div className='text-left'>
-                                <p className='text-[10px] text-gray-400 leading-none'>User Profile</p>
-                                <p className='text-sm font-bold text-white mt-1'>{user?.name}</p>
+            {/* Sidebar Drawer - Only interacts if user is authenticated */}
+            {isAuthenticated && (
+                <div className={`fixed inset-0 z-50 transition-opacity duration-300 ${isSidebarOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
+                    <div onClick={() => setIsSidebarOpen(false)} className='absolute inset-0 bg-black/60 backdrop-blur-xs' />
+                    <div className={`absolute top-0 right-0 h-full w-72 max-w-[80vw] border-l border-white/10 bg-slate-950/90 backdrop-blur-xl p-6 shadow-2xl transition-transform duration-300 transform ${isSidebarOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+                        <div className='flex items-center justify-between pb-6 border-b border-white/5 mb-6'>
+                            <div onClick={() => setIsModelOpen(true)} className='flex items-center gap-3 cursor-pointer'>
+                                <img src={profileImage} alt='Avatar' className='w-10 h-10 rounded-full bg-slate-800 border border-white/20 object-cover' />
+                                <div className='text-left'>
+                                    <p className='text-[10px] text-gray-400 leading-none'>User Profile</p>
+                                    <p className='text-sm font-bold text-white mt-1'>{user?.name}</p>
+                                </div>
                             </div>
+                            <button onClick={() => setIsSidebarOpen(false)} className='p-1 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition'>
+                                <X className='w-5 h-5' />
+                            </button>
                         </div>
-                        <button onClick={() => setIsSidebarOpen(false)} className='p-1 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition'>
-                            <X className='w-5 h-5' />
-                        </button>
+
+                        <nav className='flex flex-col gap-3 text-base font-semibold'>
+                            {location.pathname === "/dashboard" ? (
+                                <Link to='/' onClick={() => setIsSidebarOpen(false)} className='flex items-center gap-3 w-full px-4 py-3.5 rounded-2xl bg-white/5 text-gray-200 border border-white/5 hover:bg-white/10 transition'>
+                                    <Home className='w-5 h-5' />
+                                    Home
+                                </Link>
+                            ) : (
+                                <Link to='/dashboard' onClick={() => setIsSidebarOpen(false)} className='flex items-center gap-3 w-full px-4 py-3.5 rounded-2xl bg-white/5 text-gray-200 border border-white/5 hover:bg-white/10 transition'>
+                                    <Home className='w-5 h-5' />
+                                    Dashboard
+                                </Link>
+                            )}
+
+                            {user?.role === 'admin' && (
+                                <Link to='/admin' onClick={() => setIsSidebarOpen(false)} className='flex items-center gap-3 w-full px-4 py-3.5 rounded-2xl bg-white/5 text-gray-200 border border-white/5 hover:bg-white/10 transition'>
+                                    <ShieldCheck className='w-5 h-5 text-purple-400' />
+                                    Admin Panel
+                                </Link>
+                            )}
+
+                            <button onClick={() => handleLogout()} className="w-full py-3.5 px-5 rounded-xl font-bold text-sm text-white bg-gradient-to-r from-red-500/80 to-rose-600/90 hover:from-red-500 hover:to-rose-600 shadow-lg shadow-red-500/10 hover:shadow-[0_0_30px_rgba(239,68,68,0.3)] transition-all duration-300 flex items-center justify-center gap-2 active:scale-[0.99]">
+                                <LogOut className="w-4 h-4" />
+                                Logout
+                            </button>
+                        </nav>
                     </div>
-
-                    <nav className='flex flex-col gap-3 text-base font-semibold'>
-                        {location.pathname === "/dashboard" ? (
-                            <Link to='/' onClick={() => setIsSidebarOpen(false)} className='flex items-center gap-3 w-full px-4 py-3.5 rounded-2xl bg-white/5 text-gray-200 border border-white/5 hover:bg-white/10 transition'>
-                                <Home className='w-5 h-5' />
-                                Home
-                            </Link>
-                        ) : (
-                            <Link to='/dashboard' onClick={() => setIsSidebarOpen(false)} className='flex items-center gap-3 w-full px-4 py-3.5 rounded-2xl bg-white/5 text-gray-200 border border-white/5 hover:bg-white/10 transition'>
-                                <Home className='w-5 h-5' />
-                                Dashboard
-                            </Link>
-                        )}
-
-                        {user?.role === 'admin' && (
-                            <Link to='/admin' onClick={() => setIsSidebarOpen(false)} className='flex items-center gap-3 w-full px-4 py-3.5 rounded-2xl bg-white/5 text-gray-200 border border-white/5 hover:bg-white/10 transition'>
-                                <ShieldCheck className='w-5 h-5 text-purple-400' />
-                                Admin Panel
-                            </Link>
-                        )}
-
-                        <button onClick={() => handleLogout()} className="w-full py-3.5 px-5 rounded-xl font-bold text-sm text-white bg-gradient-to-r from-red-500/80 to-rose-600/90 hover:from-red-500 hover:to-rose-600 shadow-lg shadow-red-500/10 hover:shadow-[0_0_30px_rgba(239,68,68,0.3)] transition-all duration-300 flex items-center justify-center gap-2 active:scale-[0.99]">
-                            <LogOut className="w-4 h-4" />
-                            Logout
-                        </button>
-                    </nav>
                 </div>
-            </div>
+            )}
 
             {/* Account Settings / Profile Modal */}
-            {isModelOpen && (
+            {isAuthenticated && isModelOpen && (
                 <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50" onClick={closeModal}>
                     <div className="flex flex-col p-8 w-90 md:w-120 rounded-3xl border border-white/10 bg-white/10 backdrop-blur-xl shadow-2xl" onClick={(e) => e.stopPropagation()}>
                         <div className='self-end flex gap-4 items-center'>

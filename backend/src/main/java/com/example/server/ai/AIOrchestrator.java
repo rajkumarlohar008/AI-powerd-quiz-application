@@ -51,7 +51,6 @@ public class AIOrchestrator {
 
         for (AIProvider provider : providers) {
             try {
-                System.out.println("Trying " + provider);
                 return factory.getProvider(provider).generateSummary(request);
 
             } catch (Exception ex) {

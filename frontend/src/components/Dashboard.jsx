@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { logout as logoutAction} from '../redux/slices/authSlice';
 import { 
     Home, 
     ShieldCheck, 
@@ -15,10 +16,12 @@ import {
     ArrowRight 
 } from 'lucide-react';
 import { toast } from 'react-toastify';
+import { useDispatch } from 'react-redux';
 
 const Dashboard = () => {
     const [user, setUser] = useState(null);
     const navigate = useNavigate();
+    const dispatch = useDispatch();
 
     useEffect(() => {
         const token = localStorage.getItem('token');
@@ -33,8 +36,7 @@ const Dashboard = () => {
 
     // Logout
     const handleLogout = () => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
+        dispatch(logoutAction());
         toast.error("Loged Out! Please visit again ‼️")
         navigate('/login');
     };
