@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+// import { useDispatch, useSelector } from 'react-redux';
 import { logout as logoutAction, updateUser as updateUserAction } from '../redux/slices/authSlice';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Home, ShieldCheck, ChevronDown, X, LogOut, Check, SquarePen, Plus, Trash } from 'lucide-react';
 import { toast } from 'react-toastify';
 import axios from 'axios';
 import API_URL from '../config';
+import { useDispatch, useSelector } from 'react-redux';
 
 const Nav = () => {
     const navigate = useNavigate();

@@ -3,6 +3,7 @@ import Scene from './Scene'
 import { Canvas } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import { Link } from 'react-router-dom'
+import { GenerateButton } from './ui/GenerateButton';
 
 const HomePage = () => {
     return (
@@ -53,26 +54,12 @@ const HomePage = () => {
 
             </div>
             <Link
-                to={'/dashboard'}
-                className=' z-10
-                mb-10
-                px-10
-                py-4
-                rounded-full
-                text-lg
-                md:text-2xl
-                font-bold
-                text-white
-                bg-linear-to-r
-                from-cyan-500
-                to-purple-600
-                hover:scale-105
-                active:scale-95
-                transition-all
-                duration-300
-                shadow-lg
-                hover:shadow-[0_0_40px_rgba(168,85,247,0.8)]'
-            >Get Started</Link>
+            to={"/dashboard"}
+            >
+                <GenerateButton 
+                className='mb-10'
+                />
+            </Link>
         </div>
     )
 }

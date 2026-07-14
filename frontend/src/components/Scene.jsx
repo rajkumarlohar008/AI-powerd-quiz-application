@@ -42,7 +42,7 @@ const Scene = () => {
 
     useFrame((state, delta) => {
         if (ref.current) {
-            ref.current.rotation.y += delta * 0.25;
+            ref.current.rotation.y += delta * -0.25;
         }
     });
 
@@ -63,7 +63,7 @@ const Scene = () => {
             <CurvedText
                 // Pro-Tip: If you want it to perfectly blanket the whole cylinder, 
                 // repeat the text string once like: "WELCOME TO QUIZ APPLICATION • WELCOME TO QUIZ APPLICATION"
-                text="MAKE YOUR LEARNING EASY"
+                text=" ^_^ YSAE GNINRAEL RUOY EKAM"
                 radius={2.1} 
             />
         </group>
