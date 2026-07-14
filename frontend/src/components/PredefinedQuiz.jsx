@@ -296,6 +296,7 @@ const PredefinedQuiz = () => {
     const handleAdminTab = () => {
         try {
             if (tab === "user") {
+                setQuery('');
                 toast.info("Hey Admin,Finding your presets please wait !!")
                 fetchAdminPresets();
             } else {

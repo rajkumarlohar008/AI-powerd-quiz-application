@@ -4,7 +4,6 @@ import HomePage from './components/HomePage';
 import Login from './components/Login';
 import Register from './components/Register';
 import Dashboard from './components/Dashboard';
-import Quiz from './components/Quiz';
 import AiQuizGenerator from './components/AiQuizGenerator';
 import QuizHistory from './components/QuizHistory';
 import AdminDashBoard from './components/AdminDashBoard';
