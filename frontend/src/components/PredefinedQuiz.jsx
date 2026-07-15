@@ -266,6 +266,7 @@ const PredefinedQuiz = () => {
             toast.success("Preset deleted successfully!");
             // Dynamic collection pruning to prevent index out of bounds render crashes
             setResult(prev => prev.filter(item => item.id !== id));
+            setSearchedResult(prev => prev.filter(item => item.id !== id));
         } catch (err) {
             console.error(err);
             toast.error(err.response?.data?.message || "Failed to delete preset");

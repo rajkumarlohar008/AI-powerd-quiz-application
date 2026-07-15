@@ -237,13 +237,15 @@ const AiQuizGenerator = () => {
         }
 
         setCreatingRoom(true);
+        console.log(quiz.questions[1].explanation);
 
         try {
             const formattedQuestions = quiz.questions.map(
-                ({ question, options, answerIndex }) => ({
+                ({ question, options, answerIndex ,explanation}) => ({
                     question,
                     options,
-                    correctAnswer: answerIndex
+                    correctAnswer: answerIndex,
+                    explanation
                 })
             );
 

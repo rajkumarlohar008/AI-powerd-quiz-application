@@ -107,10 +107,11 @@ public class QuizService {
             }).collect(Collectors.toList());
             attempt.setQuestions(qs);
         }
-        quizAttemptRepository.save(attempt);
+        QuizAttempt saved = quizAttemptRepository.save(attempt);
 
         Map<String, Object> body = new HashMap<>();
         body.put("message", "Quiz attempt saved.");
+        body.put("saved",saved);
         return ResponseEntity.status(HttpStatus.CREATED).body(body);
     }
 

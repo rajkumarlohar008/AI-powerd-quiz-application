@@ -19,16 +19,11 @@ public class QuizAttempt {
 
     @Indexed
     private String userId;
-
-    /** PREDEFINED or AI */
     private String quizType;
-
     private int correct;
     private int total;
     private double percentage;
-
     private Instant createdAt;
-
     private List<QuestionAttempt> questions;
 
     public QuizAttempt() {
