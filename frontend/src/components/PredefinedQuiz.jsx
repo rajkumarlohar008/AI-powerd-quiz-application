@@ -51,7 +51,7 @@ const PredefinedQuiz = () => {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 setResult(res.data.query || []);
-                setSearchedResult(result);
+                setSearchedResult(res.data.query || []);
             }
         } catch (error) {
             console.error("Error fetching predefined quizzes:", error);
@@ -62,7 +62,7 @@ const PredefinedQuiz = () => {
 
     useEffect(() => {
         fetchResults();
-    }, [API_URL, token, fetchResults])
+    }, [token])
 
     useEffect(() => {
         if (query.trim() === "") {
