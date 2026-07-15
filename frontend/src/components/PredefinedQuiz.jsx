@@ -13,6 +13,7 @@ const PredefinedQuiz = () => {
     const [user, setUser] = useState(null);
     const [query, setQuery] = useState('');
     const [result, setResult] = useState([]);
+    const [searchedResult, setSearchedResult] = useState([]);
     const [questions, setQuestions] = useState([]);
     const [currentQuestion, setCurrentQuestion] = useState(0);
     const [selectedAnswer, setSelectedAnswer] = useState(null);
@@ -50,37 +51,32 @@ const PredefinedQuiz = () => {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 setResult(res.data.query || []);
+                setSearchedResult(result);
             }
         } catch (error) {
             console.error("Error fetching predefined quizzes:", error);
             setResult([]);
+            setSearchedResult([]);
         }
     }, [API_URL, token, tab]);
 
-    // Handle search query updates with debounce
+    useEffect(() => {
+        fetchResults();
+    }, [API_URL, token, fetchResults])
+
     useEffect(() => {
         if (query.trim() === "") {
-            fetchResults();
+            setSearchedResult(result);
             return;
         }
-
         const timer = setTimeout(async () => {
-            try {
-                const res = await axios.get(`${API_URL}/api/preset`, {
-                    params: { query: query },
-                    headers: { Authorization: `Bearer ${token}` }
-                });
-                setResult(res.data.query || []);
-            } catch (err) {
-                // Handle 404 cleanly by clearing list
-                setResult([]);
-            }
+            setSearchedResult(result.filter((item) => {
+                return item.presetName.toLowerCase().includes(query.toLowerCase());
+            }));
         }, 300);
 
         return () => clearTimeout(timer);
     }, [query, fetchResults, API_URL, token]);
-
-    // Quiz Countdown Timer
     useEffect(() => {
         if (loading || showResult || addPreset || updatingRoom || viewOnly || !selectedQuiz) return;
 
@@ -286,6 +282,7 @@ const PredefinedQuiz = () => {
         const presets = res.data.presets || [];
 
         setResult(presets);
+        setSearchedResult(presets);
         setTab("admin");
 
         if (presets.length === 0) {
@@ -301,6 +298,7 @@ const PredefinedQuiz = () => {
                 fetchAdminPresets();
             } else {
                 setTab("user");
+                setQuery('');
             }
         } catch (err) {
             console.error(err);
@@ -327,7 +325,7 @@ const PredefinedQuiz = () => {
 
     return (
         <>
-            
+
             {/* FIXED SAFE-GUARD: Ensured rendering conditions check that questions are loaded before passing downstream */}
             {selectedQuiz && questions.length > 0 && !addPreset && !updatingRoom && !viewOnly && (
                 <QuizScreen
@@ -360,13 +358,11 @@ const PredefinedQuiz = () => {
                         <input
                             type="text"
                             name="query"
-                            disabled={tab === 'admin' ? true : false}
                             value={query}
-                            className={`items-center cursor-pointer p-4 md:px-10 rounded-xl border flex gap-5 mb-5 w-full outline-none focus:border-cyan-500/50 ${tab === 'admin' ? 'border-red-500/30 bg-red-400/5' : 'border-white/10 bg-white/5'}`}
-                            placeholder={tab === "admin" ? 'You can`t search here we will fix soon !!' : "Search quizzes..."}
+                            className={`items-center cursor-pointer p-4 md:px-10 rounded-xl border flex gap-5 mb-5 w-full outline-none focus:border-cyan-500/50 `}
+                            placeholder={ "Search quizzes..."}
                             onChange={(e) => {
-                                let value = tab === "admin" ? '' : e.target.value;
-                                setQuery(value);
+                                setQuery(e.target.value);
                             }}
                         />
 
@@ -389,8 +385,8 @@ const PredefinedQuiz = () => {
                                 )}
                             </div>
 
-                            {result && result.length > 0 ? (
-                                result.map((item, index) => (
+                            {searchedResult && searchedResult.length > 0 ? (
+                                searchedResult.map((item, index) => (
                                     <div key={index}
                                         onClick={() => handleSelectPreset(item)}
                                         className={`items-center cursor-pointer p-4 md:px-10 bg-white/5 rounded-xl border border-white/10 flex justify-between gap-5 transition-all hover:bg-white/10 ${tab === 'admin' ? 'flex-col items-start sm:flex-row' : ''} `}>
