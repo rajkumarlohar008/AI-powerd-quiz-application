@@ -1,27 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import API_URL from '../config';
-import {
-    Home,
-    ShieldCheck,
-    ChevronDown,
-    User,
-    Mail,
-    Trophy,
-    FileText,
-    Bot,
-    Users,
-    History,
-    LogOut,
-    ArrowRight,
-    Trash
-} from 'lucide-react';
+import { Trash } from 'lucide-react';
 import { toast } from 'react-toastify';
 
 const QuizHistory = () => {
 
-    const [user, setUser] = useState(null);
+    const [user] = useState(() => {
+        try {
+            return JSON.parse(localStorage.getItem('user')) || null;
+        } catch {
+            return null;
+        }
+    });
     const [history, setHistory] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -52,24 +44,20 @@ const QuizHistory = () => {
     // Fetch History
     useEffect(() => {
         const token = localStorage.getItem('token');
-        const userData = localStorage.getItem('user');
 
         if (!token) {
             navigate('/login');
             return;
         }
 
-        const u = userData ? JSON.parse(userData) : null;
-        setUser(u);
-
-        if (!u?.id) {
+        if (!user?.id) {
             setLoading(false);
             return;
         }
 
         axios
             .get(`${API_URL}/api/quiz-history`, {
-                params: { userId: u.id },
+                params: { userId: user.id },
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
@@ -84,7 +72,7 @@ const QuizHistory = () => {
                 setLoading(false);
             });
 
-    }, [navigate]);
+    }, [navigate, user]);
 
     // Dashboard
     const handleDashboard = () => {
@@ -99,17 +87,14 @@ const QuizHistory = () => {
                     Authorization: `Bearer ${token}`
                 }
             });
-            const userData = localStorage.getItem('user');
-            const u = userData ? JSON.parse(userData) : null;
-
             const res = await axios.get(`${API_URL}/api/quiz-history`, {
-                params: { userId: u.id },
+                params: { userId: user?.id },
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
             });
             setHistory(res.data);
-        } catch (err) {
+        } catch {
             setError('Failed to load quiz history.');
         } finally {
             setLoading(false);
@@ -230,11 +215,9 @@ const QuizHistory = () => {
                                             )}
                                         </div>
                                         {
-                                            q.explanation ? <div className={`p-4 rounded-xl border text-sm max-w-2xl text-center 'border-blue-500/20 bg-blue-500/20 text-blue-300 bg'
-                                                }`}>
-                                                <span className={`block text-xs font-bold uppercase tracking-wider mb-1 text-blue-400 text-left
-                                                    `}>
-                                                    Explanation : 
+                                            q.explanation ? <div className="p-4 rounded-xl border text-sm max-w-2xl border-blue-500/20 bg-blue-500/10 text-blue-300">
+                                                <span className="block text-xs font-bold uppercase tracking-wider mb-1 text-blue-400 text-left">
+                                                    Explanation:
                                                 </span>
                                                 {q.explanation}
                                             </div> : ''
@@ -321,7 +304,7 @@ const QuizHistory = () => {
                                             </div>
 
                                             <div className='flex sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-2 border-t sm:border-t-0 border-white/5 pt-3 sm:pt-0'>
-                                                <div className='px-3 py-1.5 rounded-xl bg-linear-to-r from-cyan-500 to-purple-600 text-white font-bold text-sm shadow-lg'>
+                                                <div className='px-3 py-1.5 w-20 text-center rounded-xl bg-linear-to-r from-cyan-500 to-purple-600 text-white font-bold text-sm shadow-lg'>
                                                     {attempt.correct ?? 0} / {attempt.total ?? 0}
                                                 </div>
                                                 <div className='text-xl font-extrabold text-cyan-400'>

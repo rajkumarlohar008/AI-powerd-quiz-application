@@ -36,7 +36,7 @@ const AppContent = () => {
       <ToastContainer
         position="top-right"
         autoClose={3000}
-        theme="light"
+        theme="dark"
       />
       {/* <PredefinedQuiz /> */}
     </>

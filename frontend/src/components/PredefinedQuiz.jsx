@@ -1,8 +1,7 @@
 import axios from 'axios';
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import API_URL from '../config';
 import { CirclePlus, FileChartPie, Plus, Trash, Undo2, SquarePen, Eye, X, NotebookPen } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import QuizScreen from './QuizScreen';
 import Result from './Result';
 import { toast } from 'react-toastify';
@@ -10,20 +9,16 @@ import { toast } from 'react-toastify';
 const PredefinedQuiz = () => {
     let token = localStorage.getItem('token');
     const isAdmin = JSON.parse(localStorage.getItem('user'))?.role === 'admin';
-    const [user, setUser] = useState(null);
     const [query, setQuery] = useState('');
     const [result, setResult] = useState([]);
-    const [searchedResult, setSearchedResult] = useState([]);
     const [questions, setQuestions] = useState([]);
     const [currentQuestion, setCurrentQuestion] = useState(0);
     const [selectedAnswer, setSelectedAnswer] = useState(null);
     const [userAnswers, setUserAnswers] = useState([]);
     const [showResult, setShowResult] = useState(false);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
     const [timeLeft, setTimeLeft] = useState(30);
     const [isFinishDisabled, setIsFinishDisabled] = useState(false);
-    const navigate = useNavigate();
 
     // View States
     const [selectedQuiz, setSelectedQuiz] = useState(null);
@@ -42,7 +37,6 @@ const PredefinedQuiz = () => {
         correctAnswer: 0,
     };
 
-    // FIXED: useCallback prevents an infinite network request loop to your Spring Boot API
     const fetchResults = useCallback(async () => {
         try {
             if (tab === 'user') {
@@ -51,32 +45,23 @@ const PredefinedQuiz = () => {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 setResult(res.data.query || []);
-                setSearchedResult(res.data.query || []);
             }
         } catch (error) {
             console.error("Error fetching predefined quizzes:", error);
             setResult([]);
-            setSearchedResult([]);
         }
-    }, [API_URL, token, tab]);
+    }, [token, tab]);
 
     useEffect(() => {
         fetchResults();
-    }, [token])
+    }, [fetchResults]);
 
-    useEffect(() => {
-        if (query.trim() === "") {
-            setSearchedResult(result);
-            return;
-        }
-        const timer = setTimeout(async () => {
-            setSearchedResult(result.filter((item) => {
-                return item.presetName.toLowerCase().includes(query.toLowerCase());
-            }));
-        }, 300);
-
-        return () => clearTimeout(timer);
-    }, [query, fetchResults, API_URL, token]);
+    const searchedResult = useMemo(() => {
+        if (!query.trim()) return result;
+        return result.filter((item) =>
+            (item.presetName || '').toLowerCase().includes(query.toLowerCase())
+        );
+    }, [query, result]);
     useEffect(() => {
         if (loading || showResult || addPreset || updatingRoom || viewOnly || !selectedQuiz) return;
 
@@ -266,7 +251,6 @@ const PredefinedQuiz = () => {
             toast.success("Preset deleted successfully!");
             // Dynamic collection pruning to prevent index out of bounds render crashes
             setResult(prev => prev.filter(item => item.id !== id));
-            setSearchedResult(prev => prev.filter(item => item.id !== id));
         } catch (err) {
             console.error(err);
             toast.error(err.response?.data?.message || "Failed to delete preset");
@@ -283,7 +267,6 @@ const PredefinedQuiz = () => {
         const presets = res.data.presets || [];
 
         setResult(presets);
-        setSearchedResult(presets);
         setTab("admin");
 
         if (presets.length === 0) {
@@ -360,8 +343,8 @@ const PredefinedQuiz = () => {
                             type="text"
                             name="query"
                             value={query}
-                            className={`items-center cursor-pointer p-4 md:px-10 rounded-xl border flex gap-5 mb-5 w-full outline-none focus:border-cyan-500/50 `}
-                            placeholder={ "Search quizzes..."}
+                            className="w-full p-4 md:px-6 rounded-xl bg-black/40 border border-white/10 text-white placeholder-gray-500 outline-none focus:border-cyan-500/60 focus:shadow-[0_0_15px_rgba(6,182,212,0.15)] transition-all duration-300 mb-5"
+                            placeholder="Search quizzes..."
                             onChange={(e) => {
                                 setQuery(e.target.value);
                             }}
@@ -392,7 +375,7 @@ const PredefinedQuiz = () => {
                                         onClick={() => handleSelectPreset(item)}
                                         className={`items-center cursor-pointer p-4 md:px-10 bg-white/5 rounded-xl border border-white/10 flex justify-between gap-5 transition-all hover:bg-white/10 ${tab === 'admin' ? 'flex-col items-start sm:flex-row' : ''} `}>
                                         <div className='flex items-center gap-5'>
-                                            <FileChartPie className='w-6 h-6 text-cyan-400' />
+                                            <FileChartPie className='w-6 h-6 text-cyan-400 shrink-0' />
                                             <h4 className='font-semibold text-xl'>{item.presetName || "Untitled Quiz"}</h4>
                                         </div>
                                         <div className='flex items-center gap-4 self-end justify-end'>

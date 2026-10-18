@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 // import { useDispatch, useSelector } from 'react-redux';
 import { logout as logoutAction, updateUser as updateUserAction } from '../redux/slices/authSlice';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
@@ -15,7 +15,7 @@ const Nav = () => {
 
     // Grab state perfectly from Redux. Fallback to an empty object if auth state doesn't exist.
     // Force standard fallback defaults so state structure remains stable post-logout
-    const { user, isAuthenticated } = useSelector(state => state.auth) || { user: null, isAuthenticated: false };
+    const { user, isAuthenticated, token } = useSelector(state => state.auth) || { user: null, isAuthenticated: false, token: null };
     const profileImage = user?.imageUrl || user?.imageURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name}`;
 
     // Layout toggles remain local as they only affect this specific instance of the UI layout
@@ -30,16 +30,13 @@ const Nav = () => {
     const [previewUrl, setPreviewUrl] = useState(null);
     const [removeImage, setRemoveImage] = useState(false);
 
-    const [message, setMessage] = useState('');
-    const [error, setError] = useState('');
     const [formData, setFormData] = useState({
         name: user?.name || '',
         email: user?.email || '',
         password: '',
     });
 
-    // Synchronize local modal form data when Redux user state changes or modal opens
-    useEffect(() => {
+    const openModal = () => {
         if (user) {
             setFormData({
                 name: user.name || '',
@@ -50,7 +47,8 @@ const Nav = () => {
         setFile(null);
         setPreviewUrl(null);
         setRemoveImage(false);
-    }, [isModelOpen, user]);
+        setIsModelOpen(true);
+    };
 
     const [rules, setRules] = useState({
         minLength: false,
@@ -74,8 +72,6 @@ const Nav = () => {
         setIsModelOpen(false);
         setIsSidebarOpen(false);
         setIsUpdate(false);
-        setError('');
-        setMessage('');
         setFile(null);
         setPreviewUrl(null);
         setRemoveImage(false);
@@ -139,7 +135,6 @@ const Nav = () => {
 
         if (trimmedPassword && !Object.values(rules).every(Boolean)) {
             const passwordErrorMessage = 'Your password does not meet all the security profile criteria shown below.';
-            setError(passwordErrorMessage);
             toast.error(passwordErrorMessage);
             return;
         }
@@ -173,7 +168,6 @@ const Nav = () => {
                 }
             );
 
-            setMessage(response.data.message);
             toast.success(response.data.message);
 
             if (response.data.emailUpdate) {
@@ -192,7 +186,6 @@ const Nav = () => {
         } catch (error) {
             console.error('updation failed:', error);
             const apiError = error.response?.data?.message || 'Updation failed. Please try again.';
-            setError(apiError);
             toast.error(apiError);
         } finally {
             setIsDisabled(false);
@@ -308,7 +301,7 @@ const Nav = () => {
                     <div onClick={() => setIsSidebarOpen(false)} className='absolute inset-0 bg-black/60 backdrop-blur-xs' />
                     <div className={`absolute top-0 right-0 h-full w-72 max-w-[80vw] border-l border-white/10 bg-slate-950/90 backdrop-blur-xl p-6 shadow-2xl transition-transform duration-300 transform ${isSidebarOpen ? 'translate-x-0' : 'translate-x-full'}`}>
                         <div className='flex items-center justify-between pb-6 border-b border-white/5 mb-6'>
-                            <div onClick={() => setIsModelOpen(true)} className='flex items-center gap-3 cursor-pointer'>
+                            <div onClick={openModal} className='flex items-center gap-3 cursor-pointer'>
                                 <img src={profileImage} alt='Avatar' className='w-10 h-10 rounded-full bg-slate-800 border border-white/20 object-cover' />
                                 <div className='text-left'>
                                     <p className='text-[10px] text-gray-400 leading-none'>User Profile</p>
@@ -340,7 +333,7 @@ const Nav = () => {
                                 </Link>
                             )}
 
-                            <button onClick={() => handleLogout()} className="w-full py-3.5 px-5 rounded-xl font-bold text-sm text-white bg-gradient-to-r from-red-500/80 to-rose-600/90 hover:from-red-500 hover:to-rose-600 shadow-lg shadow-red-500/10 hover:shadow-[0_0_30px_rgba(239,68,68,0.3)] transition-all duration-300 flex items-center justify-center gap-2 active:scale-[0.99]">
+                            <button onClick={() => handleLogout()} className="w-full py-3.5 px-5 rounded-xl font-bold text-sm text-white bg-linear-to-r from-red-500/80 to-rose-600/90 hover:from-red-500 hover:to-rose-600 shadow-lg shadow-red-500/10 hover:shadow-[0_0_30px_rgba(239,68,68,0.3)] transition-all duration-300 flex items-center justify-center gap-2 active:scale-[0.99]">
                                 <LogOut className="w-4 h-4" />
                                 Logout
                             </button>

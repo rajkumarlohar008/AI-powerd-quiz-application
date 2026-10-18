@@ -5,7 +5,6 @@ export function GenerateButton({
   isGenerating: controlledIsGenerating,
   className = "",
   onClick,
-  children,
   ...props
 }) {
   const [isFocused, setIsFocused] = useState(false);

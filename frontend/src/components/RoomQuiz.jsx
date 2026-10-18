@@ -1,15 +1,12 @@
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import API_URL from '../config';
-import { Link } from 'react-router-dom';
-import { Home, ShieldCheck, ChevronDown, X } from 'lucide-react';
 import Result from './Result';
 import QuizScreen from './QuizScreen'; 
 
 const RoomQuiz = () => {
 
     const [roomId, setRoomId] = useState('');
-    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [room, setRoom] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
@@ -128,19 +125,10 @@ const RoomQuiz = () => {
     // Finish Quiz
     const finishQuiz = async () => {
         let correct = 0;
-        const formattedQuestions = room.questions.map((q, index) => {
-            const chosenAnswer = userAnswers[index];
-            if (chosenAnswer === q.correctAnswer) {
+        room.questions.forEach((q, index) => {
+            if (userAnswers[index] === q.correctAnswer) {
                 correct++;
             }
-            return {
-                question: q.question,
-                options: q.options,
-                correctAnswer: q.correctAnswer,
-                userAnswer: chosenAnswer,
-                explanation: q.explanation || '',
-                topic: q.topic || 'General Room Quiz'
-            };
         });
 
         const total = room.questions.length;
@@ -150,7 +138,7 @@ const RoomQuiz = () => {
         const finalTimeTaken = timeTaken + (30 - timeLeft);
 
         const roomPayload = {
-            userId: user.id,
+            userId: user.email,
             userName: user.name,
             correct,
             total,
@@ -211,7 +199,7 @@ const RoomQuiz = () => {
 
     // JOIN ROOM SCREEN
     return (
-        <div className='relative min-h-screen overflow-hidden flex items-center justify-center bg-linear-to-br from-black via-slate-900 to-purple-950 px-4'>
+        <div className='relative min-h-screen overflow-hidden flex items-center justify-center bg-linear-to-br from-black via-slate-900 to-purple-950 px-4 pt-24'>
             {/* Glow */}
             <div className='absolute top-[-120px] left-[-120px] w-[350px] h-[350px] bg-cyan-500/20 rounded-full blur-3xl' />
             <div className='absolute bottom-[-120px] right-[-120px] w-[350px] h-[350px] bg-purple-500/20 rounded-full blur-3xl' />

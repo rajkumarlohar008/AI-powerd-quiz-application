@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
 import { useDispatch } from 'react-redux';
 import { loginSuccess } from '../redux/slices/authSlice';
@@ -81,6 +81,8 @@ const Login = () => {
             via-slate-900
             to-purple-950
             px-4
+            pt-20
+            pb-10
         '>
             
 

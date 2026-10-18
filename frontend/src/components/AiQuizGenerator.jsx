@@ -1,12 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import API_URL from '../config';
-import { ChevronDown, Flag, Home, ShieldCheck } from 'lucide-react';
 import QuizScreen from './QuizScreen';
 import { toast } from "react-toastify";
 import Result from './Result';
-
+import { UploadCloud, FileText, X } from 'lucide-react';
 
 const AiQuizGenerator = () => {
     const [text, setText] = useState('');
@@ -22,7 +20,6 @@ const AiQuizGenerator = () => {
     const [summary, setSummary] = useState(null);
     const [error, setError] = useState('');
     const [currentQuestion, setCurrentQuestion] = useState(0);
-    const navigate = useNavigate();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [timeLeft, setTimeLeft] = useState(30);
     const [showRoomModal, setShowRoomModal] = useState(false);
@@ -281,6 +278,14 @@ const AiQuizGenerator = () => {
         }
     };
 
+    const formatFileSize = (bytes) => {
+        if (!bytes || bytes === 0) return '0 B';
+        const k = 1024;
+        const sizes = ['B', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+    };
+
     const universalBack = () => {
         summaryController.current?.abort();
         summaryController.current = null;
@@ -290,6 +295,9 @@ const AiQuizGenerator = () => {
         setSummary(null);
         setText('');
         setFile(null);
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
         setCurrentQuestion(0);
         setTimeLeft(60);
     };
@@ -298,12 +306,12 @@ const AiQuizGenerator = () => {
 
     if (!quiz && !showSummary) {
         return (
-            <div className='relative min-h-screen overflow-hidden flex items-center justify-center bg-linear-to-br from-black via-slate-900 to-purple-950 px-4 py-10'>
+            <div className='relative min-h-screen overflow-hidden flex items-center justify-center bg-linear-to-br from-black via-slate-900 to-purple-950 px-4 pt-28 pb-10'>
                 <div className='absolute -top-30 -left-30 w-87.5 h-87.5 bg-cyan-500/20 rounded-full blur-3xl' />
                 <div className='absolute -bottom-30 -right-30 w-87.5 h-87.5 bg-purple-500/20 rounded-full blur-3xl' />
                 
 
-                <div className='mt-15 relative z-10 w-full max-w-3xl rounded-3xl border border-white/10 bg-white/10 backdrop-blur-xl shadow-2xl p-6 md:p-10'>
+            <div className='mt-10 relative z-10 w-full max-w-3xl rounded-3xl border border-white/10 bg-white/10 backdrop-blur-xl shadow-2xl p-6 md:p-10'>
                     <h1 className='text-4xl md:text-5xl font-extrabold text-center mb-10 bg-linear-to-r from-cyan-400 via-blue-500 to-purple-500 bg-clip-text text-transparent tracking-wide drop-shadow-[0_0_15px_rgba(6,182,212,0.3)]'>
                         AI Quiz Generator
                     </h1>
@@ -318,28 +326,68 @@ const AiQuizGenerator = () => {
                                 onChange={(e) => setText(e.target.value)}
                                 rows={7}
                                 placeholder='Paste your notes here...'
-                                className='w-full rounded-2xl bg-white/5 border border-white/10 p-5 text-white placeholder-gray-400 outline-hidden resize-none transition-all duration-300 focus:border-cyan-400/50 focus:bg-white/10 focus:shadow-[0_0_20px_rgba(6,182,212,0.15)]'
+                                className='w-full rounded-2xl bg-white/5 border border-white/10 p-5 text-white placeholder-gray-400 outline-none resize-none transition-all duration-300 focus:border-cyan-400/50 focus:bg-white/10 focus:shadow-[0_0_20px_rgba(6,182,212,0.15)]'
                             />
                         </div>
 
                         <div>
-                            <label className='block text-xl font-bold text-white mb-4 tracking-wide'>
-                                Upload PDF / TXT File
-                            </label>
+                            <div className='flex items-center justify-between mb-3'>
+                                <label className='block text-xl font-bold text-white tracking-wide'>
+                                    Upload Document
+                                </label>
+                                <span className='text-xs text-cyan-300/80 font-medium'>
+                                    PDF, Word, PPT, Excel, TXT & more
+                                </span>
+                            </div>
                             <input
                                 ref={fileInputRef}
                                 type='file'
-                                accept='application/pdf,text/plain'
+                                accept='.pdf,.doc,.docx,.ppt,.pptx,.pps,.ppsx,.xls,.xlsx,.csv,.txt,.text,.md,.markdown,.json,.xml,.html,.rtf,text/*,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
                                 onChange={(e) => setFile(e.target.files[0] || null)}
                                 className='hidden'
                             />
-                            <button
-                                type='button'
-                                onClick={() => fileInputRef.current?.click()}
-                                className='w-full py-4 rounded-2xl border border-dashed border-cyan-400/40 bg-white/5 text-gray-300 font-semibold hover:bg-white/10 hover:border-cyan-400/60 hover:text-white hover:scale-[1.01] transition-all duration-300 cursor-pointer overflow-clip'
-                            >
-                                {file ? file.name : "Upload File"}
-                            </button>
+                            {!file ? (
+                                <button
+                                    type='button'
+                                    onClick={() => fileInputRef.current?.click()}
+                                    className='w-full py-6 px-4 rounded-2xl border border-dashed border-cyan-400/40 bg-white/5 text-gray-300 font-semibold hover:bg-white/10 hover:border-cyan-400/70 hover:text-white transition-all duration-300 cursor-pointer flex flex-col items-center justify-center gap-2 group'
+                                >
+                                    <div className='p-3 rounded-full bg-cyan-500/10 text-cyan-400 group-hover:scale-110 group-hover:bg-cyan-500/20 transition-all'>
+                                        <UploadCloud className='w-6 h-6' />
+                                    </div>
+                                    <span className='text-base font-semibold text-white'>Click to upload study material</span>
+                                    {/* <span className='text-xs text-gray-400 text-center max-w-md'>
+                                        Supports PDF, Word (.docx/.doc), PowerPoint (.pptx/.ppt), Excel (.xlsx/.csv), Markdown, TXT & code files (up to 25MB)
+                                    </span> */}
+                                </button>
+                            ) : (
+                                <div className='flex items-center justify-between p-4 rounded-2xl border border-cyan-400/40 bg-cyan-500/10 backdrop-blur-md shadow-[0_0_20px_rgba(6,182,212,0.1)]'>
+                                    <div
+                                        className='flex items-center gap-3 overflow-hidden cursor-pointer flex-1 mr-3'
+                                        onClick={() => fileInputRef.current?.click()}
+                                        title='Click to choose a different file'
+                                    >
+                                        <div className='p-2.5 rounded-xl bg-cyan-400/20 text-cyan-300 shrink-0'>
+                                            <FileText className='w-6 h-6' />
+                                        </div>
+                                        <div className='truncate text-left'>
+                                            <p className='text-sm font-semibold text-white truncate'>{file.name}</p>
+                                            <p className='text-xs text-cyan-300/80 font-medium'>{formatFileSize(file.size)} &bull; Click to change</p>
+                                        </div>
+                                    </div>
+                                    <button
+                                        type='button'
+                                        onClick={() => {
+                                            setFile(null);
+                                            if (fileInputRef.current) fileInputRef.current.value = '';
+                                        }}
+                                        className='p-2 rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500/20 hover:text-red-300 transition-colors cursor-pointer'
+                                        title='Remove file'
+                                    >
+                                        <X className='w-5 h-5' />
+                                    </button>
+                                </div>
+                            )}
                         </div>
 
                         {error && (

@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import axios from 'axios';
 import API_URL from '../config';
 import { Undo2 } from 'lucide-react';
@@ -7,11 +7,8 @@ import { Undo2 } from 'lucide-react';
 // Added quizType as an optional prop with a default value of 'PREDEFINED'
 const Result = ({ questions, userAnswers, quizType = 'PREDEFINED', title, summary, recommendation, onUniversalBack }) => {
 
-    const navigate = useNavigate();
-
     const savedRef = useRef(false);
     const token = localStorage.getItem('token') || '';
-    const [scoreData, setScoreData] = useState(null);
 
     // Standardized helper to determine if a specific question was answered correctly
     const checkIsCorrect = (question, index) => {
@@ -101,18 +98,10 @@ const Result = ({ questions, userAnswers, quizType = 'PREDEFINED', title, summar
         score.correct,
         score.total,
         percentage,
-        quizType
+        quizType,
+        title,
+        token
     ]);
-
-    // Retake Quiz
-    const handleRetake = () => {
-        window.location.reload();
-    };
-
-    // Dashboard
-    const handleDashboard = () => {
-        navigate('/dashboard');
-    };
 
     return (
         <div className='relative min-h-screen overflow-y-auto bg-linear-to-br from-black via-slate-900 to-purple-950 flex items-center justify-center px-4 py-10 w-full'>

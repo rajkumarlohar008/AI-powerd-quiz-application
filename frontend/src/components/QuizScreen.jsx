@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Undo2, Users, FileChartPie } from 'lucide-react';
 
 const QuizScreen = ({
@@ -19,20 +19,6 @@ const QuizScreen = ({
     onGeneratePreset,
     onUniversalBack
 }) => {
-
-    const [isPopedUp, setPopedUp] = useState(false);
-
-    let handleCreateRoom = () => {
-        setPopedUp(true);
-        if (questionData && questionData.questions) {
-            const newQuestions = questionData.questions.map(({ question, options, answerIndex }) => ({
-                question,
-                options,
-                correctAnswer: answerIndex
-            }));
-            console.log(newQuestions);
-        }
-    }
 
     return (
         <div className='relative min-h-screen overflow-y-auto bg-linear-to-br from-black via-slate-900 to-purple-950 px-4 pt-28 pb-10'>

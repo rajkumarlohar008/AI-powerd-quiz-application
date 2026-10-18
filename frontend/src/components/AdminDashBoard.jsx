@@ -1,8 +1,7 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import axios from 'axios';
 import API_URL from '../config';
-import { Link } from 'react-router-dom';
-import { ChevronDown, CirclePlus, Eye, Home, Plus, ShieldCheck, SquarePen, Trash, Undo2, X } from 'lucide-react';
+import { CirclePlus, Eye, Plus, SquarePen, Trash, Undo2, X } from 'lucide-react';
 import { toast } from 'react-toastify';
 
 // Reusable blueprint structure for empty questions
@@ -34,10 +33,10 @@ const AdminDashBoard = () => {
     const [preview, setPreview] = useState(false);
 
     // Safely parse credentials using useMemo to avoid parsing on every single render
-    const { user, token, userEmail } = useMemo(() => {
+    const { token, userEmail } = useMemo(() => {
         const storedUser = JSON.parse(localStorage.getItem('user')) || {};
         const storedToken = localStorage.getItem('token') || '';
-        return { user: storedUser, token: storedToken, userEmail: storedUser.email };
+        return { token: storedToken, userEmail: storedUser.email };
     }, []);
 
     // Helper to safely extract Room ID
@@ -310,7 +309,7 @@ const AdminDashBoard = () => {
 
 
     return (
-        <div className='relative min-h-screen w-full overflow-x-hidden bg-gradient-to-br from-black via-slate-900 to-purple-950 px-4 py-10 text-white'>
+        <div className='relative min-h-screen w-full overflow-x-hidden bg-linear-to-br from-black via-slate-900 to-purple-950 px-4 pt-24 pb-10 text-white'>
             {/* Glow Background Rings */}
             <div className='absolute top-[-120px] left-[-120px] w-[350px] h-[350px] bg-cyan-500/20 rounded-full blur-3xl pointer-events-none' />
             <div className='absolute bottom-[-120px] right-[-120px] w-[350px] h-[350px] bg-purple-500/20 rounded-full blur-3xl pointer-events-none' />
@@ -319,7 +318,7 @@ const AdminDashBoard = () => {
 
                 {/* Header Title Block */}
                 <div className='text-center mb-10'>
-                    <h1 className='text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 bg-clip-text text-transparent mb-5'>
+                    <h1 className='text-4xl md:text-5xl font-extrabold bg-linear-to-r from-cyan-400 via-blue-500 to-purple-500 bg-clip-text text-transparent mb-5'>
                         Admin Dashboard
                     </h1>
                     <p className='text-gray-300 text-lg'>
@@ -813,7 +812,7 @@ const AdminDashBoard = () => {
                                                         <div className='text-xs font-medium text-gray-400 hidden sm:block'>
                                                             Score: <span className='text-white font-bold'>{item.correct}</span> / {item.total}
                                                         </div>
-                                                        <div className='bg-emerald-500/10 border border-emerald-500/20 px- py-1.5 rounded-xl text-center min-w-12'>
+                                                        <div className='bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-xl text-center min-w-12'>
                                                             <p className='text-xs font-mono font-black text-emerald-400'>{item.percentage}%</p>
                                                         </div>
                                                     </div>

@@ -83,7 +83,7 @@ public class RoomService {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "User ID is required."));
         }
 
-        if (userRepository.findById(request.getUserId()).isEmpty()) {
+        if (userRepository.findByEmail(request.getUserId()).isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "User not found."));
         }
 

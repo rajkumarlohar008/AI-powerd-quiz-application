@@ -19,25 +19,27 @@ import { toast } from 'react-toastify';
 import { useDispatch } from 'react-redux';
 
 const Dashboard = () => {
-    const [user, setUser] = useState(null);
+    const [user] = useState(() => {
+        try {
+            return JSON.parse(localStorage.getItem('user')) || null;
+        } catch {
+            return null;
+        }
+    });
     const navigate = useNavigate();
     const dispatch = useDispatch();
 
     useEffect(() => {
         const token = localStorage.getItem('token');
-        const userData = localStorage.getItem('user');
-
         if (!token) {
             navigate('/login');
-        } else {
-            setUser(JSON.parse(userData));
         }
     }, [navigate]);
 
     // Logout
     const handleLogout = () => {
         dispatch(logoutAction());
-        toast.error("Loged Out! Please visit again ‼️")
+        toast.error("Logged Out! Please visit again ‼️");
         navigate('/login');
     };
 
@@ -47,12 +49,12 @@ const Dashboard = () => {
     const handleViewHistory = () => navigate('/history');
 
     return (
-        <div className="relative min-h-screen overflow-hidden flex flex-col bg-[#0b0c20] text-white font-sans selection:bg-purple-500/30">
+        <div className="relative min-h-screen overflow-hidden flex flex-col bg-linear-to-br from-black via-slate-900 to-purple-950 text-white font-sans selection:bg-purple-500/30">
             
             {/* Background Orbs & Grid */}
             <div className="absolute top-1/4 -left-20 w-96 h-96 bg-blue-600/10 rounded-full blur-[120px] pointer-events-none" />
             <div className="absolute top-1/3 -right-20 w-[500px] h-[500px] bg-purple-600/20 rounded-full blur-[150px] pointer-events-none" />
-            <div className="absolute inset-0 bg-[radial-gradient(transparent_1px,#0b0c20_1px)] [background-size:20px_20px] opacity-30 pointer-events-none" />
+            <div className="absolute inset-0 bg-[radial-gradient(transparent_1px,rgba(0,0,0,0.3)_1px)] [background-size:20px_20px] opacity-20 pointer-events-none" />
 
             
             {/* Main Content Dashboard Wrapper */}
@@ -62,12 +64,12 @@ const Dashboard = () => {
                 <div className="w-full max-w-2xl rounded-[2.5rem] border border-white/10 bg-slate-900/40 backdrop-blur-2xl shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] p-8 md:p-12 text-center relative overflow-hidden">
                     
                     {/* Decorative Top Trophy */}
-                    <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-b from-indigo-500 to-purple-600 text-white mb-6 shadow-lg shadow-indigo-500/20">
+                    <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-linear-to-b from-indigo-500 to-purple-600 text-white mb-6 shadow-lg shadow-indigo-500/20">
                         <Trophy className="w-6 h-6" />
                     </div>
 
                     {/* Main Headings */}
-                    <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-b from-white to-gray-300">
+                    <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-transparent bg-clip-text bg-linear-to-b from-white to-gray-300">
                         Welcome to Quiz App
                     </h1>
                     <p className="text-gray-400 text-xs md:text-sm mt-2 mb-8 font-medium">
@@ -103,10 +105,10 @@ const Dashboard = () => {
                     {/* Dashboard Navigation Actions Grid */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                         
-                        {/* Predefined Quiz - Purple-Blue Deep Gloss Button */}
+                        {/* Predefined Quiz */}
                         <button
                             onClick={handleStartQuiz}
-                            className="group flex items-center justify-between p-4 rounded-2xl text-left bg-gradient-to-r from-[#171a4a] to-[#0f2d59] border border-indigo-500/20 hover:border-indigo-400/40 transition-all duration-300 hover:shadow-[0_0_25px_rgba(99,102,241,0.2)] active:scale-[0.98]"
+                            className="group flex items-center justify-between p-4 rounded-2xl text-left bg-linear-to-r from-[#171a4a] to-[#0f2d59] border border-indigo-500/20 hover:border-indigo-400/40 transition-all duration-300 hover:shadow-[0_0_25px_rgba(99,102,241,0.2)] active:scale-[0.98]"
                         >
                             <div className="flex items-center gap-4">
                                 <div className="p-3 rounded-xl bg-indigo-500/10 text-indigo-400 group-hover:scale-110 transition-transform">
@@ -120,10 +122,10 @@ const Dashboard = () => {
                             <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-white group-hover:translate-x-1 transition-all" />
                         </button>
 
-                        {/* AI Quiz - Deep Electric Blue Button */}
+                        {/* AI Quiz */}
                         <button
                             onClick={handleStartAiQuiz}
-                            className="group flex items-center justify-between p-4 rounded-2xl text-left bg-gradient-to-r from-[#101e4a] to-[#07366b] border border-blue-500/20 hover:border-blue-400/40 transition-all duration-300 hover:shadow-[0_0_25px_rgba(59,130,246,0.2)] active:scale-[0.98]"
+                            className="group flex items-center justify-between p-4 rounded-2xl text-left bg-linear-to-r from-[#101e4a] to-[#07366b] border border-blue-500/20 hover:border-blue-400/40 transition-all duration-300 hover:shadow-[0_0_25px_rgba(59,130,246,0.2)] active:scale-[0.98]"
                         >
                             <div className="flex items-center gap-4">
                                 <div className="p-3 rounded-xl bg-blue-500/10 text-blue-400 group-hover:scale-110 transition-transform">
@@ -137,10 +139,10 @@ const Dashboard = () => {
                             <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-white group-hover:translate-x-1 transition-all" />
                         </button>
 
-                        {/* Join Room - Teal Gradient Button */}
+                        {/* Join Room */}
                         <Link
                             to="/room"
-                            className="group flex items-center justify-between p-4 rounded-2xl text-left bg-gradient-to-r from-[#0d283d] to-[#063a47] border border-teal-500/20 hover:border-teal-400/40 transition-all duration-300 hover:shadow-[0_0_25px_rgba(20,184,166,0.2)] active:scale-[0.98]"
+                            className="group flex items-center justify-between p-4 rounded-2xl text-left bg-linear-to-r from-[#0d283d] to-[#063a47] border border-teal-500/20 hover:border-teal-400/40 transition-all duration-300 hover:shadow-[0_0_25px_rgba(20,184,166,0.2)] active:scale-[0.98]"
                         >
                             <div className="flex items-center gap-4">
                                 <div className="p-3 rounded-xl bg-teal-500/10 text-teal-400 group-hover:scale-110 transition-transform">
@@ -154,10 +156,10 @@ const Dashboard = () => {
                             <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-white group-hover:translate-x-1 transition-all" />
                         </Link>
 
-                        {/* Quiz History - Amber Warm Gradient Button */}
+                        {/* Quiz History */}
                         <button
                             onClick={handleViewHistory}
-                            className="group flex items-center justify-between p-4 rounded-2xl text-left bg-gradient-to-r from-[#291e22] to-[#40241a] border border-amber-500/20 hover:border-amber-400/40 transition-all duration-300 hover:shadow-[0_0_25px_rgba(245,158,11,0.15)] active:scale-[0.98]"
+                            className="group flex items-center justify-between p-4 rounded-2xl text-left bg-linear-to-r from-[#291e22] to-[#40241a] border border-amber-500/20 hover:border-amber-400/40 transition-all duration-300 hover:shadow-[0_0_25px_rgba(245,158,11,0.15)] active:scale-[0.98]"
                         >
                             <div className="flex items-center gap-4">
                                 <div className="p-3 rounded-xl bg-amber-500/10 text-amber-400 group-hover:scale-110 transition-transform">
@@ -175,7 +177,7 @@ const Dashboard = () => {
                     {/* Logout Action Bar */}
                     <button
                         onClick={handleLogout}
-                        className="w-full py-3.5 px-5 rounded-xl font-bold text-sm text-white bg-gradient-to-r from-red-500/80 to-rose-600/90 hover:from-red-500 hover:to-rose-600 shadow-lg shadow-red-500/10 hover:shadow-[0_0_30px_rgba(239,68,68,0.3)] transition-all duration-300 flex items-center justify-center gap-2 active:scale-[0.99]"
+                        className="w-full py-3.5 px-5 rounded-xl font-bold text-sm text-white bg-linear-to-r from-red-500/80 to-rose-600/90 hover:from-red-500 hover:to-rose-600 shadow-lg shadow-red-500/10 hover:shadow-[0_0_30px_rgba(239,68,68,0.3)] transition-all duration-300 flex items-center justify-center gap-2 active:scale-[0.99]"
                     >
                         <LogOut className="w-4 h-4" />
                         Logout

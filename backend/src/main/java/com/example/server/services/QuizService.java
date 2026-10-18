@@ -51,13 +51,11 @@ public class QuizService {
 
             AiQuizResponse quiz = ai.generateQuiz(combined);
             return ResponseEntity.ok(quiz);
-        } catch (IOException | InterruptedException e) {
+        } catch (Exception e) {
             Map<String, Object> body = new HashMap<>();
             body.put("message", "Failed to generate AI quiz.");
             body.put("error", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
         }
     }
 
