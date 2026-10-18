@@ -224,7 +224,7 @@ const AdminDashBoard = () => {
         try {
             toast.info("Deleting room !!");
             await axios.delete(`${API_URL}/api/room/delete`, {
-                params:{roomId},
+                params: { roomId },
                 headers: { Authorization: `Bearer ${token}` }
             });
 
@@ -834,118 +834,118 @@ const AdminDashBoard = () => {
                                         const isExpanded = expandedResponseIdx === idx;
                                         const answers = item.answers || [];
                                         return (
-                                        <div
-                                            key={idx}
-                                            className='flex-col p-4 rounded-xl border border-white/5 bg-black/40 flex gap-3 shadow-sm hover:bg-black/60 transition-colors'
-                                        >
-                                            <div className='flex items-center justify-between w-full'>
-                                                <div className='flex flex-col'>
-                                                    <div className='flex items-center gap-3 truncate'>
-                                                        <span className={`h-7 w-7 rounded-lg text-xs font-extrabold flex items-center justify-center shrink-0 ${idx === 0 ? 'bg-amber-400/20 text-amber-300 border border-amber-400/40' :
-                                                            idx === 1 ? 'bg-slate-300/20 text-slate-200 border border-slate-300/40' :
-                                                                idx === 2 ? 'bg-amber-700/20 text-amber-600 border border-amber-700/40' :
-                                                                    'bg-white/5 text-gray-400 border border-white/5'
-                                                            }`}>
-                                                            #{idx + 1}
-                                                        </span>
-                                                        <div className='truncate'>
-                                                            <p className='text-sm font-bold text-gray-100 truncate'>{item.userName || 'Anonymous User'}</p>
-                                                            <p className='text-[10px] text-gray-500 font-mono truncate'>Email: {item.userId}</p>
+                                            <div
+                                                key={idx}
+                                                className='flex-col p-4 rounded-xl border border-white/5 bg-black/40 flex gap-3 shadow-sm hover:bg-black/60 transition-colors'
+                                            >
+                                                <div className='flex flex-col gap-5'>
+                                                    <div className='flex items-center justify-between w-full'>
+                                                        <div className='flex flex-col'>
+                                                            <div className='flex items-center gap-3 truncate'>
+                                                                <span className={`h-7 w-7 rounded-lg text-xs font-extrabold flex items-center justify-center shrink-0 ${idx === 0 ? 'bg-amber-400/20 text-amber-300 border border-amber-400/40' :
+                                                                    idx === 1 ? 'bg-slate-300/20 text-slate-200 border border-slate-300/40' :
+                                                                        idx === 2 ? 'bg-amber-700/20 text-amber-600 border border-amber-700/40' :
+                                                                            'bg-white/5 text-gray-400 border border-white/5'
+                                                                    }`}>
+                                                                    #{idx + 1}
+                                                                </span>
+                                                                <div className='truncate'>
+                                                                    <p className='text-sm font-bold text-gray-100 truncate'>{item.userName || 'Anonymous User'}</p>
+                                                                    <p className='text-[10px] text-gray-500 font-mono truncate'>Email: {item.userId}</p>
+                                                                </div>
+
+                                                            </div>
+                                                            <div className='text-xs font-medium text-gray-400 block self-end sm:hidden'>
+                                                                Score: <span className='text-white font-bold'>{item.correct}</span> / {item.total}
+                                                            </div>
                                                         </div>
 
-                                                    </div>
-                                                    <div className='text-xs font-medium text-gray-400 block self-end sm:hidden'>
-                                                        Score: <span className='text-white font-bold'>{item.correct}</span> / {item.total}
-                                                    </div>
-                                                </div>
-
-                                                <div className='flex flex-col gap-3'>
-                                                    <div className='text-right flex items-center gap-4 shrink-0 flex-col sm:flex-row'>
-                                                        <div className='text-xs font-medium text-gray-400 hidden sm:block'>
-                                                            Score: <span className='text-white font-bold'>{item.correct}</span> / {item.total}
+                                                        <div className='flex flex-col gap-3'>
+                                                            <div className='text-right flex items-center gap-4 shrink-0 flex-col sm:flex-row'>
+                                                                <div className='text-xs font-medium text-gray-400 hidden sm:block'>
+                                                                    Score: <span className='text-white font-bold'>{item.correct}</span> / {item.total}
+                                                                </div>
+                                                                <div className='bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-xl text-center min-w-12'>
+                                                                    <p className='text-xs font-mono font-black text-emerald-400'>{item.percentage}%</p>
+                                                                </div>
+                                                            </div>
+                                                            <div className='flex items-center gap-3 self-end mr-1'>
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => setExpandedResponseIdx(isExpanded ? null : idx)}
+                                                                    className='text-gray-400 hover:text-cyan-300 transition-colors'
+                                                                    title="Review answers"
+                                                                >
+                                                                    {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                                                                </button>
+                                                                <Trash
+                                                                    type="button"
+                                                                    className='w-5 h-5 text-gray-400 hover:text-red-400 cursor-pointer transition-transform hover:scale-110'
+                                                                    onClick={(e) => handleDeleteClick(e, item.originalIdx)}
+                                                                    disabled={deletingId === item.originalIdx}
+                                                                />
+                                                            </div>
                                                         </div>
-                                                        <div className='bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-xl text-center min-w-12'>
-                                                            <p className='text-xs font-mono font-black text-emerald-400'>{item.percentage}%</p>
-                                                        </div>
                                                     </div>
-                                                    <div className='flex items-center gap-3 self-end mr-1'>
-                                                        <button
-                                                            type="button"
-                                                            title={item.certificateAllowed ? 'Revoke certificate' : 'Allow certificate'}
-                                                            onClick={() => handleToggleCertificate(item.userId, Boolean(item.certificateAllowed))}
-                                                            disabled={togglingCertId === item.userId}
-                                                            className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[10px] font-bold border transition-all ${
-                                                                item.certificateAllowed
-                                                                    ? 'bg-emerald-500/15 border-emerald-400/40 text-emerald-300'
-                                                                    : 'bg-white/5 border-white/10 text-gray-400 hover:text-cyan-300 hover:border-cyan-400/30'
+                                                    <button
+                                                        type="button"
+                                                        title={item.certificateAllowed ? 'Revoke certificate' : 'Allow certificate'}
+                                                        onClick={() => handleToggleCertificate(item.userId, Boolean(item.certificateAllowed))}
+                                                        disabled={togglingCertId === item.userId}
+                                                        className={`justify-center inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[10px] font-bold border transition-all ${item.certificateAllowed
+                                                                ? 'bg-emerald-500/15 border-emerald-400/40 text-emerald-300'
+                                                                : 'bg-white/5 border-white/10 text-gray-400 hover:text-cyan-300 hover:border-cyan-400/30'
                                                             } disabled:opacity-50`}
-                                                        >
-                                                            <Award size={14} />
-                                                            {togglingCertId === item.userId
-                                                                ? '...'
-                                                                : item.certificateAllowed ? 'Cert Allowed' : 'Allow Cert'}
-                                                        </button>
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => setExpandedResponseIdx(isExpanded ? null : idx)}
-                                                            className='text-gray-400 hover:text-cyan-300 transition-colors'
-                                                            title="Review answers"
-                                                        >
-                                                            {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-                                                        </button>
-                                                        <Trash
-                                                            type="button"
-                                                            className='w-5 h-5 text-gray-400 hover:text-red-400 cursor-pointer transition-transform hover:scale-110'
-                                                            onClick={(e) => handleDeleteClick(e, item.originalIdx)}
-                                                            disabled={deletingId === item.originalIdx}
-                                                        />
-                                                    </div>
+                                                    >
+                                                        <Award size={14} />
+                                                        {togglingCertId === item.userId
+                                                            ? '...'
+                                                            : item.certificateAllowed ? 'Certificate Allowed' : 'Allow Certificate'}
+                                                    </button>
                                                 </div>
-                                            </div>
 
-                                            {isExpanded && (
-                                                <div className='mt-1 pt-3 border-t border-white/10 space-y-3 w-full'>
-                                                    <p className='text-[11px] uppercase tracking-wider font-bold text-cyan-400'>Answer Review</p>
-                                                    {answers.length === 0 ? (
-                                                        <p className='text-xs text-gray-500 italic'>No per-question answers were stored for this attempt.</p>
-                                                    ) : (
-                                                        answers.map((ans, aIdx) => {
-                                                            const isCorrect = ans.userAnswer === ans.correctAnswer;
-                                                            const userText = ans.userAnswer != null && ans.options?.[ans.userAnswer] != null
-                                                                ? ans.options[ans.userAnswer]
-                                                                : 'Not answered';
-                                                            const correctText = ans.options?.[ans.correctAnswer] ?? 'N/A';
-                                                            return (
-                                                                <div
-                                                                    key={aIdx}
-                                                                    className={`rounded-xl border p-3 text-left ${
-                                                                        isCorrect
+                                                {isExpanded && (
+                                                    <div className='mt-1 pt-3 border-t border-white/10 space-y-3 w-full'>
+                                                        <p className='text-[11px] uppercase tracking-wider font-bold text-cyan-400'>Answer Review</p>
+                                                        {answers.length === 0 ? (
+                                                            <p className='text-xs text-gray-500 italic'>No per-question answers were stored for this attempt.</p>
+                                                        ) : (
+                                                            answers.map((ans, aIdx) => {
+                                                                const isCorrect = ans.userAnswer === ans.correctAnswer;
+                                                                const userText = ans.userAnswer != null && ans.options?.[ans.userAnswer] != null
+                                                                    ? ans.options[ans.userAnswer]
+                                                                    : 'Not answered';
+                                                                const correctText = ans.options?.[ans.correctAnswer] ?? 'N/A';
+                                                                return (
+                                                                    <div
+                                                                        key={aIdx}
+                                                                        className={`rounded-xl border p-3 text-left ${isCorrect
                                                                             ? 'bg-emerald-500/5 border-emerald-500/20'
                                                                             : 'bg-red-500/5 border-red-500/20'
-                                                                    }`}
-                                                                >
-                                                                    <p className='text-xs font-bold text-white mb-1.5'>
-                                                                        Q{aIdx + 1}: {ans.question}
-                                                                    </p>
-                                                                    <p className='text-[11px] text-gray-400'>
-                                                                        Their answer:{' '}
-                                                                        <span className={isCorrect ? 'text-emerald-400' : 'text-red-400'}>
-                                                                            {userText}
-                                                                        </span>
-                                                                    </p>
-                                                                    {!isCorrect && (
-                                                                        <p className='text-[11px] text-gray-400 mt-0.5'>
-                                                                            Correct:{' '}
-                                                                            <span className='text-emerald-400'>{correctText}</span>
+                                                                            }`}
+                                                                    >
+                                                                        <p className='text-xs font-bold text-white mb-1.5'>
+                                                                            Q{aIdx + 1}: {ans.question}
                                                                         </p>
-                                                                    )}
-                                                                </div>
-                                                            );
-                                                        })
-                                                    )}
-                                                </div>
-                                            )}
-                                        </div>
+                                                                        <p className='text-[11px] text-gray-400'>
+                                                                            Their answer:{' '}
+                                                                            <span className={isCorrect ? 'text-emerald-400' : 'text-red-400'}>
+                                                                                {userText}
+                                                                            </span>
+                                                                        </p>
+                                                                        {!isCorrect && (
+                                                                            <p className='text-[11px] text-gray-400 mt-0.5'>
+                                                                                Correct:{' '}
+                                                                                <span className='text-emerald-400'>{correctText}</span>
+                                                                            </p>
+                                                                        )}
+                                                                    </div>
+                                                                );
+                                                            })
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </div>
                                         );
                                     })}
                                 </div>

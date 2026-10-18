@@ -39,7 +39,7 @@ public class CertificateService {
             User admin
     ) throws IOException {
         try (PDDocument document = new PDDocument()) {
-            PDPage page = new PDPage(PDRectangle.A4);
+            PDPage page = new PDPage(new PDRectangle(PDRectangle.A4.getHeight(), PDRectangle.A4.getWidth()));
             document.addPage(page);
 
             PDFont latoRegular = loadFont(document, "fonts/Lato-Regular.ttf");
