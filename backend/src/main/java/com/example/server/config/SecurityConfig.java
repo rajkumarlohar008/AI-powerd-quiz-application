@@ -58,6 +58,10 @@ public class SecurityConfig {
                                 "/api/verify",
                                 "/api/preset",
                                 "/api/preset/all",
+                                "/api/getRoom/id",
+                                "/api/quizRoom/quiz-attempt",
+                                "/api/quizRoom/attempt-status",
+                                "/api/quizRoom/certificate",
                                 "/"
                         ).permitAll()
 
@@ -96,6 +100,7 @@ public class SecurityConfig {
                         "GET",
                         "POST",
                         "PUT",
+                        "PATCH",
                         "DELETE",
                         "OPTIONS"
                 )

@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import axios from 'axios';
 import API_URL from '../config';
-import { CirclePlus, Eye, Plus, SquarePen, Trash, Undo2, X } from 'lucide-react';
+import { Award, ChevronDown, ChevronUp, CirclePlus, Eye, Plus, SquarePen, Trash, Undo2, X } from 'lucide-react';
 import { toast } from 'react-toastify';
 
 // Reusable blueprint structure for empty questions
@@ -31,6 +31,8 @@ const AdminDashBoard = () => {
     const [updatingRoom, setUpdatingRoom] = useState(false);
     const [editingRoomId, setEditingRoomId] = useState(null);
     const [preview, setPreview] = useState(false);
+    const [expandedResponseIdx, setExpandedResponseIdx] = useState(null);
+    const [togglingCertId, setTogglingCertId] = useState(null);
 
     // Safely parse credentials using useMemo to avoid parsing on every single render
     const { token, userEmail } = useMemo(() => {
@@ -41,6 +43,20 @@ const AdminDashBoard = () => {
 
     // Helper to safely extract Room ID
     const getRoomId = (room) => room?.id || room?._id;
+
+    const getRoomShareLink = (roomId) =>
+        `${window.location.origin}/room?roomId=${encodeURIComponent(roomId || '')}`;
+
+    const copyRoomShareLink = async (e, roomId) => {
+        e?.stopPropagation?.();
+        if (!roomId) return;
+        try {
+            await navigator.clipboard.writeText(getRoomShareLink(roomId));
+            toast.success('Room link copied!');
+        } catch {
+            toast.error('Could not copy link');
+        }
+    };
 
     // --- REUSABLE DISPATCHERS / API HELPERS ---
     const fetchRooms = useCallback(async () => {
@@ -154,7 +170,27 @@ const AdminDashBoard = () => {
         if (!roomId) return;
         setSelectedRoom(room);
         setIsModalOpen(true);
+        setExpandedResponseIdx(null);
         await fetchResponses(roomId);
+    };
+
+    const handleToggleCertificate = async (userId, currentlyAllowed) => {
+        const roomId = getRoomId(selectedRoom);
+        if (!roomId || !userId) return;
+        setTogglingCertId(userId);
+        try {
+            await axios.put(
+                `${API_URL}/api/room/response/certificate`,
+                { roomId, userId, allowed: !currentlyAllowed },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            toast.success(!currentlyAllowed ? 'Certificate download allowed' : 'Certificate download revoked');
+            await fetchResponses(roomId);
+        } catch (err) {
+            toast.error(err.response?.data?.message || 'Failed to update certificate permission');
+        } finally {
+            setTogglingCertId(null);
+        }
     };
 
     const handleDeleteResponse = async (originalIdx) => {
@@ -362,7 +398,13 @@ const AdminDashBoard = () => {
                                                     <div className='flex flex-col md:flex-row md:justify-between md:items-center'>
                                                         <div className='flex flex-col  items-start justify-between text-[11px] text-gray-400 font-mono mt-2.5'>
                                                             <span className='truncate text-gray-500 font-semibold md:text-[15px]'>Room ID:{roomId}</span>
-                                                            <span className='text-[8px] md:text-xs'>You can copy this id and share with the participants.</span>
+                                                            <button
+                                                                type="button"
+                                                                onClick={(e) => copyRoomShareLink(e, roomId)}
+                                                                className='text-[8px] md:text-xs text-cyan-400 hover:text-cyan-300 underline underline-offset-2 text-left'
+                                                            >
+                                                                Copy shareable room link
+                                                            </button>
                                                         </div>
                                                         <div className='flex items-center  justify-between self-end mt-2 sm:mt-0 w-28 gap-3'>
                                                             <Eye size={28}
@@ -507,6 +549,13 @@ const AdminDashBoard = () => {
                                         <div>
                                             <span className='text-xs md:text-lg text-cyan-400 font-bold block mb-1'>Room ID:</span>
                                             <span className='font-mono block bg-black/30 p-3 rounded-xl border border-white/10 text-sm break-all select-all'>{getRoomId(createdRoom)}</span>
+                                            <button
+                                                type="button"
+                                                onClick={(e) => copyRoomShareLink(e, getRoomId(createdRoom))}
+                                                className='mt-2 text-xs md:text-sm text-cyan-400 hover:text-cyan-300 underline underline-offset-2'
+                                            >
+                                                Copy shareable room link
+                                            </button>
                                         </div>
                                         <div className='text-xs md:text-lg'>
                                             <span className='text-cyan-400 font-bold'>Title:</span>{' '}{createdRoom.roomName || createdRoom.title}
@@ -749,7 +798,7 @@ const AdminDashBoard = () => {
             {/* MODAL OVERLAY POP-UP PORTAL */}
             {!updatingRoom && isModalOpen && selectedRoom && (
                 <div className='fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md transition-all'>
-                    <div className='relative w-full max-w-2xl rounded-3xl border border-white/10 bg-slate-900/90 text-white shadow-2xl p-6 md:p-8 space-y-6 max-h-[85vh] flex flex-col overflow-hidden'>
+                    <div className='relative w-full max-w-3xl rounded-3xl border border-white/10 bg-slate-900/90 text-white shadow-2xl p-6 md:p-8 space-y-6 max-h-[85vh] flex flex-col overflow-hidden'>
 
                         <div className='flex items-start justify-between border-b border-white/10 pb-4 shrink-0'>
                             <div>
@@ -781,10 +830,13 @@ const AdminDashBoard = () => {
                                         <span>🏆</span> Leaderboard:
                                     </div>
 
-                                    {sortedResponsesWithIndices.map((item, idx) => (
+                                    {sortedResponsesWithIndices.map((item, idx) => {
+                                        const isExpanded = expandedResponseIdx === idx;
+                                        const answers = item.answers || [];
+                                        return (
                                         <div
                                             key={idx}
-                                            className='flex-col p-4 rounded-xl border border-white/5 bg-black/40 flex items-center justify-between gap-4 shadow-sm hover:bg-black/60 transition-colors'
+                                            className='flex-col p-4 rounded-xl border border-white/5 bg-black/40 flex gap-3 shadow-sm hover:bg-black/60 transition-colors'
                                         >
                                             <div className='flex items-center justify-between w-full'>
                                                 <div className='flex flex-col'>
@@ -798,7 +850,7 @@ const AdminDashBoard = () => {
                                                         </span>
                                                         <div className='truncate'>
                                                             <p className='text-sm font-bold text-gray-100 truncate'>{item.userName || 'Anonymous User'}</p>
-                                                            <p className='text-[10px] text-gray-500 font-mono truncate'>ID: {item.userId}</p>
+                                                            <p className='text-[10px] text-gray-500 font-mono truncate'>Email: {item.userId}</p>
                                                         </div>
 
                                                     </div>
@@ -816,17 +868,86 @@ const AdminDashBoard = () => {
                                                             <p className='text-xs font-mono font-black text-emerald-400'>{item.percentage}%</p>
                                                         </div>
                                                     </div>
-                                                    <Trash
-                                                        type="button"
-                                                        className='w-5 h-5 text-gray-400 hover:text-red-400 cursor-pointer transition-transform hover:scale-110 self-end mr-3'
-                                                        onClick={(e) => handleDeleteClick(e, item.originalIdx)}
-                                                        disabled={deletingId === item.originalIdx}
-                                                    />
+                                                    <div className='flex items-center gap-3 self-end mr-1'>
+                                                        <button
+                                                            type="button"
+                                                            title={item.certificateAllowed ? 'Revoke certificate' : 'Allow certificate'}
+                                                            onClick={() => handleToggleCertificate(item.userId, Boolean(item.certificateAllowed))}
+                                                            disabled={togglingCertId === item.userId}
+                                                            className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[10px] font-bold border transition-all ${
+                                                                item.certificateAllowed
+                                                                    ? 'bg-emerald-500/15 border-emerald-400/40 text-emerald-300'
+                                                                    : 'bg-white/5 border-white/10 text-gray-400 hover:text-cyan-300 hover:border-cyan-400/30'
+                                                            } disabled:opacity-50`}
+                                                        >
+                                                            <Award size={14} />
+                                                            {togglingCertId === item.userId
+                                                                ? '...'
+                                                                : item.certificateAllowed ? 'Cert Allowed' : 'Allow Cert'}
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setExpandedResponseIdx(isExpanded ? null : idx)}
+                                                            className='text-gray-400 hover:text-cyan-300 transition-colors'
+                                                            title="Review answers"
+                                                        >
+                                                            {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                                                        </button>
+                                                        <Trash
+                                                            type="button"
+                                                            className='w-5 h-5 text-gray-400 hover:text-red-400 cursor-pointer transition-transform hover:scale-110'
+                                                            onClick={(e) => handleDeleteClick(e, item.originalIdx)}
+                                                            disabled={deletingId === item.originalIdx}
+                                                        />
+                                                    </div>
                                                 </div>
                                             </div>
 
+                                            {isExpanded && (
+                                                <div className='mt-1 pt-3 border-t border-white/10 space-y-3 w-full'>
+                                                    <p className='text-[11px] uppercase tracking-wider font-bold text-cyan-400'>Answer Review</p>
+                                                    {answers.length === 0 ? (
+                                                        <p className='text-xs text-gray-500 italic'>No per-question answers were stored for this attempt.</p>
+                                                    ) : (
+                                                        answers.map((ans, aIdx) => {
+                                                            const isCorrect = ans.userAnswer === ans.correctAnswer;
+                                                            const userText = ans.userAnswer != null && ans.options?.[ans.userAnswer] != null
+                                                                ? ans.options[ans.userAnswer]
+                                                                : 'Not answered';
+                                                            const correctText = ans.options?.[ans.correctAnswer] ?? 'N/A';
+                                                            return (
+                                                                <div
+                                                                    key={aIdx}
+                                                                    className={`rounded-xl border p-3 text-left ${
+                                                                        isCorrect
+                                                                            ? 'bg-emerald-500/5 border-emerald-500/20'
+                                                                            : 'bg-red-500/5 border-red-500/20'
+                                                                    }`}
+                                                                >
+                                                                    <p className='text-xs font-bold text-white mb-1.5'>
+                                                                        Q{aIdx + 1}: {ans.question}
+                                                                    </p>
+                                                                    <p className='text-[11px] text-gray-400'>
+                                                                        Their answer:{' '}
+                                                                        <span className={isCorrect ? 'text-emerald-400' : 'text-red-400'}>
+                                                                            {userText}
+                                                                        </span>
+                                                                    </p>
+                                                                    {!isCorrect && (
+                                                                        <p className='text-[11px] text-gray-400 mt-0.5'>
+                                                                            Correct:{' '}
+                                                                            <span className='text-emerald-400'>{correctText}</span>
+                                                                        </p>
+                                                                    )}
+                                                                </div>
+                                                            );
+                                                        })
+                                                    )}
+                                                </div>
+                                            )}
                                         </div>
-                                    ))}
+                                        );
+                                    })}
                                 </div>
                             ) : (
                                 <div className='flex-1 flex flex-col items-center justify-center text-center py-12 text-gray-500 space-y-2'>

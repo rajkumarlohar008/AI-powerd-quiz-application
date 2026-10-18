@@ -1,35 +1,43 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import API_URL from '../config';
-import { Undo2 } from 'lucide-react';
+import { Download, Undo2 } from 'lucide-react';
 
-// Added quizType as an optional prop with a default value of 'PREDEFINED'
-const Result = ({ questions, userAnswers, quizType = 'PREDEFINED', title, summary, recommendation, onUniversalBack }) => {
-
+const Result = ({
+    questions,
+    userAnswers,
+    quizType = 'PREDEFINED',
+    title,
+    summary,
+    recommendation,
+    onUniversalBack,
+    roomCertificate,
+    hideReview = false,
+}) => {
     const savedRef = useRef(false);
     const token = localStorage.getItem('token') || '';
 
-    // Standardized helper to determine if a specific question was answered correctly
+    const [certAllowed, setCertAllowed] = useState(Boolean(roomCertificate?.initiallyAllowed));
+    const [certLoading, setCertLoading] = useState(false);
+    const [certDownloading, setCertDownloading] = useState(false);
+    const [certMessage, setCertMessage] = useState('');
+
     const checkIsCorrect = (question, index) => {
         const userIdx = userAnswers[index];
-        // Safely fallback to correctAnswer if answerIndex is not defined
-        const correctIdx = question.answerIndex !== undefined && question.answerIndex !== null 
-            ? question.answerIndex 
+        const correctIdx = question.answerIndex !== undefined && question.answerIndex !== null
+            ? question.answerIndex
             : question.correctAnswer;
 
-        // If the user didn't answer, it's incorrect
         if (userIdx === null || userIdx === undefined) return false;
-
         return userIdx === correctIdx;
     };
 
-    // Calculate Score
     const calculateScore = () => {
         let correct = 0;
         let incorrect = 0;
 
-        questions.forEach((question, index) => {
+        (questions || []).forEach((question, index) => {
             if (checkIsCorrect(question, index)) {
                 correct++;
             } else {
@@ -40,36 +48,116 @@ const Result = ({ questions, userAnswers, quizType = 'PREDEFINED', title, summar
         return {
             correct,
             incorrect,
-            total: questions.length
+            total: (questions || []).length
         };
     };
 
     const score = calculateScore();
 
-    const percentage = score.total > 0 
-        ? Math.round((score.correct / score.total) * 100) 
+    const percentage = score.total > 0
+        ? Math.round((score.correct / score.total) * 100)
         : 0;
 
-    // Save Quiz Attempt
+    const refreshCertificateStatus = useCallback(async () => {
+        if (!roomCertificate?.roomId || !roomCertificate?.email) return;
+        setCertLoading(true);
+        setCertMessage('');
+        try {
+            const res = await axios.get(`${API_URL}/api/quizRoom/attempt-status`, {
+                params: {
+                    roomId: roomCertificate.roomId,
+                    email: roomCertificate.email,
+                },
+            });
+            setCertAllowed(Boolean(res.data?.certificateAllowed));
+            if (!res.data?.certificateAllowed) {
+                setCertMessage('Waiting for admin approval to download your certificate.');
+            } else {
+                setCertMessage('Your certificate is ready to download.');
+            }
+        } catch {
+            setCertMessage('Could not check certificate status.');
+        } finally {
+            setCertLoading(false);
+        }
+    }, [roomCertificate?.roomId, roomCertificate?.email]);
+
+    useEffect(() => {
+        if (roomCertificate?.roomId && roomCertificate?.email) {
+            refreshCertificateStatus();
+            const interval = setInterval(refreshCertificateStatus, 15000);
+            return () => clearInterval(interval);
+        }
+    }, [roomCertificate?.roomId, roomCertificate?.email, refreshCertificateStatus]);
+
+    const downloadCertificate = async () => {
+        if (!roomCertificate?.roomId || !roomCertificate?.email) return;
+        setCertDownloading(true);
+        setCertMessage('');
+        try {
+            const res = await axios.get(`${API_URL}/api/quizRoom/certificate`, {
+                params: {
+                    roomId: roomCertificate.roomId,
+                    email: roomCertificate.email,
+                },
+                responseType: 'blob',
+            });
+
+            const contentType = res.headers['content-type'] || '';
+            if (contentType.includes('application/json')) {
+                const text = await res.data.text();
+                const json = JSON.parse(text);
+                setCertMessage(json.message || 'Certificate not available yet.');
+                setCertAllowed(false);
+                return;
+            }
+
+            const blob = new Blob([res.data], { type: 'application/pdf' });
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `certificate_${(title || 'quiz').replace(/\s+/g, '_')}.pdf`;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(url);
+            setCertMessage('Certificate downloaded successfully.');
+        } catch (err) {
+            const data = err.response?.data;
+            if (data instanceof Blob) {
+                try {
+                    const text = await data.text();
+                    const json = JSON.parse(text);
+                    setCertMessage(json.message || 'Failed to download certificate.');
+                } catch {
+                    setCertMessage('Failed to download certificate.');
+                }
+            } else {
+                setCertMessage(err.response?.data?.message || 'Failed to download certificate.');
+            }
+        } finally {
+            setCertDownloading(false);
+        }
+    };
+
     useEffect(() => {
         if (
             savedRef.current ||
-            !questions?.length || title === questions[0].topic
+            !questions?.length ||
+            hideReview ||
+            title === questions[0]?.topic
         ) {
             return;
         }
 
-        const user = JSON.parse(
-            localStorage.getItem('user') || '{}'
-        );
-
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
         if (!user.id) return;
 
         savedRef.current = true;
 
         const payload = {
             userId: user.id,
-            quizType: title || quizType, // Use the dynamic prop here
+            quizType: title || quizType,
             correct: score.correct,
             total: score.total,
             percentage,
@@ -100,24 +188,55 @@ const Result = ({ questions, userAnswers, quizType = 'PREDEFINED', title, summar
         percentage,
         quizType,
         title,
-        token
+        token,
+        hideReview,
     ]);
+
+    if (hideReview && roomCertificate) {
+        return (
+            <div className="space-y-3">
+                <p className="text-sm text-amber-100/90">
+                    {certLoading
+                        ? 'Checking certificate status...'
+                        : certMessage || (certAllowed
+                            ? 'Your certificate is ready.'
+                            : 'Waiting for admin to allow certificate download.')}
+                </p>
+                <div className="flex flex-wrap gap-2">
+                    <button
+                        type="button"
+                        onClick={refreshCertificateStatus}
+                        disabled={certLoading}
+                        className="px-4 py-2 rounded-xl text-xs font-bold bg-white/10 border border-white/10 text-white hover:bg-white/20 disabled:opacity-50"
+                    >
+                        Refresh Status
+                    </button>
+                    <button
+                        type="button"
+                        onClick={downloadCertificate}
+                        disabled={!certAllowed || certDownloading}
+                        className="px-4 py-2 rounded-xl text-xs font-bold bg-cyan-500/20 border border-cyan-400/30 text-cyan-200 hover:bg-cyan-500/30 disabled:opacity-40 inline-flex items-center gap-2"
+                    >
+                        <Download size={14} />
+                        {certDownloading ? 'Downloading...' : 'Download Certificate'}
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className='relative min-h-screen overflow-y-auto bg-linear-to-br from-black via-slate-900 to-purple-950 flex items-center justify-center px-4 py-10 w-full'>
 
-            {/* Glow */}
             <div className='absolute top-[-120px] left-[-120px] w-[350px] h-[350px] bg-cyan-500/20 rounded-full blur-3xl' />
             <div className='absolute bottom-[-120px] right-[-120px] w-[350px] h-[350px] bg-purple-500/20 rounded-full blur-3xl' />
 
-            {/* Main Card */}
             <div className='mt-15 relative z-10 w-full max-w-3xl rounded-3xl border border-white/10 bg-white/10 backdrop-blur-xl shadow-2xl p-6 md:p-10 text-center'>
 
                 <h1 className='text-5xl font-extrabold bg-linear-to-r from-cyan-400 via-blue-500 to-purple-500 bg-clip-text text-transparent mb-10'>
                     Quiz Completed 🎉
                 </h1>
 
-                {/* Score Circle */}
                 <div className='flex justify-center mb-10'>
                     <div className='w-44 h-44 rounded-full bg-linear-to-r from-cyan-500 to-purple-600 flex flex-col items-center justify-center shadow-2xl'>
                         <h2 className='text-5xl font-extrabold text-white'>
@@ -129,7 +248,6 @@ const Result = ({ questions, userAnswers, quizType = 'PREDEFINED', title, summar
                     </div>
                 </div>
 
-                {/* Stats */}
                 <div className='grid grid-cols-1 md:grid-cols-3 gap-5 mb-12'>
 
                     <div className='rounded-2xl bg-emerald-500/10 border border-emerald-500/20 p-6'>
@@ -155,9 +273,39 @@ const Result = ({ questions, userAnswers, quizType = 'PREDEFINED', title, summar
 
                 </div>
 
+                {roomCertificate && (
+                    <div className='mb-10 rounded-2xl border border-purple-500/20 bg-purple-500/10 p-5 text-left space-y-3'>
+                        <h3 className='text-lg font-bold text-white'>Completion Certificate</h3>
+                        <p className='text-sm text-gray-300'>
+                            {certLoading
+                                ? 'Checking certificate status...'
+                                : certMessage || 'After the admin reviews your attempt and grants permission, you can download your PDF certificate here.'}
+                        </p>
+                        <div className='flex flex-wrap gap-3'>
+                            <button
+                                type="button"
+                                onClick={refreshCertificateStatus}
+                                disabled={certLoading}
+                                className='px-4 py-2.5 rounded-xl text-sm font-bold bg-white/10 border border-white/10 text-white hover:bg-white/20 disabled:opacity-50'
+                            >
+                                Refresh Status
+                            </button>
+                            <button
+                                type="button"
+                                onClick={downloadCertificate}
+                                disabled={!certAllowed || certDownloading}
+                                className='px-4 py-2.5 rounded-xl text-sm font-bold bg-cyan-500/20 border border-cyan-400/30 text-cyan-200 hover:bg-cyan-500/30 disabled:opacity-40 inline-flex items-center gap-2'
+                            >
+                                <Download size={16} />
+                                {certDownloading ? 'Downloading...' : 'Download PDF Certificate'}
+                            </button>
+                        </div>
+                    </div>
+                )}
+
                 <hr className='border-white/10 mb-10' />
 
-                {/* Review */}
+                {!hideReview && (
                 <div className='text-left space-y-8 flex flex-col'>
 
                     <div className='flex justify-between'>
@@ -188,11 +336,11 @@ const Result = ({ questions, userAnswers, quizType = 'PREDEFINED', title, summar
                         </div>
                     )}
 
-                    {questions.map((q, idx) => {
+                    {(questions || []).map((q, idx) => {
                         const userIdx = userAnswers[idx];
                         const correctIdx = q.answerIndex !== undefined && q.answerIndex !== null ? q.answerIndex : q.correctAnswer;
                         const isCorrect = checkIsCorrect(q, idx);
-                        
+
                         const userAnswerText = userIdx !== null && userIdx !== undefined ? q.options[userIdx] : 'Not answered';
                         const correctAnswerText = q.options[correctIdx] !== undefined ? q.options[correctIdx] : 'N/A';
 
@@ -230,6 +378,7 @@ const Result = ({ questions, userAnswers, quizType = 'PREDEFINED', title, summar
                         Back to Dashboard
                     </Link>
                 </div>
+                )}
             </div>
         </div>
     );

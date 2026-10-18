@@ -20,6 +20,7 @@ public class Room {
     @Id
     private String id;
     private String roomName;
+    private String createdBy;
     private List<RoomQuestions> questions;
     private List<RoomResponseRequest> userResponse;
 

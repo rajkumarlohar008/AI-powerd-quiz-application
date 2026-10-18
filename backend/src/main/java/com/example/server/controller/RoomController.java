@@ -10,6 +10,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.Nullable;
 import org.springframework.security.core.Authentication;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -39,8 +40,8 @@ public class RoomController {
     }
 
     @GetMapping("/getRoom/id")
-    public ResponseEntity<?> getRoomById(@RequestParam("roomId") String id,Authentication authentication) {
-        return roomService.getRoomById(id,authentication);
+    public ResponseEntity<?> getRoomById(@RequestParam("roomId") String id, @Nullable Authentication authentication) {
+        return roomService.getRoomById(id, authentication);
     }
 
     @GetMapping("/room/all")
@@ -71,5 +72,29 @@ public class RoomController {
     @PutMapping("/room/update")
     public ResponseEntity<?> updateRoom(@RequestBody Room room,Authentication authentication){
         return roomService.updateRoom(room,authentication);
+    }
+
+    @GetMapping("/quizRoom/attempt-status")
+    public ResponseEntity<?> getAttemptStatus(
+            @RequestParam("roomId") String roomId,
+            @RequestParam("email") String email
+    ) {
+        return roomService.getAttemptStatus(roomId, email);
+    }
+
+    @PutMapping("/room/response/certificate")
+    public ResponseEntity<?> setCertificateAllowed(@RequestBody Map<String, Object> body) {
+        String roomId = body.get("roomId") != null ? body.get("roomId").toString() : null;
+        String userId = body.get("userId") != null ? body.get("userId").toString() : null;
+        boolean allowed = Boolean.parseBoolean(String.valueOf(body.getOrDefault("allowed", false)));
+        return roomService.setCertificateAllowed(roomId, userId, allowed);
+    }
+
+    @GetMapping("/quizRoom/certificate")
+    public ResponseEntity<?> downloadCertificate(
+            @RequestParam("roomId") String roomId,
+            @RequestParam("email") String email
+    ) {
+        return roomService.downloadCertificate(roomId, email);
     }
 }
