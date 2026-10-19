@@ -67,7 +67,7 @@ public class OpenRouterService implements AIService {
                 
                 Read the study material carefully.
                 
-                Generate EXACTLY 10 multiple choice questions.
+                Return random number of questions that you can made with the study material but minimum 10 questions.
                 
                 Each question MUST have:
                 - question

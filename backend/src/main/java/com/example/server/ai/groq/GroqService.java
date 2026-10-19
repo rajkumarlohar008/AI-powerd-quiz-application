@@ -55,7 +55,7 @@ public class GroqService implements AIService {
                 You are an expert tutor.
                 Read the following study material detect language and in this language create a quiz.
                 
-                Return exactly 10 questions.
+                Return random number of questions that you can made with the study material but minimum 10 questions.
                 
                  Schema:
                  {

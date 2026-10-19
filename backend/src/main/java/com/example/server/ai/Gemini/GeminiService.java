@@ -43,7 +43,7 @@ public class GeminiService implements AIService {
                 You are an expert tutor.
                 Read the following study material and create a quiz.
                 
-                Return exactly 10 questions.
+                Return random number of questions that you can made with the study material but minimum 10 questions.
                 
                  Schema:
                  {
