@@ -32,11 +32,17 @@ public class GroqService implements AIService {
     private final String apiKey;
     private final ObjectMapper objectMapper;
     private final HttpClient httpClient;
+    private final String model;
 
-    public GroqService(@Value("${groq.api.key:}") String apiKey, ObjectMapper objectMapper) {
+    public GroqService(@Value("${groq.api.key:}") String apiKey,
+                       ObjectMapper objectMapper,
+                       @Value("${groq.model:openai/gpt-oss-120b}") String model) {
         this.apiKey = apiKey;
         this.objectMapper = objectMapper;
-        this.httpClient = HttpClient.newHttpClient();
+        this.model = (model == null || model.isBlank()) ? "openai/gpt-oss-120b" : model.trim();
+        this.httpClient = HttpClient.newBuilder()
+                .connectTimeout(java.time.Duration.ofSeconds(20))
+                .build();
     }
 
     @Override
@@ -69,13 +75,14 @@ public class GroqService implements AIService {
                 Study material:
                 """ + combinedText;
 
-        // Groq uses standard llama3 models or similar. We will use llama-3.3-70b-versatile as a strong default.
+        // Model is configurable; llama-3.3-70b-versatile was deprecated for developer-tier usage.
         ObjectNode body = buildOpenAiCompatibleRequest(prompt);
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("https://api.groq.com/openai/v1/chat/completions"))
                 .header("Content-Type", MediaType.APPLICATION_JSON_VALUE)
                 .header("Authorization", "Bearer " + apiKey)
+                .timeout(java.time.Duration.ofSeconds(90))
                 .POST(HttpRequest.BodyPublishers.ofByteArray(objectMapper.writeValueAsBytes(body)))
                 .build();
 
@@ -97,7 +104,7 @@ public class GroqService implements AIService {
                         "Groq is temporarily unavailable.");
 
             default:
-                throw new AIException(response.body());
+                throw new AIException("Groq API returned HTTP " + response.statusCode() + ": " + response.body());
         }
 
         String text = extractTextFromOpenAiResponse(response.body());
@@ -157,6 +164,7 @@ public class GroqService implements AIService {
                 .uri(URI.create("https://api.groq.com/openai/v1/chat/completions"))
                 .header("Content-Type", MediaType.APPLICATION_JSON_VALUE)
                 .header("Authorization", "Bearer " + apiKey)
+                .timeout(java.time.Duration.ofSeconds(90))
                 .POST(HttpRequest.BodyPublishers.ofByteArray(objectMapper.writeValueAsBytes(body)))
                 .build();
 
@@ -178,7 +186,7 @@ public class GroqService implements AIService {
                         "Groq is temporarily unavailable.");
 
             default:
-                throw new AIException(response.body());
+                throw new AIException("Groq API returned HTTP " + response.statusCode() + ": " + response.body());
         }
 
         String text = extractTextFromOpenAiResponse(response.body());
@@ -195,7 +203,7 @@ public class GroqService implements AIService {
 
     private ObjectNode buildOpenAiCompatibleRequest(String prompt) {
         ObjectNode body = objectMapper.createObjectNode();
-        body.put("model", "llama-3.3-70b-versatile");
+        body.put("model", model);
 
         ArrayNode messages = body.putArray("messages");
         ObjectNode message = messages.addObject();

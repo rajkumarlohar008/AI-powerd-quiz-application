@@ -198,4 +198,30 @@ public class PresetService {
         userRepository.save(user);
         return ResponseEntity.status(HttpStatus.OK).body(saved);
     }
+
+    public ResponseEntity<?> createAllPresets(List<Presets> presets,Authentication authentication){
+        if (authentication == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Authentication required."));
+        }
+
+        String email = authentication.getName();
+        if (email == null || email.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "User email is required."));
+        }
+
+        Optional<User> userOpt = userRepository.findByEmail(email);
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "User not found."));
+        }
+        User user = userOpt.get();
+
+        List<Presets> savedPreset = presetRepository.saveAll(presets);
+        if (user.getPresets() != null) {
+            user.getPresets().addAll(savedPreset);
+        } else {
+            user.setPresets(savedPreset);
+        }
+        userRepository.save(user);
+        return ResponseEntity.ok(savedPreset);
+    }
 }

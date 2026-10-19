@@ -60,4 +60,9 @@ public class PresetController {
     public ResponseEntity<?> updatePreset(@RequestBody Presets preset,Authentication authentication) {
         return presetService.updatePreset(preset,authentication);
     }
+
+    @PostMapping("/preset/create/all")
+    public ResponseEntity<?> createPreset(@RequestBody List<Presets> presets, Authentication authentication) {
+        return presetService.createAllPresets(presets,authentication);
+    }
 }

@@ -48,11 +48,12 @@ public class OpenRouterService implements AIService {
         for (int attempt = 1; attempt <= 2; attempt++) {
             try {
                 return executeGenerateQuiz(combinedText);
-            } catch (AIException e) {
-                if (attempt == 2) {
+            } catch (Exception e) {
+                if (attempt == 2 || !isRetryable(e)) {
                     throw e;
                 }
-                System.out.println("Retrying OpenRouter quiz generation (Attempt " + attempt + " failed)...");
+                System.err.println("OpenRouter quiz attempt " + attempt + " failed: " + e.getMessage());
+                Thread.sleep(1000L * attempt);
             }
         }
         throw new AIException("OpenRouter failed to generate a valid quiz after retries.");
@@ -106,6 +107,7 @@ public class OpenRouterService implements AIService {
                 .uri(URI.create("https://openrouter.ai/api/v1/chat/completions"))
                 .header("Content-Type", MediaType.APPLICATION_JSON_VALUE)
                 .header("Authorization", "Bearer " + apiKey)
+                .timeout(java.time.Duration.ofSeconds(90))
                 .POST(HttpRequest.BodyPublishers.ofByteArray(objectMapper.writeValueAsBytes(body)))
                 .build();
 
@@ -142,11 +144,12 @@ public class OpenRouterService implements AIService {
         for (int attempt = 1; attempt <= 2; attempt++) {
             try {
                 return executeGenerateSummary(request);
-            } catch (AIException e) {
-                if (attempt == 2) {
+            } catch (Exception e) {
+                if (attempt == 2 || !isRetryable(e)) {
                     throw e;
                 }
-                System.out.println("Retrying OpenRouter summary generation (Attempt " + attempt + " failed)...");
+                System.err.println("OpenRouter summary attempt " + attempt + " failed: " + e.getMessage());
+                Thread.sleep(1000L * attempt);
             }
         }
         throw new AIException("OpenRouter failed to generate a valid summary after retries.");
@@ -200,6 +203,7 @@ public class OpenRouterService implements AIService {
                 .uri(URI.create("https://openrouter.ai/api/v1/chat/completions"))
                 .header("Content-Type", MediaType.APPLICATION_JSON_VALUE)
                 .header("Authorization", "Bearer " + apiKey)
+                .timeout(java.time.Duration.ofSeconds(90))
                 .POST(HttpRequest.BodyPublishers.ofByteArray(objectMapper.writeValueAsBytes(body)))
                 .build();
 
@@ -220,6 +224,18 @@ public class OpenRouterService implements AIService {
         );
 
         return new QuizSummaryResponse(perTopic, overallSummary, recommendations);
+    }
+
+    private boolean isRetryable(Exception e) {
+        if (e instanceof RateLimitException || e instanceof AIServiceUnavailableException) {
+            return true;
+        }
+        String message = e.getMessage();
+        if (message == null) return false;
+        String m = message.toLowerCase();
+        return m.contains("http 500") || m.contains("http 502") || m.contains("http 503")
+                || m.contains("http 504") || m.contains("temporarily unavailable")
+                || m.contains("timed out") || m.contains("timeout");
     }
 
     private void validateApiKey() {
