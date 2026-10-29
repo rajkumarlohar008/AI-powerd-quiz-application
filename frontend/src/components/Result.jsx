@@ -226,7 +226,7 @@ const Result = ({
     }
 
     return (
-        <div className='relative min-h-screen overflow-y-auto bg-linear-to-br from-black via-slate-900 to-purple-950 flex items-center justify-center px-4 py-10 w-full'>
+        <div className='relative min-h-screen overflow-y-auto theme-page-bg flex items-center justify-center px-4 py-10 w-full'>
 
             <div className='absolute top-[-120px] left-[-120px] w-[350px] h-[350px] bg-cyan-500/20 rounded-full blur-3xl' />
             <div className='absolute bottom-[-120px] right-[-120px] w-[350px] h-[350px] bg-purple-500/20 rounded-full blur-3xl' />
@@ -238,7 +238,7 @@ const Result = ({
                 </h1>
 
                 <div className='flex justify-center mb-10'>
-                    <div className='w-44 h-44 rounded-full bg-linear-to-r from-cyan-500 to-purple-600 flex flex-col items-center justify-center shadow-2xl'>
+                    <div className='w-44 h-44 rounded-full bg-linear-to-r from-cyan-500 to-purple-600 flex flex-col items-center justify-center shadow-2xl keep-white'>
                         <h2 className='text-5xl font-extrabold text-white'>
                             {percentage}%
                         </h2>

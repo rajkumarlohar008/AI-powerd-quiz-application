@@ -49,7 +49,7 @@ const Dashboard = () => {
     const handleViewHistory = () => navigate('/history');
 
     return (
-        <div className="relative min-h-screen overflow-hidden flex flex-col bg-linear-to-br from-black via-slate-900 to-purple-950 text-white font-sans selection:bg-purple-500/30">
+        <div className="relative min-h-screen overflow-hidden flex flex-col theme-page-bg font-sans selection:bg-purple-500/30">
             
             {/* Background Orbs & Grid */}
             <div className="absolute top-1/4 -left-20 w-96 h-96 bg-blue-600/10 rounded-full blur-[120px] pointer-events-none" />
@@ -69,7 +69,7 @@ const Dashboard = () => {
                     </div>
 
                     {/* Main Headings */}
-                    <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-transparent bg-clip-text bg-linear-to-b from-white to-gray-300">
+                    <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight gradient-heading">
                         Welcome to Quiz App
                     </h1>
                     <p className="text-gray-400 text-xs md:text-sm mt-2 mb-8 font-medium">

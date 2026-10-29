@@ -306,7 +306,7 @@ const AiQuizGenerator = () => {
 
     if (!quiz && !showSummary) {
         return (
-            <div className='relative min-h-screen overflow-hidden flex items-center justify-center bg-linear-to-br from-black via-slate-900 to-purple-950 px-4 pt-28 pb-10'>
+            <div className='relative min-h-screen overflow-hidden flex items-center justify-center theme-page-bg px-4 pt-28 pb-10'>
                 <div className='absolute -top-30 -left-30 w-87.5 h-87.5 bg-cyan-500/20 rounded-full blur-3xl' />
                 <div className='absolute -bottom-30 -right-30 w-87.5 h-87.5 bg-purple-500/20 rounded-full blur-3xl' />
                 

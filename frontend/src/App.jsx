@@ -11,15 +11,14 @@ import RoomQuiz from './components/RoomQuiz';
 import { ToastContainer } from 'react-toastify';
 import PredefinedQuiz from './components/PredefinedQuiz';
 import Nav from './components/Nav';
+import { ThemeProvider, useTheme } from './context/ThemeContext';
 
-// 1. Create a helper component to manage the conditional Navbar
 const AppContent = () => {
-  const location = useLocation(); // Get the current path safely from React Router
+  const location = useLocation();
+  const { isDark } = useTheme();
 
   return (
     <>
-      {/* If current path is NOT "/", show the Nav component */}
-      {/* {location.pathname !== "/" && <Nav />} */}
       {location.pathname === "/" ? '' : <Nav />}
       <Routes>
         <Route path='/' element={<HomePage />} />
@@ -36,21 +35,21 @@ const AppContent = () => {
       <ToastContainer
         position="top-right"
         autoClose={3000}
-        theme="dark"
+        theme={isDark ? 'dark' : 'light'}
       />
-      {/* <PredefinedQuiz /> */}
     </>
   );
 };
 
-// 2. Keep the main App component clean, wrapping everything in the Router
 const App = () => {
   return (
-    <div className='min-h-screen w-full'>
-      <Router>
-        <AppContent />
-      </Router>
-    </div>
+    <ThemeProvider>
+      <div className='min-h-screen w-full'>
+        <Router>
+          <AppContent />
+        </Router>
+      </div>
+    </ThemeProvider>
   )
 }
 

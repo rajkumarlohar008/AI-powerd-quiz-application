@@ -21,15 +21,16 @@ const CurvedText = ({ text, radius }) => {
                 rotation={[0, -angle + Math.PI / 2, 0]}
                 // 1. Significantly increased font size
                 fontSize={0.55} 
+                fontWeight={800}
                 // 2. Added a heavy weight system font fallback
                 // font="https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLte5LY6dfjaWff97AgA.woff" 
-                fontWeight="900" // Maximum thickness
+                // fontWeight="900" // Maximum thickness
                 color="white"
                 anchorX="center"
                 anchorY="middle"
                 // 3. Optional: Add an outline to make letters look even thicker/heavier
                 outlineWidth={0.02}
-                outlineColor="white"
+                // outlineColor="white"
             >
                 {letter}
             </Text>

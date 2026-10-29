@@ -345,7 +345,7 @@ const AdminDashBoard = () => {
 
 
     return (
-        <div className='relative min-h-screen w-full overflow-x-hidden bg-linear-to-br from-black via-slate-900 to-purple-950 px-4 pt-24 pb-10 text-white'>
+        <div className='relative min-h-screen w-full overflow-x-hidden theme-page-bg px-4 pt-24 pb-10'>
             {/* Glow Background Rings */}
             <div className='absolute top-[-120px] left-[-120px] w-[350px] h-[350px] bg-cyan-500/20 rounded-full blur-3xl pointer-events-none' />
             <div className='absolute bottom-[-120px] right-[-120px] w-[350px] h-[350px] bg-purple-500/20 rounded-full blur-3xl pointer-events-none' />

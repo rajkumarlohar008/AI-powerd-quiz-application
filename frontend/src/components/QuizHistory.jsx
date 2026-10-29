@@ -104,7 +104,7 @@ const QuizHistory = () => {
     // Loading
     if (loading) {
         return (
-            <div className='min-h-screen flex items-center justify-center bg-linear-to-br from-black via-slate-900 to-purple-950'>
+            <div className='min-h-screen flex items-center justify-center theme-page-bg'>
                 <div className='text-cyan-400 text-3xl font-bold animate-pulse'>
                     Loading Quiz History...
                 </div>
@@ -115,7 +115,7 @@ const QuizHistory = () => {
     // Error
     if (error) {
         return (
-            <div className='min-h-screen flex items-center justify-center bg-linear-to-br from-black via-slate-900 to-purple-950 px-4'>
+            <div className='min-h-screen flex items-center justify-center theme-page-bg px-4'>
                 <div className='w-full max-w-xl rounded-3xl border border-red-500/20 bg-red-500/10 backdrop-blur-xl p-8 text-center'>
                     <p className='text-red-400 text-xl font-semibold mb-6'>{error}</p>
                     <button
@@ -136,7 +136,7 @@ const QuizHistory = () => {
 
     return (
         /* OPTIMIZATION: Added arbitrary Tailwind targets to mask scrollbars in Webkit engines (Chrome/Safari), IE, and Firefox */
-        <div className='relative min-h-screen w-full bg-linear-to-br from-black via-slate-900 to-purple-950 flex justify-center items-start p-4 sm:p-6 md:p-10 pt-24 md:pt-28 overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]'>
+        <div className='relative min-h-screen w-full theme-page-bg flex justify-center items-start p-4 sm:p-6 md:p-10 pt-24 md:pt-28 overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]'>
 
             {/* Glow Effects */}
             <div className='pointer-events-none absolute -top-30 -left-30 w-80 h-80 bg-cyan-500/20 rounded-full blur-3xl' />

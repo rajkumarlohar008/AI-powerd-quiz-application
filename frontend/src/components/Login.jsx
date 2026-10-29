@@ -69,21 +69,7 @@ const Login = () => {
 
     return (
 
-        <div className='
-            relative
-            min-h-screen
-            overflow-hidden
-            flex
-            items-center
-            justify-center
-            bg-linear-to-br
-            from-black
-            via-slate-900
-            to-purple-950
-            px-4
-            pt-20
-            pb-10
-        '>
+        <div className='relative min-h-screen overflow-hidden flex items-center justify-center theme-page-bg px-4 pt-20 pb-10'>
             
 
             {/* Glow Effects */}

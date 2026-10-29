@@ -14,6 +14,7 @@ const QuizScreen = ({
     nextText,
     title,
     timeLeft,
+    onTimerClick,
     role,
     onGenerateRoom,
     onGeneratePreset,
@@ -21,7 +22,7 @@ const QuizScreen = ({
 }) => {
 
     return (
-        <div className='relative min-h-screen overflow-y-auto bg-linear-to-br from-black via-slate-900 to-purple-950 px-4 pt-28 pb-10'>
+        <div className='relative min-h-screen overflow-y-auto theme-page-bg px-4 pt-28 pb-10'>
             {/* Glow */}
             <div className='absolute top-[-120px] left-[-120px] w-[350px] h-[350px] bg-cyan-500/20 rounded-full blur-3xl' />
             <div className='absolute bottom-[-120px] right-[-120px] w-[350px] h-[350px] bg-purple-500/20 rounded-full blur-3xl' />
@@ -71,9 +72,14 @@ const QuizScreen = ({
 
                     <div className='flex justify-between items-center text-xs font-semibold tracking-wider uppercase text-gray-400'>
                         <span>Progress: {Math.round(((currentQuestion + 1) / totalQuestions) * 100)}%</span>
-                        <span className={`${timeLeft <= 10 ? 'text-rose-400 animate-pulse' : 'text-cyan-400'}`}>
-                            Time Remaining: {timeLeft}s
-                        </span>
+                        <button
+                            type="button"
+                            onClick={onTimerClick}
+                            title="Click to change seconds per question"
+                            className={`${timeLeft <= 10 ? 'text-rose-400 animate-pulse' : 'text-cyan-400'} cursor-pointer rounded-md px-2 py-1 transition-colors hover:bg-white/10 hover:text-gray-400 focus:outline-none focus:ring-1 focus:ring-cyan-400`}
+                        >
+                            Time Remaining: {timeLeft}s <span className="normal-case text-[10px] opacity-70">(click to edit)</span>
+                        </button>   
                     </div>
                 </div>
 

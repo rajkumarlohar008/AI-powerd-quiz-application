@@ -7,6 +7,7 @@ import { toast } from 'react-toastify';
 import axios from 'axios';
 import API_URL from '../config';
 import { useDispatch, useSelector } from 'react-redux';
+import ThemeToggle from './ThemeToggle';
 
 const Nav = () => {
     const navigate = useNavigate();
@@ -246,12 +247,12 @@ const Nav = () => {
     return (
         <>
             {/* Header */}
-            <header className='fixed top-0 left-0 z-50 w-full px-6 py-4 flex items-center justify-between border-b border-white/5 bg-slate-950/60 backdrop-blur-md'>
+            <header className='theme-nav fixed top-0 left-0 z-50 w-full px-6 py-4 flex items-center justify-between border-b border-white/5'>
                 {/* Left Section */}
                 <div className='px-0 md:px-10 flex items-center gap-6'>
                     {/* Logo */}
                     <div className='flex items-center gap-2 font-black text-xl tracking-wide text-white'>
-                        <span className='bg-linear-to-r from-amber-400 via-pink-500 to-purple-600 p-1.5 rounded-lg text-white inline-flex items-center justify-center'>
+                        <span className='bg-linear-to-r from-amber-400 via-pink-500 to-purple-600 p-1.5 rounded-lg keep-white inline-flex items-center justify-center'>
                             <svg className='w-5 h-5 fill-current' viewBox='0 0 24 24'>
                                 <path d='M19 11h-6V3a1 1 0 0 0-1.707-.707l-9 9a1 1 0 0 0 .707 1.707h6v8a1 1 0 0 0 1.707.707l9-9A1 1 0 0 0 19 11z' />
                             </svg>
@@ -282,17 +283,22 @@ const Nav = () => {
                     </nav>
                 </div>
 
-                {/* Profile Widget - Only visible when user is Authenticated */}
-                {isAuthenticated && user && user?.name && (
-                    <div onClick={() => setIsSidebarOpen(true)} className='flex items-center gap-3 bg-white/5 border border-white/10 rounded-full pl-2 pr-4 py-1.5 hover:bg-white/10 transition cursor-pointer'>
-                        <img src={profileImage} alt='Avatar' className='w-8 h-8 rounded-full bg-slate-800 border object-cover border-white/20' />
-                        <div className='hidden sm:block text-left'>
-                            <p className='text-[10px] text-gray-400 leading-none'>Welcome,</p>
-                            <p className='text-xs font-semibold text-gray-200'>{user.name}</p>
+                <div className='flex items-center gap-3'>
+                    <ThemeToggle compact className='' />
+                    {/* <ThemeToggle className='hidden' /> */}
+
+                    {/* Profile Widget - Only visible when user is Authenticated */}
+                    {isAuthenticated && user && user?.name && (
+                        <div onClick={() => setIsSidebarOpen(true)} className='flex items-center gap-3 bg-white/5 border border-white/10 rounded-full pl-2 pr-4 py-1.5 hover:bg-white/10 transition cursor-pointer'>
+                            <img src={profileImage} alt='Avatar' className='w-8 h-8 rounded-full bg-slate-800 border object-cover border-white/20' />
+                            <div className='hidden sm:block text-left'>
+                                <p className='text-[10px] text-gray-400 leading-none'>Welcome,</p>
+                                <p className='text-xs font-semibold text-gray-200'>{user.name}</p>
+                            </div>
+                            <ChevronDown className='w-3.5 h-3.5 text-gray-400' />
                         </div>
-                        <ChevronDown className='w-3.5 h-3.5 text-gray-400' />
-                    </div>
-                )}
+                    )}
+                </div>
             </header>
 
             {/* Sidebar Drawer - Only interacts if user is authenticated */}
@@ -305,7 +311,7 @@ const Nav = () => {
                                 <img src={profileImage} alt='Avatar' className='w-10 h-10 rounded-full bg-slate-800 border border-white/20 object-cover' />
                                 <div className='text-left'>
                                     <p className='text-[10px] text-gray-400 leading-none'>User Profile</p>
-                                    <p className='text-sm font-bold text-white mt-1'>{user?.name}</p>
+                                    <p className='text-sm font-bold text-gray-400 mt-1'>{user?.name}</p>
                                 </div>
                             </div>
                             <button onClick={() => setIsSidebarOpen(false)} className='p-1 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition'>
@@ -315,19 +321,19 @@ const Nav = () => {
 
                         <nav className='flex flex-col gap-3 text-base font-semibold'>
                             {location.pathname === "/dashboard" ? (
-                                <Link to='/' onClick={() => setIsSidebarOpen(false)} className='flex items-center gap-3 w-full px-4 py-3.5 rounded-2xl bg-white/5 text-gray-200 border border-white/5 hover:bg-white/10 transition'>
+                                <Link to='/' onClick={() => setIsSidebarOpen(false)} className='flex items-center gap-3 w-full px-4 py-3.5 rounded-2xl bg-white/5  border border-white/5 hover:bg-white/10 transition'>
                                     <Home className='w-5 h-5' />
                                     Home
                                 </Link>
                             ) : (
-                                <Link to='/dashboard' onClick={() => setIsSidebarOpen(false)} className='flex items-center gap-3 w-full px-4 py-3.5 rounded-2xl bg-white/5 text-gray-200 border border-white/5 hover:bg-white/10 transition'>
+                                <Link to='/dashboard' onClick={() => setIsSidebarOpen(false)} className='flex items-center gap-3 w-full px-4 py-3.5 rounded-2xl bg-white/5  border border-white/5 hover:bg-white/10 transition'>
                                     <Home className='w-5 h-5' />
                                     Dashboard
                                 </Link>
                             )}
 
                             {user?.role === 'admin' && (
-                                <Link to='/admin' onClick={() => setIsSidebarOpen(false)} className='flex items-center gap-3 w-full px-4 py-3.5 rounded-2xl bg-white/5 text-gray-200 border border-white/5 hover:bg-white/10 transition'>
+                                <Link to='/admin' onClick={() => setIsSidebarOpen(false)} className='flex items-center gap-3 w-full px-4 py-3.5 rounded-2xl bg-white/5  border border-white/5 hover:bg-white/10 transition'>
                                     <ShieldCheck className='w-5 h-5 text-purple-400' />
                                     Admin Panel
                                 </Link>
@@ -347,7 +353,7 @@ const Nav = () => {
                 <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50" onClick={closeModal}>
                     <div className="flex flex-col p-8 w-90 md:w-120 rounded-3xl border border-white/10 bg-white/10 backdrop-blur-xl shadow-2xl" onClick={(e) => e.stopPropagation()}>
                         <div className='self-end flex gap-4 items-center'>
-                            <SquarePen onClick={() => setIsUpdate(!isUpdate)} className={`w-5 h-5 cursor-pointer transition-transform hover:scale-110 active:scale-95 ${isUpdate ? 'text-amber-400' : 'text-gray-400'}`} />
+                            <SquarePen onClick={() => setIsUpdate(!isUpdate)} className={`w-5 h-5 cursor-pointer transition-transform hover:text-blue-400 hover:scale-110 active:scale-95 ${isUpdate ? 'text-amber-400' : 'text-gray-400'}`} />
                             <Trash onClick={() => handleDeleteAccount()} className={`w-5 h-5 text-gray-400 hover:text-red-400 cursor-pointer transition-transform hover:scale-110 ${isUpdate ? 'inline' : 'hidden'} `} />
                             <X onClick={closeModal} className='w-7 h-7 text-red-400 hover:text-red-600 cursor-pointer transition-transform hover:scale-110 active:scale-95' />
                         </div>
@@ -376,24 +382,24 @@ const Nav = () => {
                             <div className='flex flex-col gap-2'>
                                 <label className='mt-3 block text-sm font-semibold text-gray-300 mb-2'>Full Name</label>
                                 {isUpdate ? (
-                                    <input type='text' name='name' required placeholder='Enter Name' onChange={handleChange} value={formData.name} className='w-full px-4 py-3.5 rounded-xl bg-black/40 border border-white/10 focus:border-cyan-500 focus:shadow-[0_0_15px_rgba(6,182,212,0.15)] text-white outline-none text-sm transition-all duration-300' />
+                                    <input type='text' name='name' required placeholder='Enter Name' onChange={handleChange} value={formData.name} className='w-full px-4 py-3.5 rounded-xl bg-black/40 border border-white/10 focus:border-cyan-500 focus:shadow-[0_0_15px_rgba(6,182,212,0.15)]  outline-none text-sm transition-all duration-300' />
                                 ) : (
-                                    <div className='w-full px-4 py-3.5 rounded-xl bg-black/40 border border-white/10 text-white text-sm'>{user?.name}</div>
+                                    <div className='w-full px-4 py-3.5 rounded-xl bg-black/40 border border-white/10  text-sm'>{user?.name}</div>
                                 )}
                             </div>
 
                             <div className='flex flex-col gap-2'>
                                 <label className='block text-sm font-semibold text-gray-300 mb-2'>Email Address</label>
                                 {isUpdate ? (
-                                    <input type='email' name='email' required placeholder='Enter Email' onChange={handleChange} value={formData.email} className='w-full px-4 py-3.5 rounded-xl bg-black/40 border border-white/10 focus:border-cyan-500 focus:shadow-[0_0_15px_rgba(6,182,212,0.15)] text-white outline-none text-sm transition-all duration-300' />
+                                    <input type='email' name='email' required placeholder='Enter Email' onChange={handleChange} value={formData.email} className='w-full px-4 py-3.5 rounded-xl bg-black/40 border border-white/10 focus:border-cyan-500 focus:shadow-[0_0_15px_rgba(6,182,212,0.15)]  outline-none text-sm transition-all duration-300' />
                                 ) : (
-                                    <div className='w-full px-4 py-3.5 rounded-xl bg-black/40 border border-white/10 text-white text-sm'>{user?.email}</div>
+                                    <div className='w-full px-4 py-3.5 rounded-xl bg-black/40 border border-white/10  text-sm'>{user?.email}</div>
                                 )}
                             </div>
 
                             <div className={`flex flex-col gap-2 ${isUpdate ? 'block' : 'hidden'}`}>
                                 <label className='block text-sm font-semibold text-gray-300 mb-2'>Secure Password</label>
-                                <input type='password' name='password' placeholder='Change password or enter current password' onChange={handleChange} value={formData.password} className='w-full px-4 py-3.5 rounded-xl bg-black/40 border border-white/10 focus:border-cyan-500 focus:shadow-[0_0_15px_rgba(6,182,212,0.15)] text-white outline-none text-sm transition-all duration-300' />
+                                <input type='password' name='password' placeholder='Change password or enter current password' onChange={handleChange} value={formData.password} className='w-full px-4 py-3.5 rounded-xl bg-black/40 border border-white/10 focus:border-cyan-500 focus:shadow-[0_0_15px_rgba(6,182,212,0.15)]  outline-none text-sm transition-all duration-300' />
 
                                 {formData.password && (
                                     <div className="mt-2 p-3 bg-black/30 border border-white/5 rounded-xl space-y-1.5 transition-all duration-300">

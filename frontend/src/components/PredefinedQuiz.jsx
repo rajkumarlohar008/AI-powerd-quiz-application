@@ -18,6 +18,10 @@ const PredefinedQuiz = () => {
     const [showResult, setShowResult] = useState(false);
     const [loading, setLoading] = useState(true);
     const [timeLeft, setTimeLeft] = useState(30);
+    const [secondsPerQuestion, setSecondsPerQuestion] = useState(30);
+    const [showTimerModal, setShowTimerModal] = useState(false);
+    const [timerInput, setTimerInput] = useState('30');
+    const [activePresetId, setActivePresetId] = useState(null);
     const [isFinishDisabled, setIsFinishDisabled] = useState(false);
 
     // View States
@@ -62,25 +66,73 @@ const PredefinedQuiz = () => {
             (item.presetName || '').toLowerCase().includes(query.toLowerCase())
         );
     }, [query, result]);
+    const getProgressKey = (presetId) => {
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        const userKey = user.id ?? user._id ?? user.email ?? 'guest';
+        return `predefinedQuizProgress:${userKey}:${presetId}`;
+    };
+
+    const readQuizProgress = (presetId) => {
+        try {
+            const saved = localStorage.getItem(getProgressKey(presetId));
+            return saved ? JSON.parse(saved) : null;
+        } catch (error) {
+            console.error('Unable to read quiz progress:', error);
+            return null;
+        }
+    };
+
     useEffect(() => {
-        if (loading || showResult || addPreset || updatingRoom || viewOnly || !selectedQuiz) return;
+        if (loading || showResult || addPreset || updatingRoom || viewOnly || !selectedQuiz || showTimerModal) return;
 
         const timer = setInterval(() => {
             setTimeLeft((prev) => {
                 if (prev <= 1) {
                     handleNext();
-                    return 60;
+                    return secondsPerQuestion;
                 }
                 return prev - 1;
             });
         }, 1000);
 
         return () => clearInterval(timer);
-    }, [currentQuestion, loading, showResult, addPreset, updatingRoom, viewOnly, selectedQuiz]);
+    }, [currentQuestion, loading, showResult, addPreset, updatingRoom, viewOnly, selectedQuiz, secondsPerQuestion, showTimerModal]);
+
+    // Persist the current position, answers, and timer preference separately for each preset.
+    useEffect(() => {
+        if (!activePresetId || !selectedQuiz || showResult || questions.length === 0) return;
+        try {
+            localStorage.setItem(getProgressKey(activePresetId), JSON.stringify({
+                currentQuestion,
+                userAnswers,
+                selectedAnswer,
+                secondsPerQuestion
+            }));
+        } catch (error) {
+            console.error('Unable to save quiz progress:', error);
+        }
+    }, [activePresetId, selectedQuiz, showResult, questions.length, currentQuestion, userAnswers, selectedAnswer, secondsPerQuestion]);
 
     const handleSelectPreset = (item) => {
+        const saved = readQuizProgress(item.id);
+        const restoredQuestion = saved && Number.isInteger(saved.currentQuestion)
+            ? Math.min(Math.max(saved.currentQuestion, 0), Math.max((item.questions || []).length - 1, 0))
+            : 0;
+        const restoredSeconds = Number.isFinite(saved?.secondsPerQuestion) && saved.secondsPerQuestion > 0
+            ? saved.secondsPerQuestion
+            : 30;
+
+        setActivePresetId(item.id);
         setSelectedQuiz(item.presetName);
-        setQuestions(item.questions);
+        setQuestions(item.questions || []);
+        setCurrentQuestion(restoredQuestion);
+        setUserAnswers(saved?.userAnswers || []);
+        setSelectedAnswer(saved?.selectedAnswer ?? saved?.userAnswers?.[restoredQuestion] ?? null);
+        setSecondsPerQuestion(restoredSeconds);
+        setTimerInput(String(restoredSeconds));
+        setTimeLeft(restoredSeconds);
+        setShowResult(false);
+        setIsFinishDisabled(false);
         setLoading(false);
     };
 
@@ -102,7 +154,7 @@ const PredefinedQuiz = () => {
         if (currentQuestion < questions.length - 1) {
             setCurrentQuestion(currentQuestion + 1);
             setSelectedAnswer(newAnswers[currentQuestion + 1] ?? null);
-            setTimeLeft(30);
+            setTimeLeft(secondsPerQuestion);
         } else {
             setShowResult(true);
         }
@@ -112,7 +164,7 @@ const PredefinedQuiz = () => {
         if (currentQuestion > 0) {
             setCurrentQuestion(currentQuestion - 1);
             setSelectedAnswer(userAnswers[currentQuestion - 1] ?? null);
-            setTimeLeft(30);
+            setTimeLeft(secondsPerQuestion);
         }
     };
 
@@ -291,11 +343,20 @@ const PredefinedQuiz = () => {
     };
 
     const universalBack = () => {
-        console.log('back')
+        // Save progress before leaving; hiding QuizScreen also clears the countdown interval.
+        if (activePresetId && selectedQuiz && !showResult) {
+            try {
+                localStorage.setItem(getProgressKey(activePresetId), JSON.stringify({
+                    currentQuestion, userAnswers, selectedAnswer, secondsPerQuestion
+                }));
+            } catch (error) {
+                console.error('Unable to save quiz progress:', error);
+            }
+        }
         setSelectedQuiz(false);
         setQuestions([]);
         setSelectedAnswer(null);
-        setTimeLeft(30);
+        setTimeLeft(secondsPerQuestion);
         setShowResult(false);
     };
 
@@ -324,13 +385,14 @@ const PredefinedQuiz = () => {
                     isBackDisabled={currentQuestion === 0}
                     nextText={currentQuestion === questions.length - 1 ? (isFinishDisabled ? 'Submitting...' : 'Finish') : 'Next'}
                     timeLeft={timeLeft}
+                    onTimerClick={() => { setTimerInput(String(secondsPerQuestion)); setShowTimerModal(true); }}
                     title={selectedQuiz || 'Predefined Quiz'}
                     onUniversalBack={universalBack}
                 />
             )}
 
             {!selectedQuiz && !addPreset && !updatingRoom && !viewOnly && (
-                <div className='relative min-h-screen w-full bg-linear-to-br from-black via-slate-900 to-purple-950 flex justify-center items-start p-4 sm:p-6 md:p-10 pt-24 md:pt-28 overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]'>
+                <div className='relative min-h-screen w-full theme-page-bg flex justify-center items-start p-4 sm:p-6 md:p-10 pt-24 md:pt-28 overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]'>
                     <div className='pointer-events-none absolute -top-30 -left-30 w-80 h-80 bg-cyan-500/20 rounded-full blur-3xl' />
                     <div className='pointer-events-none absolute -bottom-30 -right-30 w-80 h-80 bg-purple-500/20 rounded-full blur-3xl' />
 
@@ -398,7 +460,7 @@ const PredefinedQuiz = () => {
             )}
 
             {(addPreset || updatingRoom) && (
-                <div className='relative min-h-screen w-full bg-linear-to-br from-black via-slate-900 to-purple-950 flex justify-center items-start p-4 sm:p-6 md:p-10 pt-24 md:pt-28 overflow-y-auto text-white'>
+                <div className='relative min-h-screen w-full theme-page-bg flex justify-center items-start p-4 sm:p-6 md:p-10 pt-24 md:pt-28 overflow-y-auto'>
                     <div className='w-full max-w-4xl space-y-6 mt-10 relative z-10'>
                         <div className='rounded-2xl border border-white/10 bg-white/5 p-5 md:px-15 space-y-4'>
                             <div className='w-full flex justify-between items-center'>
@@ -510,7 +572,7 @@ const PredefinedQuiz = () => {
             )}
 
             {viewOnly && (
-                <div className='relative min-h-screen w-full bg-linear-to-br from-black via-slate-900 to-purple-950 flex justify-center items-start p-4 sm:p-6 md:p-10 pt-24 md:pt-28 overflow-y-auto text-white'>
+                <div className='relative min-h-screen w-full theme-page-bg flex justify-center items-start p-4 sm:p-6 md:p-10 pt-24 md:pt-28 overflow-y-auto'>
                     <div className='w-full max-w-4xl space-y-6 mt-10 relative z-10'>
                         <div className='rounded-2xl border border-white/10 bg-white/5 p-5 md:px-15 space-y-4'>
                             <div className='w-full flex justify-between items-center'>
@@ -543,6 +605,38 @@ const PredefinedQuiz = () => {
                         <button type='button' onClick={handleMenuBack} className='w-full py-4 rounded-2xl font-bold bg-white/10 hover:bg-white/20 border border-white/10 transition-all text-white'>
                             Back to Quizzes
                         </button>
+                    </div>
+                </div>
+            )}
+            {showTimerModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+                    <div className="w-full max-w-md rounded-2xl border border-white/10 bg-slate-900/95 p-6 text-white shadow-2xl">
+                        <div className="mb-4 flex items-center justify-between">
+                            <h3 className="text-xl font-bold text-cyan-400">Question Timer</h3>
+                            <button type="button" onClick={() => setShowTimerModal(false)} className=" hover:text-white"><X size={22} /></button>
+                        </div>
+                        <p className="mb-4 text-sm ">Set how many seconds you want for each question in this quiz.</p>
+                        <label className="mb-2 block text-xs font-semibold uppercase tracking-wider ">Seconds per question</label>
+                        <input
+                            type="number" min="1" max="3600" value={timerInput}
+                            onChange={(e) => setTimerInput(e.target.value)}
+                            className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3  outline-none focus:border-cyan-500 active:border-black"
+                        />
+                        <div className="mt-5 flex gap-3">
+                            <button type="button" onClick={() => setShowTimerModal(false)} className="flex-1 rounded-xl border border-white/10 bg-white/5 px-4 py-3 font-semibold  hover:bg-white/10 hover:border-cyan-500/30 hover:text-cyan-300 transition-all duration-300">Cancel</button>
+                            <button type="button" onClick={() => {
+                                const parsed = Number.parseInt(timerInput, 10);
+                                if (!Number.isFinite(parsed) || parsed < 1 || parsed > 3600) {
+                                    toast.error('Enter a timer between 1 and 3600 seconds.');
+                                    return;
+                                }
+                                setSecondsPerQuestion(parsed);
+                                setTimeLeft(parsed);
+                                setTimerInput(String(parsed));
+                                setShowTimerModal(false);
+                                toast.success(`Timer set to ${parsed} seconds per question.`);
+                            }} className="flex-1 rounded-xl border border-cyan-400/30 bg-cyan-500/20 px-4 py-3 font-bold text-cyan-300 hover:bg-cyan-500/30">Save Timer</button>
+                        </div>
                     </div>
                 </div>
             )}
