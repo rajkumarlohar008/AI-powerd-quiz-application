@@ -380,7 +380,7 @@ const Nav = () => {
 
                         <form onSubmit={handleSubmit} className='space-y-5'>
                             <div className='flex flex-col gap-2'>
-                                <label className='mt-3 block text-sm font-semibold text-gray-300 mb-2'>Full Name</label>
+                                <label className='mt-3 block text-sm font-semibold  mb-2'>Full Name</label>
                                 {isUpdate ? (
                                     <input type='text' name='name' required placeholder='Enter Name' onChange={handleChange} value={formData.name} className='w-full px-4 py-3.5 rounded-xl bg-black/40 border border-white/10 focus:border-cyan-500 focus:shadow-[0_0_15px_rgba(6,182,212,0.15)]  outline-none text-sm transition-all duration-300' />
                                 ) : (
@@ -389,7 +389,7 @@ const Nav = () => {
                             </div>
 
                             <div className='flex flex-col gap-2'>
-                                <label className='block text-sm font-semibold text-gray-300 mb-2'>Email Address</label>
+                                <label className='block text-sm font-semibold  mb-2'>Email Address</label>
                                 {isUpdate ? (
                                     <input type='email' name='email' required placeholder='Enter Email' onChange={handleChange} value={formData.email} className='w-full px-4 py-3.5 rounded-xl bg-black/40 border border-white/10 focus:border-cyan-500 focus:shadow-[0_0_15px_rgba(6,182,212,0.15)]  outline-none text-sm transition-all duration-300' />
                                 ) : (
@@ -398,7 +398,7 @@ const Nav = () => {
                             </div>
 
                             <div className={`flex flex-col gap-2 ${isUpdate ? 'block' : 'hidden'}`}>
-                                <label className='block text-sm font-semibold text-gray-300 mb-2'>Secure Password</label>
+                                <label className='block text-sm font-semibold  mb-2'>Secure Password</label>
                                 <input type='password' name='password' placeholder='Change password or enter current password' onChange={handleChange} value={formData.password} className='w-full px-4 py-3.5 rounded-xl bg-black/40 border border-white/10 focus:border-cyan-500 focus:shadow-[0_0_15px_rgba(6,182,212,0.15)]  outline-none text-sm transition-all duration-300' />
 
                                 {formData.password && (
@@ -427,7 +427,7 @@ const Nav = () => {
                                 )}
                             </div>
 
-                            <button type='submit' disabled={isDisabled} className={`flex-1 text-lg hover:border-blue-400/40 duration-300 hover:shadow-[0_0_25px_rgba(59,130,246,0.2)] active:scale-[0.98] disabled:opacity-40 disabled:scale-100 disabled:hover:shadow-none disabled:cursor-not-allowed px-10 md:px-17 mt-3 w-full py-3.5 rounded-2xl font-bold bg-white/10 hover:bg-white/20 border border-white/10 transition-all text-center text-white ${isUpdate ? 'block' : 'hidden'}`}>
+                            <button type='submit' disabled={isDisabled} className={`flex-1 text-lg hover:border-blue-400/40 duration-300 hover:shadow-[0_0_25px_rgba(59,130,246,0.2)] active:scale-[0.98] disabled:opacity-40 disabled:scale-100 disabled:hover:shadow-none disabled:cursor-not-allowed px-10 md:px-17 mt-3 w-full py-3.5 rounded-2xl font-bold bg-white/10 hover:bg-white/20 border border-white/10 transition-all text-center  ${isUpdate ? 'block' : 'hidden'}`}>
                                 {isDisabled ? 'Updating...' : 'Update'}
                             </button>
                         </form>

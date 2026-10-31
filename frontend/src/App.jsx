@@ -1,17 +1,19 @@
-import React from 'react'
+import React, { Suspense, lazy } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import HomePage from './components/HomePage';
 import Login from './components/Login';
 import Register from './components/Register';
 import Dashboard from './components/Dashboard';
-import AiQuizGenerator from './components/AiQuizGenerator';
 import QuizHistory from './components/QuizHistory';
-import AdminDashBoard from './components/AdminDashBoard';
-import RoomQuiz from './components/RoomQuiz';
 import { ToastContainer } from 'react-toastify';
-import PredefinedQuiz from './components/PredefinedQuiz';
 import Nav from './components/Nav';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
+// Lazy loaded heavy components
+const AiQuizGenerator = lazy(() => import('./components/AiQuizGenerator'));
+const AdminDashBoard = lazy(() => import('./components/AdminDashBoard'));
+const PredefinedQuiz = lazy(() => import('./components/PredefinedQuiz'));
+const RoomQuiz = lazy(() => import('./components/RoomQuiz'));
+
 
 const AppContent = () => {
   const location = useLocation();
